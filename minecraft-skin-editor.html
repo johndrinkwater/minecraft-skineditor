@@ -7,8 +7,8 @@
 <link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
 <style>
 body { background: #eeeeee; }
-#lesson04-skin { background: red;}
-#lesson04-canvas { background: green;}
+#lesson04-skin { position: relative; /*background: red;*/ }
+#lesson04-c anvas { background: green;}*/
 
 </style>
 <!-- <script type="text/javascript" src="sylvester.js"></script> -->
@@ -366,7 +366,8 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
   var pyramidVertexColorBuffer;
   var cubeVertexPositionBuffer;
   var cubeVertexColorBuffer;
-  var cubeVertexTextureCoordBuffer;
+  var headVTCB;
+  var headAccessVTCB;
   var cubeVertexIndexBuffer;
   function initBuffers() {
     pyramidVertexPositionBuffer = gl.createBuffer();
@@ -460,68 +461,35 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
     cubeVertexPositionBuffer.itemSize = 3;
     cubeVertexPositionBuffer.numItems = 24;
-/*
-    cubeVertexColorBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, cubeVertexColorBuffer);
-    var colors = [
-      [1.0, 0.0, 0.0, 1.0],     // Front face
-      [1.0, 1.0, 0.0, 1.0],     // Back face
-      [0.0, 1.0, 0.0, 1.0],     // Top face
-      [1.0, 0.5, 0.5, 1.0],     // Bottom face
-      [1.0, 0.0, 1.0, 1.0],     // Right face
-      [0.0, 0.0, 1.0, 1.0],     // Left face
-    ];
-    var unpackedColors = []
-    for (var i in colors) {
-      var color = colors[i];
-      for (var j=0; j < 4; j++) {
-        unpackedColors = unpackedColors.concat(color);
-      }
-    }
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(unpackedColors), gl.STATIC_DRAW);
-    cubeVertexColorBuffer.itemSize = 4;
-    cubeVertexColorBuffer.numItems = 24;
-*/
 
-    cubeVertexTextureCoordBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, cubeVertexTextureCoordBuffer);
+    headVTCB = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, headVTCB);
     var textureCoords = [
       // Front face
       0.125, 0.5,
       0.25, 0.5,
       0.25, 0.75,
       0.125, 0.75,
-
-/*//    to test transface
-      0.0, 0.75,
-      0.125, 0.75,
-      0.125, 1.0,
-      0.0, 1.0,
-*/
       // Back face
       0.5, 0.5,
       0.5, 0.75,
       0.375, 0.75,
       0.375, 0.5,
-
       // Top face
       0.125, 1.0,
       0.125, 0.75,
       0.25, 0.75,
       0.25, 1.0,
-
       // Bottom face
       0.375, 1.0,
       0.25, 1.0,
       0.25, 0.75,
       0.375, 0.75,
-
       // Right face
       0.375, 0.5,
       0.375, 0.75,
       0.25, 0.75,
       0.25, 0.5,
-
       // Left face
       0.0, 0.5,
       0.125, 0.5,
@@ -529,10 +497,46 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
       0.0, 0.75,
     ];
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoords), gl.STATIC_DRAW);
-    cubeVertexTextureCoordBuffer.itemSize = 2;
-    cubeVertexTextureCoordBuffer.numItems = 24;
+    headVTCB.itemSize = 2;
+    headVTCB.numItems = 24;
 
-
+    headAccessVTCB = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, headAccessVTCB);
+    var textureCoords = [
+      // Front face
+      0.625, 0.5,
+      0.75, 0.5,
+      0.75, 0.75,
+      0.625, 0.75,
+      // Back face
+      1.0, 0.5,
+      1.0, 0.75,
+      0.875, 0.75,
+      0.875, 0.5,
+      // Top face
+      0.625, 1.0,
+      0.625, 0.75,
+      0.75, 0.75,
+      0.75, 1.0,
+      // Bottom face
+      0.875, 1.0,
+      0.75, 1.0,
+      0.75, 0.75,
+      0.875, 0.75,
+      // Right face
+      0.875, 0.5,
+      0.875, 0.75,
+      0.75, 0.75,
+      0.75, 0.5,
+      // Left face
+      0.5, 0.5,
+      0.625, 0.5,
+      0.625, 0.75,
+      0.5, 0.75,
+    ];
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoords), gl.STATIC_DRAW);
+    headAccessVTCB.itemSize = 2;
+    headAccessVTCB.numItems = 24;
 
 
     cubeVertexIndexBuffer = gl.createBuffer();
@@ -582,10 +586,9 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
     perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0);
     loadIdentity();
 
-    mvTranslate([0.0, 0.0, -8.0])
+    mvTranslate([-1.5, 1.5, -8.0])
 
-    //mvPushMatrix();
-    // mvRotate(rCube, [0, 1, 0]);
+    mvPushMatrix();
     mvRotate(xHead, [0, 1, 0]);
     mvRotate(yHead, [1, 0, 0]);
     mvRotate( 25, [1, 0, 0]);
@@ -593,11 +596,8 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
     gl.bindBuffer(gl.ARRAY_BUFFER, cubeVertexPositionBuffer);
     gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, cubeVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, cubeVertexTextureCoordBuffer);
-    gl.vertexAttribPointer(shaderProgram.textureCoordAttribute, cubeVertexTextureCoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
-
-//    gl.bindBuffer(gl.ARRAY_BUFFER, cubeVertexColorBuffer);
-  //  gl.vertexAttribPointer(shaderProgram.vertexColorAttribute, cubeVertexColorBuffer.itemSize, gl.FLOAT, false, 0, 0);
+    gl.bindBuffer(gl.ARRAY_BUFFER, headVTCB);
+    gl.vertexAttribPointer(shaderProgram.textureCoordAttribute, headVTCB.itemSize, gl.FLOAT, false, 0, 0);
 
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, ourTexture);
@@ -607,7 +607,31 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
     setMatrixUniforms();
     gl.drawElements(gl.TRIANGLES, cubeVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
 
-    //mvPopMatrix();
+    mvPopMatrix();
+
+
+    mvTranslate([3.0, 0.0, 0.0])
+
+    mvPushMatrix();
+    mvRotate(xHead, [0, 1, 0]);
+    mvRotate(yHead, [1, 0, 0]);
+    mvRotate( 25, [1, 0, 0]);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, cubeVertexPositionBuffer);
+    gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, cubeVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, headAccessVTCB);
+    gl.vertexAttribPointer(shaderProgram.textureCoordAttribute, headAccessVTCB.itemSize, gl.FLOAT, false, 0, 0);
+
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, ourTexture);
+    gl.uniform1i(shaderProgram.samplerUniform, 0);
+
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cubeVertexIndexBuffer);
+    setMatrixUniforms();
+    gl.drawElements(gl.TRIANGLES, cubeVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
+
+    mvPopMatrix();
 
   }
 
@@ -688,14 +712,32 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
     newskin = document.createElement('img');
     newskin.src = skinloader.value;
     newskin.onload = function() {
-       temp = document.getElementById("lesson04-skin").getContext('2d');
-       temp.mozImageSmoothingEnabled = false;
-       temp.width = temp.width;
-       temp.drawImage( newskin, 0, 0);
-       updateTexture();
+      skin = document.getElementById("lesson04-skin");
+      skin.width = skin.width;
+      skinctx = skin.getContext('2d');
+      skinctx.mozImageSmoothingEnabled = false;
+      skinctx.drawImage( newskin, 0, 0);
+      updateTexture();
     }
     e.preventDefault();
     return false;
+  }
+  function roundNumber(num, dec) {
+    return Math.round( Math.round( num * Math.pow( 10, dec + 1 ) ) / Math.pow( 10, 1 ) ) / Math.pow(10,dec);
+  }
+
+  function captureUVCursorLocation(ev) {
+    var x, y;
+
+	  // Get the mouse position relative to the canvas element.
+	  if (ev.layerX || ev.layerX == 0) { // Firefox
+	    x = ev.layerX;
+	    y = ev.layerY;
+	  } else if (ev.offsetX || ev.offsetX == 0) { // Opera
+	    x = ev.offsetX;
+	    y = ev.offsetY;
+	  }
+    debug.innerHTML = roundNumber((x / 384),2) + ", " + roundNumber(((256-y)/256),2)
   }
 
   function webGLStart() {
@@ -703,14 +745,21 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
     skin = document.getElementById("lesson04-skin");
     skinctx = skin.getContext('2d');
     //skinctx.globalAlpha = 0.0;
-    skinctx.globalCompositeOperation = "source-out";
+
+    //skinctx.globalCompositeOperation = "source-out";
+
     //curContext.mozImageSmoothingEnabled ? curContext.mozImageSmoothingEnabled = false; true;
     skinctx.mozImageSmoothingEnabled = false;
     // fill with alpha
-    skinctx.fillStyle = 'rgba(60,255,20,0.0)';
-    skinctx.fillRect(0, 0, 64, 32);
+    //skinctx.fillStyle = 'rgba(60,255,20,0.0)';
+    //skinctx.fillRect(0, 0, 64, 32);
     defaultskin = new Image();
     defaultskin.onload = function() {
+
+      skin = document.getElementById("lesson04-skin");
+      skin.width = skin.width;
+      skinctx = skin.getContext('2d');
+      skinctx.mozImageSmoothingEnabled = false
       skinctx.drawImage( defaultskin, 0, 0);
       updateTexture();
     }
@@ -725,6 +774,7 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
     canvas.addEventListener('click',                drawOnDude, true);
     canvas.addEventListener('mouseup',        stopRotatingDude, true);
     canvas.addEventListener('mousemove', captureCursorLocation, true);
+    skin.addEventListener('mousemove', captureUVCursorLocation, true);
     initGL(canvas);
     initShaders()
     initBuffers();
@@ -732,8 +782,8 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
     updateTexture();
 
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
-    // gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
-    // gl.enable(gl.BLEND);
+    //gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
+    //gl.enable(gl.BLEND);
     gl.clearDepth(1.0);
 
     gl.enable(gl.DEPTH_TEST);
@@ -767,7 +817,7 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
  <input type="file" id="lesson04-file" style="float:right; "/>
  <canvas id="lesson04-skin" style="border: 1px solid grey; width:384px; height:256px;" width="64" height="32">Sorry, you don’t have Canvas support</canvas>
 
- <span id="debug"></span>
+ <span id="debug" style="float: right;" ></span>
  </section>
 <!-- <footer>
   <p>Last updated <time datetime="2011-02-10T17:00:00">20/01/2011</time></p>
