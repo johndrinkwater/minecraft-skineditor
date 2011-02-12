@@ -672,6 +672,8 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
 
     // move to the plain we want
     mvTranslate([0.0, 2.0, -14.0])
+    
+    //gl.enable(gl.ALPHA_BITS);
 
     // draw body
     mvPushMatrix();
@@ -742,7 +744,7 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
 	    mvScale([-1.0,1.0,1.0]);
 	    drawAndTexture(legVPB, legLVTCB);
     mvPopMatrix();
-
+    // gl.disable(gl.ALPHA_BITS);
   }
 
 
@@ -892,10 +894,11 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
     // if we put 0.0 for alpha, we see the background!
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
     gl.clearDepth(1.0);
-    //gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
-    //gl.enable(gl.BLEND);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    gl.enable(gl.BLEND);
+    // 
     //gl.enable(gl.ALPHA_TEST);
-    //gl.alphaFunc(gl.LEQUAL);
+    //gl.alphaTestFunc(gl.LEQUAL);
 
     gl.enable(gl.DEPTH_TEST);
     gl.depthFunc(gl.LEQUAL);
