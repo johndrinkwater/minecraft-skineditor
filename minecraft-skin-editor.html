@@ -221,7 +221,6 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
 
   varying vec2 vTextureCoord;
 
-
   void main(void) {
     gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
     vTextureCoord = aTextureCoord;
@@ -407,10 +406,10 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
     // for head, and head accessories
     cubeVPB = makeCube( 8, 8, 8);
     // body, unsure what ‘depth’ body should be
-    bodyVPB = makeCube(10,16, 6);
+    bodyVPB = makeCube( 8,12, 4);
 
-    armVPB  = makeCube( 4,14, 4);
-    legVPB  = makeCube( 4,16, 4);
+    armVPB  = makeCube( 4,12, 4);
+    legVPB  = makeCube( 4,12, 4);
 
     headVTCB = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, headVTCB);
@@ -694,12 +693,17 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
 
     // draw head bits
     mvPushMatrix();
-	    mvTranslate([1.5, 1.9, 0.0]);
+	    mvTranslate([-1.5, 1.9, 0]);
+	    mvRotate(xHead, [0, 1, 0]);
+	    mvRotate(yHead, [1, 0, 0]);
+	    mvRotate( 25, [1, 0, 0]);
+	    //mvTranslate([1.5, 1.9, 0.0]);
 	    /*
 	      mvRotate(xHead, [0, 1, 0]);
 	      mvRotate(yHead, [1, 0, 0]);
 	      mvRotate( 25, [1, 0, 0]);
 	    */
+ 	    mvScale([1.2,1.2,1.2]);
 	    drawAndTexture(cubeVPB, headAccessVTCB);
     mvPopMatrix();
 
@@ -885,10 +889,13 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
     ourTexture = gl.createTexture();
     updateTexture();
 
+    // if we put 0.0 for alpha, we see the background!
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
+    gl.clearDepth(1.0);
     //gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
     //gl.enable(gl.BLEND);
-    gl.clearDepth(1.0);
+    //gl.enable(gl.ALPHA_TEST);
+    //gl.alphaFunc(gl.LEQUAL);
 
     gl.enable(gl.DEPTH_TEST);
     gl.depthFunc(gl.LEQUAL);
