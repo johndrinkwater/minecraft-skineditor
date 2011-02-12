@@ -362,96 +362,40 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
   }
 
 
-  var pyramidVertexPositionBuffer;
-  var pyramidVertexColorBuffer;
-  var cubeVertexPositionBuffer;
-  var cubeVertexColorBuffer;
-  var headVTCB;
-  var headAccessVTCB;
+  var cubeVPB, bodyVPB;
+  var headVTCB, headAccessVTCB, bodyVTCB;
   var cubeVertexIndexBuffer;
   function initBuffers() {
-    pyramidVertexPositionBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, pyramidVertexPositionBuffer);
-    var vertices = [
-        // Front face
-         0.0,  1.0,  0.0,
-        -1.0, -1.0,  1.0,
-         1.0, -1.0,  1.0,
-        // Right face
-         0.0,  1.0,  0.0,
-         1.0, -1.0,  1.0,
-         1.0, -1.0, -1.0,
-        // Back face
-         0.0,  1.0,  0.0,
-         1.0, -1.0, -1.0,
-        -1.0, -1.0, -1.0,
-        // Left face
-         0.0,  1.0,  0.0,
-        -1.0, -1.0, -1.0,
-        -1.0, -1.0,  1.0
-    ];
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
-    pyramidVertexPositionBuffer.itemSize = 3;
-    pyramidVertexPositionBuffer.numItems = 12;
 
-    pyramidVertexColorBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, pyramidVertexColorBuffer);
-    var colors = [
-        // Front face
-        1.0, 0.0, 0.0, 1.0,
-        0.0, 1.0, 0.0, 1.0,
-        0.0, 0.0, 1.0, 1.0,
-        // Right face
-        1.0, 0.0, 0.0, 1.0,
-        0.0, 0.0, 1.0, 1.0,
-        0.0, 1.0, 0.0, 1.0,
-        // Back face
-        1.0, 0.0, 0.0, 1.0,
-        0.0, 1.0, 0.0, 1.0,
-        0.0, 0.0, 1.0, 1.0,
-        // Left face
-        1.0, 0.0, 0.0, 1.0,
-        0.0, 0.0, 1.0, 1.0,
-        0.0, 1.0, 0.0, 1.0
-    ];
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
-    pyramidVertexColorBuffer.itemSize = 4;
-    pyramidVertexColorBuffer.numItems = 12;
-
-
-    cubeVertexPositionBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, cubeVertexPositionBuffer);
+    // for head, and head accessories
+    cubeVPB = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, cubeVPB);
     vertices = [
       // Front face
       -1.0, -1.0,  1.0,
        1.0, -1.0,  1.0,
        1.0,  1.0,  1.0,
       -1.0,  1.0,  1.0,
-
       // Back face
       -1.0, -1.0, -1.0,
       -1.0,  1.0, -1.0,
        1.0,  1.0, -1.0,
        1.0, -1.0, -1.0,
-
       // Top face
       -1.0,  1.0, -1.0,
       -1.0,  1.0,  1.0,
        1.0,  1.0,  1.0,
        1.0,  1.0, -1.0,
-
       // Bottom face
       -1.0, -1.0, -1.0,
        1.0, -1.0, -1.0,
        1.0, -1.0,  1.0,
       -1.0, -1.0,  1.0,
-
       // Right face
        1.0, -1.0, -1.0,
        1.0,  1.0, -1.0,
        1.0,  1.0,  1.0,
        1.0, -1.0,  1.0,
-
       // Left face
       -1.0, -1.0, -1.0,
       -1.0, -1.0,  1.0,
@@ -459,8 +403,47 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
       -1.0,  1.0, -1.0,
     ];
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
-    cubeVertexPositionBuffer.itemSize = 3;
-    cubeVertexPositionBuffer.numItems = 24;
+    cubeVPB.itemSize = 3;
+    cubeVPB.numItems = 24;
+
+    // for head, and head accessories
+    bodyVPB = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, bodyVPB);
+    vertices = [
+      // Front face
+      -1.0, -1.5,  0.5,
+       1.0, -1.5,  0.5,
+       1.0,  1.5,  0.5,
+      -1.0,  1.5,  0.5,
+      // Back face
+      -1.0, -1.5, -0.5,
+      -1.0,  1.5, -0.5,
+       1.0,  1.5, -0.5,
+       1.0, -1.5, -0.5,
+      // Top face
+      -1.0,  1.5, -0.5,
+      -1.0,  1.5,  0.5,
+       1.0,  1.5,  0.5,
+       1.0,  1.5, -0.5,
+      // Bottom face
+      -1.0, -1.5, -0.5,
+       1.0, -1.5, -0.5,
+       1.0, -1.5,  0.5,
+      -1.0, -1.5,  0.5,
+      // Right face
+       1.0, -1.5, -0.5,
+       1.0,  1.5, -0.5,
+       1.0,  1.5,  0.5,
+       1.0, -1.5,  0.5,
+      // Left face
+      -1.0, -1.5, -0.5,
+      -1.0, -1.5,  0.5,
+      -1.0,  1.5,  0.5,
+      -1.0,  1.5, -0.5,
+    ];
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+    bodyVPB.itemSize = 3;
+    bodyVPB.numItems = 24;
 
     headVTCB = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, headVTCB);
@@ -538,6 +521,43 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
     headAccessVTCB.itemSize = 2;
     headAccessVTCB.numItems = 24;
 
+    bodyVTCB = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, bodyVTCB);
+    var textureCoords = [
+      // Front face
+      0.3125, 0.0,
+      0.4375, 0.0,
+      0.4375, 0.375,
+      0.3125, 0.375,
+      // Back face
+      0.625, 0.0,
+      0.625, 0.375,
+      0.5, 0.375,
+      0.5, 0.0,
+      // Top face
+      0.3125, 0.5,
+      0.3125, 0.375,
+      0.4375, 0.375,
+      0.4375, 0.5,
+      // Bottom face
+      0.5625, 0.5,
+      0.4375, 0.5,
+      0.4375, 0.375,
+      0.5625, 0.375,
+      // Right face
+      0.5, 0.0,
+      0.5, 0.375,
+      0.4375, 0.375,
+      0.4375, 0.0,
+      // Left face
+      0.25, 0.0,
+      0.3125, 0.0,
+      0.3125, 0.375,
+      0.25, 0.375,
+    ];
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoords), gl.STATIC_DRAW);
+    bodyVTCB.itemSize = 2;
+    bodyVTCB.numItems = 24;
 
     cubeVertexIndexBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cubeVertexIndexBuffer);
@@ -577,7 +597,6 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
     gl.bindTexture(gl.TEXTURE_2D, null);
   }
 
-  var rCube = 0;
   var xHead = 0, yHead = 0;
   function drawScene() {
     gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
@@ -586,15 +605,38 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
     perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0);
     loadIdentity();
 
-    mvTranslate([-1.5, 1.5, -8.0])
+    // move to the plain we want
+    mvTranslate([0, 0, -8.0])
 
+    // draw body
     mvPushMatrix();
+    mvTranslate([-1.5, -1.0, 0.0])
+    mvRotate(xHead, [0, 1, 0]);
+    gl.bindBuffer(gl.ARRAY_BUFFER, bodyVPB);
+    gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, bodyVPB.itemSize, gl.FLOAT, false, 0, 0);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, bodyVTCB);
+    gl.vertexAttribPointer(shaderProgram.textureCoordAttribute, bodyVTCB.itemSize, gl.FLOAT, false, 0, 0);
+
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, ourTexture);
+    gl.uniform1i(shaderProgram.samplerUniform, 0);
+
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cubeVertexIndexBuffer);
+    setMatrixUniforms();
+    gl.drawElements(gl.TRIANGLES, cubeVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
+    mvPopMatrix();
+
+
+    // draw head
+    mvPushMatrix();
+    mvTranslate([-1.5, 1.5, 0]);
     mvRotate(xHead, [0, 1, 0]);
     mvRotate(yHead, [1, 0, 0]);
     mvRotate( 25, [1, 0, 0]);
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, cubeVertexPositionBuffer);
-    gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, cubeVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
+    gl.bindBuffer(gl.ARRAY_BUFFER, cubeVPB);
+    gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, cubeVPB.itemSize, gl.FLOAT, false, 0, 0);
 
     gl.bindBuffer(gl.ARRAY_BUFFER, headVTCB);
     gl.vertexAttribPointer(shaderProgram.textureCoordAttribute, headVTCB.itemSize, gl.FLOAT, false, 0, 0);
@@ -610,15 +652,15 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
     mvPopMatrix();
 
 
-    mvTranslate([3.0, 0.0, 0.0])
-
+    // draw head bits
     mvPushMatrix();
-    mvRotate(xHead, [0, 1, 0]);
-    mvRotate(yHead, [1, 0, 0]);
-    mvRotate( 25, [1, 0, 0]);
+    mvTranslate([1.5, 1.5, 0.0]);
+    //mvRotate(xHead, [0, 1, 0]);
+    //mvRotate(yHead, [1, 0, 0]);
+    // mvRotate( 25, [1, 0, 0]);
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, cubeVertexPositionBuffer);
-    gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, cubeVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
+    gl.bindBuffer(gl.ARRAY_BUFFER, cubeVPB);
+    gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, cubeVPB.itemSize, gl.FLOAT, false, 0, 0);
 
     gl.bindBuffer(gl.ARRAY_BUFFER, headAccessVTCB);
     gl.vertexAttribPointer(shaderProgram.textureCoordAttribute, headAccessVTCB.itemSize, gl.FLOAT, false, 0, 0);
@@ -642,14 +684,12 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
     if (lastTime != 0) {
       var elapsed = timeNow - lastTime;
 
-      // rCube -= (75 * elapsed) / 1000.0;
-      rCube -= ( cursorDiff*2 )
       xHead -= ( cursorDiffX*2 )
       yHead -= ( cursorDiffY*2 )
-      if (yHead >= 64)
-	yHead = 64;
-      if (yHead <= -64)
-	yHead = -64;
+      if (yHead >= 16)
+	yHead = 16;
+      if (yHead <= -50)
+	yHead = -50;
 
 	debug.innerHTML = xHead + " " + yHead;
 
