@@ -8,7 +8,7 @@
 <style>
 body { background: #eeeeee; }
 #lesson04-skin { position: relative; /*background: red;*/ }
-#lesson04-c anvas { background: green;}*/
+#lesson04-canvas { background: url(http://www.minecraft.net/img/bg.gif);}*/
 
 </style>
 <!-- <script type="text/javascript" src="sylvester.js"></script> -->
@@ -671,80 +671,53 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
     loadIdentity();
 
     // move to the plain we want
-    mvTranslate([0.0, 2.0, -14.0])
+    mvTranslate([0.0, 0.5, -13.0])
     
-    //gl.enable(gl.ALPHA_BITS);
+    // we rotate everything
+    //mvRotate(xHead, [0, 1, 0]); 
 
     // draw body
     mvPushMatrix();
-	    mvTranslate([-1.5, -1.5, 0.0])
-	    mvRotate(xHead, [0, 1, 0]);
+	    //mvTranslate([-1.5, -1.5, 0.0])
 	    drawAndTexture(bodyVPB, bodyVTCB);
     mvPopMatrix();
 
+    // arms
+    mvPushMatrix();
+	    mvTranslate([-1.6, 0.0, 0.0]);
+	    mvRotate(8, [1, 0, 0]);
+	    drawAndTexture(armVPB, armLVTCB);
+    mvPopMatrix();
+    mvPushMatrix();
+	    mvTranslate([1.6, 0.0, 0.0]);
+	    mvRotate(-8, [1, 0, 0]);
+	    mvScale([-1.0,1.0,1.0]);
+	    drawAndTexture(armVPB, armLVTCB);
+    mvPopMatrix();
+
+    // legs
+    mvPushMatrix();
+	    mvTranslate([-0.525, -3.1, 0.0]);
+	    mvRotate(4, [1, 0, 0]);
+	    drawAndTexture(legVPB, legLVTCB);
+    mvPopMatrix();
+    mvPushMatrix();
+	    mvTranslate([0.525, -3.1, 0.0]);
+	    mvRotate(-4, [1, 0, 0]);
+	    mvScale([-1.0,1.0,1.0]);
+	    drawAndTexture(legVPB, legLVTCB);
+    mvPopMatrix();
 
     // draw head
     mvPushMatrix();
-	    mvTranslate([-1.5, 1.9, 0]);
-	    mvRotate(xHead, [0, 1, 0]);
+	    mvTranslate([0.0, 2.6, 0]);
+            mvRotate(xHead, [0, 1, 0]); 
 	    mvRotate(yHead, [1, 0, 0]);
-	    mvRotate( 25, [1, 0, 0]);
+	    mvRotate( 5, [1, 0, 0]);
 	    drawAndTexture(cubeVPB, headVTCB);
-    mvPopMatrix();
-
-
-    // draw head bits
-    mvPushMatrix();
-	    mvTranslate([-1.5, 1.9, 0]);
-	    mvRotate(xHead, [0, 1, 0]);
-	    mvRotate(yHead, [1, 0, 0]);
-	    mvRotate( 25, [1, 0, 0]);
-	    //mvTranslate([1.5, 1.9, 0.0]);
-	    /*
-	      mvRotate(xHead, [0, 1, 0]);
-	      mvRotate(yHead, [1, 0, 0]);
-	      mvRotate( 25, [1, 0, 0]);
-	    */
- 	    mvScale([1.2,1.2,1.2]);
+ 	    mvScale([1.175,1.175,1.175]);
 	    drawAndTexture(cubeVPB, headAccessVTCB);
     mvPopMatrix();
-
-    // draw arms
-    mvPushMatrix();
-	    mvTranslate([-3.3, -1.5, 0.0]);
-	    mvRotate(xHead, [0, 1, 0]);
-	    mvRotate(yHead, [1, 0, 0]);
-	    mvRotate( 25, [1, 0, 0]);
-	    drawAndTexture(armVPB, armLVTCB);
-    mvPopMatrix();
-    /* we need to ‘mirror’ this arm, somehow */
-    mvPushMatrix();
-	    mvTranslate([0.3, -1.5, 0.0]);
-	    mvRotate(xHead, [0, 1, 0]);
-	    mvRotate(yHead, [1, 0, 0]);
-	    mvRotate(25, [1, 0, 0]);
-	    mvScale([-1.0,1.0,1.0]);
-	    drawAndTexture(armVPB, armLVTCB);
-    mvPopMatrix();
-
-    // draw legs
-    mvPushMatrix();
-	    mvTranslate([-2.2, -5.8, 0.0]);
-	    mvRotate(xHead, [0, 1, 0]);
-	    mvRotate(yHead, [1, 0, 0]);
-	    //mvRotate( 25, [1, 0, 0]);
-	    drawAndTexture(legVPB, legLVTCB);
-    mvPopMatrix();
-    /* we need to ‘mirror’ this arm, somehow */
-    mvPushMatrix();
-	    mvTranslate([-0.8, -5.8, 0.0]);
-	    mvRotate(xHead, [0, 1, 0]);
-	    mvRotate(yHead, [1, 0, 0]);
-	    //mvRotate(25, [1, 0, 0]);
-	    mvScale([-1.0,1.0,1.0]);
-	    drawAndTexture(legVPB, legLVTCB);
-    mvPopMatrix();
-    // gl.disable(gl.ALPHA_BITS);
   }
 
 
@@ -892,7 +865,7 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
     updateTexture();
 
     // if we put 0.0 for alpha, we see the background!
-    gl.clearColor(0.0, 0.0, 0.0, 1.0);
+    gl.clearColor(0.0, 0.0, 0.0, 0.0);
     gl.clearDepth(1.0);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     gl.enable(gl.BLEND);
@@ -914,24 +887,18 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
 
 <!--<header><h1>johndrinkwater</h1></header>-->
 
-<nav>
-<ul>
-<li><a href="/">Home</a></li>
-
-</ul></nav>
-
 <section>
 <article>
-<!-- <header>
-  <h1>Skins</h1>
- </header>-->
+ <header>
+  <h1>Minecraft Skin Editor (with HTML5 WebGL preview)</h1>
+ </header>
  <section>
 
- <canvas id="lesson04-canvas" style="border: 1px solid grey;" width="400" height="500">Sorry, you don’t have WebGL</canvas>
- <input type="file" id="lesson04-file" style="float:right; "/>
+ <canvas id="lesson04-canvas" style="border: 1px solid grey;" width="350" height="500">Sorry, you don’t have WebGL</canvas>
+ <input type="file" id="lesson04-file" style="position: absolute; right: 1em; top: 6em; "/>
  <canvas id="lesson04-skin" style="border: 1px solid grey; width:384px; height:256px;" width="64" height="32">Sorry, you don’t have Canvas support</canvas>
 
- <span id="debug" style="float: right;" ></span>
+ <span id="debug" style="float: right; display: none;" ></span>
  </section>
 <!-- <footer>
   <p>Last updated <time datetime="2011-02-10T17:00:00">20/01/2011</time></p>
