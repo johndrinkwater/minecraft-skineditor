@@ -4,11 +4,14 @@
 <meta charset="utf-8" />
 <title>Minecraft ‐ Skin</title>
 <link rel="stylesheet" href="/style/" />
-<link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
+<link rel="shortcut icon" type="image/x-icon" href="http://www.minecraft.net/favicon.png" />
 <style>
-body { background: #eeeeee; }
-#lesson04-skin { position: relative; /*background: red;*/ }
-#lesson04-canvas { background: url(http://www.minecraft.net/img/bg.gif);}*/
+html,h1,article { margin: 0; padding: 0; }
+body { background: url(http://www.minecraft.net/img/bg.gif) #eeeeee; margin:0; }
+#skin-editor { position: relative; background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH2wIODRAceCm/UgAAAC9JREFUOMtjvHnz5n8GPEBNTQ2fNAMTA4Vg1IDBYADj////8aaDW7dujQbi8DcAAEPDCqVzBCYkAAAAAElFTkSuQmCC)}
+#skin-preview { background: url(http://www.minecraft.net/img/bg.gif); }
+#minecraft { background: url(http://www.minecraft.net/img/logo_no_pps.png) transparent no-repeat; display: inline-block; text-indent: -9999px; min-width:270px; min-height: 70px; }
+header { margin: 0; padding-bottom: 10px; color: white; background: url(http://www.minecraft.net/img/top-bg.gif) repeat-x transparent; height:58px; }
 
 </style>
 <!-- <script type="text/javascript" src="sylvester.js"></script> -->
@@ -411,6 +414,8 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
     armVPB  = makeCube( 4,12, 4);
     legVPB  = makeCube( 4,12, 4);
 
+    ourTexture = gl.createTexture();
+
     headVTCB = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, headVTCB);
     var textureCoords = [
@@ -621,16 +626,18 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
   function updateTexture() {
     gl.bindTexture(gl.TEXTURE_2D, ourTexture);
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-    // var texels = skinctx.getImageData(0,0, 64, 32);
-	
+    var texels = 0; // make sure 	
 	try {
 	  try {
-	    var texels = skinctx.getImageData(0,0, 64, 32);
+	    //var texels = skinctx.getImageData(0,0, 64, 32);
+	    var texels = skineditormc.getImageData(0, 0, 64, 32);
 	  } catch(e) {
             // if we, as the user, have asked for a local file, we expect to be able to use it
             // so request perms 
 	    netscape.security.PrivilegeManager.enablePrivilege("UniversalBrowserRead");
-	    var texels = skinctx.getImageData(0,0, 64, 32);
+	    //var texels = skinctx.getImageData(0,0, 64, 32);
+            var texels = skineditormc.getImageData(0, 0, 64, 32);
+
 	  }
 	} catch(e) {
 	  throw new Error("unable to access image data: " + e);
@@ -639,6 +646,7 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
     gl.bindTexture(gl.TEXTURE_2D, null);
+    loadedImage = true;
   }
 
   /*
@@ -664,6 +672,8 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
 
   var xHead = 0, yHead = 0;
   function drawScene() {
+    if (!loadedImage)
+	return;
     gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
@@ -715,14 +725,15 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
 	    mvRotate(yHead, [1, 0, 0]);
 	    mvRotate( 5, [1, 0, 0]);
 	    drawAndTexture(cubeVPB, headVTCB);
- 	    mvScale([1.175,1.175,1.175]);
+	    // 1.125 puts it as 9,9,9
+ 	    mvScale([1.125,1.125,1.125]);
 	    drawAndTexture(cubeVPB, headAccessVTCB);
     mvPopMatrix();
   }
 
 
   var lastTime = 0;
-  function animate() {
+  function animateScene() {
     var timeNow = new Date().getTime();
     if (lastTime != 0) {
       var elapsed = timeNow - lastTime;
@@ -744,7 +755,7 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
 
   function tick() {
     drawScene();
-    animate();
+    animateScene();
   }
 
   /**
@@ -787,21 +798,17 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
     redrawing = setInterval(drawScene, 1000);
   }
 
+  function toggleAnimation() {
+    animate = !animate;
+  }
+
   function drawOnDude() {
   }
 
   function loadNewDude(e) {
-    //alert(skinloader + " " + skinloader.value + " " + skinloader.files[0]);
     newskin = document.createElement('img');
+    newskin.onload = loadNewSkin;
     newskin.src = skinloader.value;
-    newskin.onload = function() {
-      skin = document.getElementById("lesson04-skin");
-      skin.width = skin.width;
-      skinctx = skin.getContext('2d');
-      skinctx.mozImageSmoothingEnabled = false;
-      skinctx.drawImage( newskin, 0, 0);
-      updateTexture();
-    }
     e.preventDefault();
     return false;
   }
@@ -823,49 +830,62 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
     debug.innerHTML = roundNumber((x / 384),2) + ", " + roundNumber(((256-y)/256),2)
   }
 
+  var defaultskin;
+
+  var skinpreview; // our WebGL canvas
+
+  var skineditor;  // our drawing canvas
+  var skineditorc; // our drawing canvas context
+
+  var loadedImage = false; // delay 3D scene if canvas is slow.
+  var animate = true; // allow our little guy to agitate
+
+  /* Image.onload function */
+  function loadNewSkin() {
+
+    skineditor.width = skineditor.width; // need a .clear
+    // if we are mozilla, tell them to stop SMOOTHING OUR SHIT
+    skineditorc.mozImageSmoothingEnabled ? skineditorc.mozImageSmoothingEnabled = false : true;
+    skineditorc.drawImage( this, 0, 0, 384, 256 );
+    skineditormc.drawImage( this, 0, 0, 64, 32 );
+    updateTexture();
+  }
+
   function webGLStart() {
-    var canvas = document.getElementById("lesson04-canvas");
-    skin = document.getElementById("lesson04-skin");
-    skinctx = skin.getContext('2d');
-    //skinctx.globalAlpha = 0.0;
+    skinpreview = document.getElementById("skin-preview");
 
-    //skinctx.globalCompositeOperation = "source-out";
+    skineditor = document.getElementById('skin-editor');
+    skineditorc = skineditor.getContext('2d');
+    skineditorm = document.createElement('canvas'); // because we are using a large texture, mirror it
+    skineditormc = skineditorm.getContext('2d');
+    skineditormc.width=64; skineditormc.height=32;
 
-    //curContext.mozImageSmoothingEnabled ? curContext.mozImageSmoothingEnabled = false; true;
-    skinctx.mozImageSmoothingEnabled = false;
-    // fill with alpha
-    //skinctx.fillStyle = 'rgba(60,255,20,0.0)';
-    //skinctx.fillRect(0, 0, 64, 32);
-    defaultskin = new Image();
-    defaultskin.onload = function() {
-
-      skin = document.getElementById("lesson04-skin");
-      skin.width = skin.width;
-      skinctx = skin.getContext('2d');
-      skinctx.mozImageSmoothingEnabled = false
-      skinctx.drawImage( defaultskin, 0, 0);
-      updateTexture();
-    }
+    defaultskin = document.createElement('img');
+    defaultskin.onload = loadNewSkin;
     defaultskin.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAAAgCAMAAACVQ462AAAA8FBMVEUAAAAfEAsjFwkkGAgkGAomGAsjGRUmGgomGgwoGg0nGwsoGwooGwsoHAspHAwyFxQqHQ0rHg0rHg4tHQ4sHg4sHhEvHw8tIBAvIA0vIhEyIxAzJBE0JRI6KBQ/KhVCKhJSKCZLLh0aSxpRMSU/Pz9iQy9qQDBSPYkkcCR1Ry8jfiOKTD2EUjGBUzmGUzSHVTuHWDqIWjmKWTuTW0Jra2uWX0GaY0ScY0WaZEqcZ0ifaEmcaUydak+iakeWb1ucclysdlqqfWaze2K1e2etgG20hG23gnK2iWy+iGy7iXK9i3K9jnK9jnTGloD///8AAABxqeaaAAAAAXRSTlMAQObYZgAAAAFiS0dEAIgFHUgAAAAJcEhZcwAACxMAAAsTAQCanBgAAAAHdElNRQfbAgkTHQUig98cAAAB30lEQVRIx7WUC1PTQBSFu4R2aRc2CV22QkWNlNAK3QBxixWMJoqKj/b//xvvzWaZTjuaB+OZTPcmM+fL2fQkrVYhz3PgcMikUKuuPEdKADiTUIVKNQFISQ1gCQrrAxyJe5BeYwB4KZVPAeR+C3jVAEAlpwQBuRoAOAV5Xu2/kTHa40eDwTNf7jnU9waDI96jjNleVAFQwf2h7/vDly/E3tDngiKg6EUpQLQp39/d5v63n79//Pr0nG/v7nPaFrYX5Qm6fcF64jC9T798fLi9PRQ9JvpdZntRYQtsZ+vy5vh+cfb54WyRHt9cbu3ARduLCoBu++BCX2XZ1yD4nmVX+uKg3cWHaHpR/gxY//RupuI4C87PgyyO1ezutM+E7UUpQKmZmuvrOI4DECzX7+fv5jN4IbEXE1WpC2MQFtieFx8Fsiz0eB0UnoQn5QBT5/8DAH/4pC1sAND8BoTraxDJNf0wnZJ/qgRANvyu69qhEmBTtQGLhXXmB2mewAC01lEKimDAtTrAXQEkaaqjuoA8gUsiA0hyQJI0AuCdERDVTGAEPgPQa4DRyAJGo7egvwG0AaQak8BWVgDGaFdMgWnGHXDh3MGhMzaAJM2TrAKWa3oEAKGYOwR+8M7gS6K1BH8A2DSJHSt8yKwAAAAASUVORK5CYII=";
-    // skinctx.drawImage( defaultskin, 0, 0);
 
-    skinloader = document.getElementById("lesson04-file");
-    skinloader.addEventListener('change',              loadNewDude, false);
+    skinloader = document.getElementById("skin-from-file");
+    skinloader.addEventListener('change',          loadNewDude, false);
 
+    skinpreview.addEventListener('mousedown',     startRotatingDude, true);
+    skinpreview.addEventListener('doubleclick',     toggleAnimation, true);
+    skinpreview.addEventListener('mouseup',        stopRotatingDude, true);
+    skinpreview.addEventListener('mouseout',       stopRotatingDude, true);
+    skinpreview.addEventListener('mousemove', captureCursorLocation, true);
+
+    skineditor.addEventListener('click',                  drawOnDude, true);
+
+    // debug
     debug = document.getElementById("debug");
-    canvas.addEventListener('mousedown',     startRotatingDude, true);
-    canvas.addEventListener('click',                drawOnDude, true);
-    canvas.addEventListener('mouseup',        stopRotatingDude, true);
-    canvas.addEventListener('mousemove', captureCursorLocation, true);
-    skin.addEventListener('mousemove', captureUVCursorLocation, true);
-    initGL(canvas);
+    skineditor.addEventListener('mousemove', captureUVCursorLocation, true);
+
+    initGL(skinpreview);
     initShaders()
     initBuffers();
-    ourTexture = gl.createTexture();
     updateTexture();
 
     // if we put 0.0 for alpha, we see the background!
-    gl.clearColor(0.0, 0.0, 0.0, 0.0);
+    gl.clearColor(0.0, 0.0, 0.0, 0.5);
     gl.clearDepth(1.0);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     gl.enable(gl.BLEND);
@@ -885,24 +905,24 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
 </head>
 <body onload="webGLStart();">
 
-<!--<header><h1>johndrinkwater</h1></header>-->
+<header><h1><span id="minecraft">Minecraft</span> Skin Editor</h1></header>
 
 <section>
 <article>
- <header>
-  <h1>Minecraft Skin Editor (with HTML5 WebGL preview)</h1>
- </header>
  <section>
 
- <canvas id="lesson04-canvas" style="border: 1px solid grey;" width="350" height="500">Sorry, you don’t have WebGL</canvas>
- <input type="file" id="lesson04-file" style="position: absolute; right: 1em; top: 6em; "/>
- <canvas id="lesson04-skin" style="border: 1px solid grey; width:384px; height:256px;" width="64" height="32">Sorry, you don’t have Canvas support</canvas>
+ <canvas id="skin-preview" style="border: 1px solid grey;" width="350" height="500">Sorry, you don’t have WebGL</canvas>
+ <input type="file" id="skin-from-file" style="position: absolute; right: 1em; top: 6em; "/>
 
+  <canvas id="skin-editor" style="border: 2px solid black; width: 384px; height:256px;" width="384" height="256">
+   <img src="http://www.minecraft.net/img/char.png" width="384" height="256" alt="Minecraft Default Skin" /><br />
+   Sorry, your browser does not support Canvas.
+  </canvas>
  <span id="debug" style="float: right; display: none;" ></span>
  </section>
-<!-- <footer>
-  <p>Last updated <time datetime="2011-02-10T17:00:00">20/01/2011</time></p>
- </footer>-->
+ <footer>
+  <p>Last updated <time datetime="2011-02-14T12:00:00">14/02/2011</time></p>
+ </footer>
 </article>
 </section>
 
