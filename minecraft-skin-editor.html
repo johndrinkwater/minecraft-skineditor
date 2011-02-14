@@ -6,10 +6,10 @@
 <link rel="stylesheet" href="/style/" />
 <link rel="shortcut icon" type="image/x-icon" href="http://www.minecraft.net/favicon.png" />
 <style>
-html,h1,article { margin: 0; padding: 0; }
+html,h1,article, p { margin: 0; padding: 0; }
 body { background: url(http://www.minecraft.net/img/bg.gif) #eeeeee; margin:0; }
-#skin-preview, #skin-editor, #skin-editor-mini { position: absolute; top: 60px; border: 2px solid grey; }
-#skin-editor-mini { left: 374px; top:330px; }
+#skin-preview, #skin-editor, #skin-editor-mini, #wip { position: absolute; top: 60px; border: 2px solid grey; }
+#wip, #skin-editor-mini { left: 374px; top:330px; color: red; }
 #skin-editor { left: 374px; cursor: crosshair; background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH2wIODxsDFVG/AgAAAClJREFUGNNjvHnz5n8GJKCmpobMZWBiIAAoV8D4//9/FDfcunWL3m4AADstCpWDR4PDAAAAAElFTkSuQmCC) }
 #skin-preview { left: 10px; cursor: pointer; background: url(http://www.minecraft.net/img/bg.gif); }
 #skin-preview:after { content: "."; display: block; height: 0; clear: both; visibility: hidden; }
@@ -557,7 +557,15 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
       name: 'default',
       data: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAAAgCAMAAACVQ462AAAA8FBMVEUAAAAfEAsjFwkkGAgkGAomGAsjGRUmGgomGgwoGg0nGwsoGwooGwsoHAspHAwyFxQqHQ0rHg0rHg4tHQ4sHg4sHhEvHw8tIBAvIA0vIhEyIxAzJBE0JRI6KBQ/KhVCKhJSKCZLLh0aSxpRMSU/Pz9iQy9qQDBSPYkkcCR1Ry8jfiOKTD2EUjGBUzmGUzSHVTuHWDqIWjmKWTuTW0Jra2uWX0GaY0ScY0WaZEqcZ0ifaEmcaUydak+iakeWb1ucclysdlqqfWaze2K1e2etgG20hG23gnK2iWy+iGy7iXK9i3K9jnK9jnTGloD///8AAABxqeaaAAAAAXRSTlMAQObYZgAAAAFiS0dEAIgFHUgAAAAJcEhZcwAACxMAAAsTAQCanBgAAAAHdElNRQfbAgkTHQUig98cAAAB30lEQVRIx7WUC1PTQBSFu4R2aRc2CV22QkWNlNAK3QBxixWMJoqKj/b//xvvzWaZTjuaB+OZTPcmM+fL2fQkrVYhz3PgcMikUKuuPEdKADiTUIVKNQFISQ1gCQrrAxyJe5BeYwB4KZVPAeR+C3jVAEAlpwQBuRoAOAV5Xu2/kTHa40eDwTNf7jnU9waDI96jjNleVAFQwf2h7/vDly/E3tDngiKg6EUpQLQp39/d5v63n79//Pr0nG/v7nPaFrYX5Qm6fcF64jC9T798fLi9PRQ9JvpdZntRYQtsZ+vy5vh+cfb54WyRHt9cbu3ARduLCoBu++BCX2XZ1yD4nmVX+uKg3cWHaHpR/gxY//RupuI4C87PgyyO1ezutM+E7UUpQKmZmuvrOI4DECzX7+fv5jN4IbEXE1WpC2MQFtieFx8Fsiz0eB0UnoQn5QBT5/8DAH/4pC1sAND8BoTraxDJNf0wnZJ/qgRANvyu69qhEmBTtQGLhXXmB2mewAC01lEKimDAtTrAXQEkaaqjuoA8gUsiA0hyQJI0AuCdERDVTGAEPgPQa4DRyAJGo7egvwG0AaQak8BWVgDGaFdMgWnGHXDh3MGhMzaAJM2TrAKWa3oEAKGYOwR+8M7gS6K1BH8A2DSJHSt8yKwAAAAASUVORK5CYII=',
       thumb: '',
+  }
+  if (localStorage) {
+    temp = localStorage.getItem(skins);
+    if (temp) {
+      skins = JSON.parse(temp);
+    } else {
+      localStorage.setItem(skins, JSON.stringify(skins));
     }
+  }
 
   function loadSkinFromSkins(skin) { 
 
@@ -580,6 +588,9 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
   function updateSkins() {
     // we want this to update the list of Skins stored, to easier allow the
     // user to pop
+
+    // first, update localStorage!
+    localStorage.setItem(skins, JSON.stringify(skins));
   }
 
   function saveCurrentSkin(skin) {
@@ -601,7 +612,7 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
       data: skineditorm.toDataURL(),
       thumb: skinthumb.toDataURL(),
     }
-    //updateSkins();
+    updateSkins();
   }
 
   /*
@@ -895,8 +906,8 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
   <p>Sorry, your browser does not support Canvas. Which kinda makes this whole application redundant.</p>
  </canvas>
 
- <canvas id="skin-editor-mini" width="64" height="32">
- </canvas>
+ <p id="wip">This is currently a work‐in‐progress, a few days old. Please understand that, if you have suggestions, i’ll gladly take them at jdrinkwater@gmail.com. The code is hosted in git on %LINK%, licensed under AGPL where applicable. Remaining copyrights belong to Mojang AB. Note I have never touched <code>WebGL</code>, <code>&lt;canvas&gt;</code> or <code>localStorage</code> before.</p>
+ <!--<canvas id="skin-editor-mini" width="64" height="32"></canvas>-->
 
  <noscript><p>While I’m the first person to complain about the needs of JavaScript for many a‐website, this is an ‘application’, it can’t run without the code being used. Please toggle NoScript, or try this in a browser that supports JavaScript.</p></noscript>
 
