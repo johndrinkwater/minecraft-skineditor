@@ -8,10 +8,15 @@
 <style>
 html,h1,article { margin: 0; padding: 0; }
 body { background: url(http://www.minecraft.net/img/bg.gif) #eeeeee; margin:0; }
-#skin-editor { position: relative; cursor: crosshair; background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH2wIODxsDFVG/AgAAAClJREFUGNNjvHnz5n8GJKCmpobMZWBiIAAoV8D4//9/FDfcunWL3m4AADstCpWDR4PDAAAAAElFTkSuQmCC) }
+#skin-preview, #skin-editor { position: absolute; top: 60px; border: 2px solid grey; }
+#skin-editor { left: 374px; cursor: crosshair; background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH2wIODxsDFVG/AgAAAClJREFUGNNjvHnz5n8GJKCmpobMZWBiIAAoV8D4//9/FDfcunWL3m4AADstCpWDR4PDAAAAAElFTkSuQmCC) }
+#skin-preview { left: 10px; background: url(http://www.minecraft.net/img/bg.gif); }
+#skin-preview:after { content: "."; display: block; height: 0; clear: both; visibility: hidden; }
+#skin-selector, #skin-saver { position: absolute; top: 570px; }
+#skin-selector { left: 10px; }
+#skin-saver { width: 60px; left: 300px; }
+footer { color: black; background: transparent; position: absolute; bottom: 10px; height: 50px; }
 
-/* url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH2wIODRAceCm/UgAAAC9JREFUOMtjvHnz5n8GPEBNTQ2fNAMTA4Vg1IDBYADj////8aaDW7dujQbi8DcAAEPDCqVzBCYkAAAAAElFTkSuQmCC) } */
-#skin-preview { background: url(http://www.minecraft.net/img/bg.gif); }
 #minecraft { background: url(http://www.minecraft.net/img/logo_no_pps.png) transparent no-repeat; display: inline-block; text-indent: -9999px; min-width:270px; min-height: 70px; }
 header { margin: 0; padding-bottom: 10px; color: white; background: url(http://www.minecraft.net/img/top-bg.gif) repeat-x transparent; height:58px; }
 
@@ -347,15 +352,27 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
     var m = Matrix.Translation($V([v[0], v[1], v[2]])).ensure4x4();
     multMatrix(m);
   }
+  function mvTranslateN(v) {
+    var m = Matrix.Translation($V([-v[0], -v[1], -v[2]])).ensure4x4();
+    multMatrix(m);
+  }
   function mvScale(v) {
     var m = Matrix.Diagonal([v[0], v[1], v[2], 1]);
     multMatrix(m);
+  }
+  function mvInvert() {
+    mvMatrix = mvMatrix.inv();
   }
 
   function mvRotate(ang, v) {
     var arad = ang * Math.PI / 180.0;
     var m = Matrix.Rotation(arad, $V([v[0], v[1], v[2]])).ensure4x4();
     multMatrix(m);
+  }
+  function mvRotateAbout(ang, v, v2) {
+    mvTranslate(v2);
+    mvRotate(ang, v);
+    mvTranslateN(v2);
   }
 
   var pMatrix;
@@ -422,35 +439,17 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
     gl.bindBuffer(gl.ARRAY_BUFFER, headVTCB);
     var textureCoords = [
       // Front face
-      0.125, 0.5,
-      0.25, 0.5,
-      0.25, 0.75,
-      0.125, 0.75,
+      0.125, 0.5,   0.25, 0.5,   0.25, 0.75,   0.125, 0.75,
       // Back face
-      0.5, 0.5,
-      0.5, 0.75,
-      0.375, 0.75,
-      0.375, 0.5,
+      0.5, 0.5,     0.5, 0.75,   0.375, 0.75,  0.375, 0.5,
       // Top face
-      0.125, 1.0,
-      0.125, 0.75,
-      0.25, 0.75,
-      0.25, 1.0,
+      0.125, 1.0,   0.125, 0.75, 0.25, 0.75,   0.25, 1.0,
       // Bottom face
-      0.375, 1.0,
-      0.25, 1.0,
-      0.25, 0.75,
-      0.375, 0.75,
+      0.375, 1.0,   0.25, 1.0,   0.25, 0.75,   0.375, 0.75,
       // Right face
-      0.375, 0.5,
-      0.375, 0.75,
-      0.25, 0.75,
-      0.25, 0.5,
+      0.375, 0.5,   0.375, 0.75, 0.25, 0.75,   0.25, 0.5,
       // Left face
-      0.0, 0.5,
-      0.125, 0.5,
-      0.125, 0.75,
-      0.0, 0.75,
+      0.0, 0.5,     0.125, 0.5,  0.125, 0.75,  0.0, 0.75,
     ];
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoords), gl.STATIC_DRAW);
     headVTCB.itemSize = 2;
@@ -460,35 +459,17 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
     gl.bindBuffer(gl.ARRAY_BUFFER, headAccessVTCB);
     var textureCoords = [
       // Front face
-      0.625, 0.5,
-      0.75, 0.5,
-      0.75, 0.75,
-      0.625, 0.75,
+      0.625, 0.5,  0.75, 0.5,   0.75, 0.75,   0.625, 0.75,
       // Back face
-      1.0, 0.5,
-      1.0, 0.75,
-      0.875, 0.75,
-      0.875, 0.5,
+      1.0, 0.5,    1.0, 0.75,   0.875, 0.75,  0.875, 0.5,
       // Top face
-      0.625, 1.0,
-      0.625, 0.75,
-      0.75, 0.75,
-      0.75, 1.0,
+      0.625, 1.0,  0.625, 0.75, 0.75, 0.75,   0.75, 1.0,
       // Bottom face
-      0.875, 1.0,
-      0.75, 1.0,
-      0.75, 0.75,
-      0.875, 0.75,
+      0.875, 1.0,  0.75, 1.0,   0.75, 0.75,   0.875, 0.75,
       // Right face
-      0.875, 0.5,
-      0.875, 0.75,
-      0.75, 0.75,
-      0.75, 0.5,
+      0.875, 0.5,  0.875, 0.75, 0.75, 0.75,   0.75, 0.5,
       // Left face
-      0.5, 0.5,
-      0.625, 0.5,
-      0.625, 0.75,
-      0.5, 0.75,
+      0.5, 0.5,    0.625, 0.5,  0.625, 0.75,  0.5, 0.75,
     ];
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoords), gl.STATIC_DRAW);
     headAccessVTCB.itemSize = 2;
@@ -629,22 +610,20 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
     loadedImage = false;
     gl.bindTexture(gl.TEXTURE_2D, skintexture);
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-    var texels = 0; // make sure 	
+    var texels;
     skineditormc.save();
 	try {
 	  try {
-	    //var texels = skinctx.getImageData(0,0, 64, 32);
-	    var texels = skineditormc.getImageData(0, 0, 64, 32);
+	    texels = skineditormc.getImageData(0, 0, 64, 32);
 	  } catch(e) {
             // if we, as the user, have asked for a local file, we expect to be able to use it
-            // so request perms 
-	    netscape.security.PrivilegeManager.enablePrivilege("UniversalBrowserRead");
-	    //var texels = skinctx.getImageData(0,0, 64, 32);
-            var texels = skineditormc.getImageData(0, 0, 64, 32);
+	    // TODO: no idea what to do for Chrome here
+	    netscape ? netscape.security.PrivilegeManager.enablePrivilege("UniversalBrowserRead") : true;
+            texels = skineditormc.getImageData(0, 0, 64, 32);
 
 	  }
 	} catch(e) {
-	  throw new Error("unable to access image data: " + e);
+	    throw new Error("unable to access image data: " + e);
 	}
     skineditormc.restore();
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, texels);
@@ -662,14 +641,11 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
   function drawAndTexture(vertices, texture) {
     gl.bindBuffer(gl.ARRAY_BUFFER, vertices);
     gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, vertices.itemSize, gl.FLOAT, false, 0, 0);
-
     gl.bindBuffer(gl.ARRAY_BUFFER, texture);
     gl.vertexAttribPointer(shaderProgram.textureCoordAttribute, texture.itemSize, gl.FLOAT, false, 0, 0);
-
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, skintexture);
     gl.uniform1i(shaderProgram.samplerUniform, 0);
-
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cubeVertexIndexBuffer);
     setMatrixUniforms();
     gl.drawElements(gl.TRIANGLES, cubeVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
@@ -689,36 +665,36 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
     mvTranslate([0.0, 0.5, -13.0])
     
     // we rotate everything
-    //mvRotate(xHead, [0, 1, 0]); 
+    mvRotate(xHead, [0, 1, 0]); 
 
     // draw body
     mvPushMatrix();
-	    //mvTranslate([-1.5, -1.5, 0.0])
 	    drawAndTexture(bodyVPB, bodyVTCB);
     mvPopMatrix();
 
     // arms
     mvPushMatrix();
 	    mvTranslate([-1.6, 0.0, 0.0]);
-	    mvRotate(8, [1, 0, 0]);
+            mvRotateAbout(25, [1, 0, 0], [-0.5, 1.5, 0]);
 	    drawAndTexture(armVPB, armLVTCB);
     mvPopMatrix();
     mvPushMatrix();
 	    mvTranslate([1.6, 0.0, 0.0]);
-	    mvRotate(-8, [1, 0, 0]);
+	    mvRotateAbout(25, [1, 0, 0], [-0.5, 1.25, 0]);
+            mvRotateAbout(5, [0, 0, 1], [-0.5, 1.25, 0]);
 	    mvScale([-1.0,1.0,1.0]);
 	    drawAndTexture(armVPB, armLVTCB);
     mvPopMatrix();
 
     // legs
     mvPushMatrix();
-	    mvTranslate([-0.525, -3.1, 0.0]);
-	    mvRotate(4, [1, 0, 0]);
+	    mvTranslate([-0.51, -3, 0.0]);
+	    mvRotateAbout(10, [1, 0, 0], [0, 1.5, 0]);
 	    drawAndTexture(legVPB, legLVTCB);
     mvPopMatrix();
     mvPushMatrix();
-	    mvTranslate([0.525, -3.1, 0.0]);
-	    mvRotate(-4, [1, 0, 0]);
+	    mvTranslate([0.51, -3, 0.0]);
+	    mvRotateAbout(-10, [1, 0, 0], [0, 1.5, 0]);
 	    mvScale([-1.0,1.0,1.0]);
 	    drawAndTexture(legVPB, legLVTCB);
     mvPopMatrix();
@@ -726,8 +702,8 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
     // draw head
     mvPushMatrix();
 	    mvTranslate([0.0, 2.6, 0]);
-            mvRotate(xHead, [0, 1, 0]); 
-	    mvRotate(yHead, [1, 0, 0]);
+            mvRotateAbout(xHead, [0, 1, 0], [0, -1.0, 0]); 
+	    mvRotateAbout(yHead, [1, 0, 0], [0, -1.0, 0]);
 	    mvRotate( 5, [1, 0, 0]);
 	    drawAndTexture(cubeVPB, headVTCB);
 	    // 1.125 puts it as 9,9,9
@@ -745,41 +721,36 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
 
       xHead -= ( cursorDiffX*2 )
       yHead -= ( cursorDiffY*2 )
-      if (yHead >= 16)
-	yHead = 16;
-      if (yHead <= -50)
-	yHead = -50;
+//      if (yHead >= 32)
+//	yHead = 32;
+  //    if (yHead <= -50)
+//	yHead = -50;
 
-	debug.innerHTML = xHead + " " + yHead;
-
-      cursorDiffX= cursorDiffY =cursorDiff = 0
+      cursorDiffX= cursorDiffY = 0
     }
     lastTime = timeNow;
-  }
-
-
-  function tick() {
-    drawScene();
-    animateScene();
   }
 
   /**
    * we only want to ‘animate’ when the user rotates, otherwise, just
    * redraw
    */
-  var ticking;
-  var redrawing;
+  var timerDrawing, timerAnimation;
   var cursorThen = [0,0], cursorNow = [0,0];
-  var debug;
-  var skinloader;
+  var skinloaderchrome;
   var skintexture;
+
+  function tick() {
+    animateScene();
+    drawScene();
+  }
 
   function startRotatingDude(e) {
     if (!e) e = window.event;
-    clearInterval(redrawing);
+    clearInterval(timerDrawing);
     // store mouse X/Y
     cursorThen = [e.clientX, e.clientY];
-    ticking = setInterval(tick, 75);
+    timerAnimation = setInterval(tick, 100);
   }
 
   function captureCursorLocation(e) {
@@ -789,18 +760,15 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
 	// rotate body on X, rotate head on Y (within bounds)
 
     cursorNow = [e.clientX, e.clientY];
-    cursorDiff = cursorThen[0] - cursorNow[0]
     cursorDiffX = cursorThen[0] - cursorNow[0]
     cursorDiffY = cursorThen[1] - cursorNow[1]
-
     cursorThen = cursorNow
-    //debug.innerHTML = cursorNow + " " + cursorDiffX + " " + cursorDiffY
   }
 
   function stopRotatingDude() {
-    clearInterval(ticking);
+    clearInterval(timerAnimation);
     // we should only redraw if: 1, invalidate 2, user draws 3, burn GPU
-    redrawing = setInterval(drawScene, 1000);
+    timerDrawing = setInterval(drawScene, 1000);
   }
 
   function toggleAnimation() {
@@ -809,59 +777,41 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
 
   function drawOnDude(ev) {
     var x, y;
-
-	  // Get the mouse position relative to the canvas element.
-	  if (ev.layerX || ev.layerX == 0) { // Firefox
-	    x = ev.layerX;
-	    y = ev.layerY;
-	  } else if (ev.offsetX || ev.offsetX == 0) { // Opera
-	    x = ev.offsetX;
-	    y = ev.offsetY;
-	  }
+    clearInterval(timerDrawing);
+    if (!ev) ev = window.event;
+  
+  // Get the mouse position relative to the canvas element.
+  if (ev.layerX || ev.layerX == 0) { // Firefox
+    x = ev.layerX; y = ev.layerY;
+  } else if (ev.offsetX || ev.offsetX == 0) { // Opera
+    x = ev.offsetX; y = ev.offsetY;
+  }
     // border?
     x -=2; y -=2;
     // now we need to clamp them to 64×32
     x -= x%8; y -= y%8;
-    // temp alpha
-    //skineditorc.save();
-    skineditorc.clearRect( x, y, 8, 8);
-    //skineditorc.restore();
 
-    //skineditormc.save();
     skineditormc.clearRect( x/8, y/8, 1, 1);
-    //skineditormc.restore();
 
-    // this is failing wrt WebGL
-    //skineditormc.globalCompositeOperation = 'copy';
-    //skineditormc.fillStyle = "rgba(100,100,100,0.0)";
-
-    // FSR, this is causing errors
     updateTexture();
+    drawScene();
+    timerDrawing = setInterval(drawScene, 1000);
+
+    skineditorc.clearRect( x, y, 8, 8);
   }
+
+  function saveDude(e) {
+  } 
 
   function loadNewDude(e) {
     var newskin = document.createElement('img');
     newskin.onload = loadNewSkin;
-    newskin.src = skinloader.value;
+    newskin.src = skinloaderchrome.value;
     e.preventDefault();
     return false;
   }
   function roundNumber(num, dec) {
     return Math.round( Math.round( num * Math.pow( 10, dec + 1 ) ) / Math.pow( 10, 1 ) ) / Math.pow(10,dec);
-  }
-
-  function captureUVCursorLocation(ev) {
-    var x, y;
-
-	  // Get the mouse position relative to the canvas element.
-	  if (ev.layerX || ev.layerX == 0) { // Firefox
-	    x = ev.layerX;
-	    y = ev.layerY;
-	  } else if (ev.offsetX || ev.offsetX == 0) { // Opera
-	    x = ev.offsetX;
-	    y = ev.offsetY;
-	  }
-    debug.innerHTML = roundNumber((x / 384),2) + ", " + roundNumber(((256-y)/256),2)
   }
 
   var defaultskin;
@@ -893,17 +843,32 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
 
     skineditor = document.getElementById('skin-editor');
     skineditorc = skineditor.getContext('2d');
-    skineditorm = document.getElementById('skin-editor-mini');
+    skineditorm = document.createElement('canvas'); // because we are using a large texture, mirror it
+    //document.getElementById('skin-editor-mini');
     //document.createElement('canvas'); // because we are using a large texture, mirror it
     skineditormc = skineditorm.getContext('2d');
     skineditormc.width=64; skineditormc.height=32;
 
+    holder = document.getElementById('container');
+
+    skinloaderchrome = document.createElement('input');
+    skinloaderchrome.id = 'skin-selector';
+    skinloaderchrome.type = 'file';
+    skinloaderchrome.addEventListener('change',          loadNewDude, false);
+
+
+    skinsaverchrome = document.createElement('input');
+    skinsaverchrome.id = 'skin-saver';
+    skinsaverchrome.type = 'submit';
+    skinsaverchrome.value = 'Save';
+    skinsaverchrome.addEventListener('click', saveDude, false);
+
+    holder.appendChild(skinloaderchrome);
+    holder.appendChild(skinsaverchrome);
+
     defaultskin = document.createElement('img');
     defaultskin.onload = loadNewSkin;
     defaultskin.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAAAgCAMAAACVQ462AAAA8FBMVEUAAAAfEAsjFwkkGAgkGAomGAsjGRUmGgomGgwoGg0nGwsoGwooGwsoHAspHAwyFxQqHQ0rHg0rHg4tHQ4sHg4sHhEvHw8tIBAvIA0vIhEyIxAzJBE0JRI6KBQ/KhVCKhJSKCZLLh0aSxpRMSU/Pz9iQy9qQDBSPYkkcCR1Ry8jfiOKTD2EUjGBUzmGUzSHVTuHWDqIWjmKWTuTW0Jra2uWX0GaY0ScY0WaZEqcZ0ifaEmcaUydak+iakeWb1ucclysdlqqfWaze2K1e2etgG20hG23gnK2iWy+iGy7iXK9i3K9jnK9jnTGloD///8AAABxqeaaAAAAAXRSTlMAQObYZgAAAAFiS0dEAIgFHUgAAAAJcEhZcwAACxMAAAsTAQCanBgAAAAHdElNRQfbAgkTHQUig98cAAAB30lEQVRIx7WUC1PTQBSFu4R2aRc2CV22QkWNlNAK3QBxixWMJoqKj/b//xvvzWaZTjuaB+OZTPcmM+fL2fQkrVYhz3PgcMikUKuuPEdKADiTUIVKNQFISQ1gCQrrAxyJe5BeYwB4KZVPAeR+C3jVAEAlpwQBuRoAOAV5Xu2/kTHa40eDwTNf7jnU9waDI96jjNleVAFQwf2h7/vDly/E3tDngiKg6EUpQLQp39/d5v63n79//Pr0nG/v7nPaFrYX5Qm6fcF64jC9T798fLi9PRQ9JvpdZntRYQtsZ+vy5vh+cfb54WyRHt9cbu3ARduLCoBu++BCX2XZ1yD4nmVX+uKg3cWHaHpR/gxY//RupuI4C87PgyyO1ezutM+E7UUpQKmZmuvrOI4DECzX7+fv5jN4IbEXE1WpC2MQFtieFx8Fsiz0eB0UnoQn5QBT5/8DAH/4pC1sAND8BoTraxDJNf0wnZJ/qgRANvyu69qhEmBTtQGLhXXmB2mewAC01lEKimDAtTrAXQEkaaqjuoA8gUsiA0hyQJI0AuCdERDVTGAEPgPQa4DRyAJGo7egvwG0AaQak8BWVgDGaFdMgWnGHXDh3MGhMzaAJM2TrAKWa3oEAKGYOwR+8M7gS6K1BH8A2DSJHSt8yKwAAAAASUVORK5CYII=";
-
-    skinloader = document.getElementById("skin-from-file");
-    skinloader.addEventListener('change',          loadNewDude, false);
 
     skinpreview.addEventListener('mousedown',     startRotatingDude, true);
     skinpreview.addEventListener('doubleclick',     toggleAnimation, true);
@@ -912,10 +877,6 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
     skinpreview.addEventListener('mousemove', captureCursorLocation, true);
 
     skineditor.addEventListener('click',                  drawOnDude, true);
-
-    // debug
-    debug = document.getElementById("debug");
-    skineditor.addEventListener('mousemove', captureUVCursorLocation, true);
 
     initGL(skinpreview);
     initShaders()
@@ -927,14 +888,14 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
     gl.clearDepth(1.0);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     gl.enable(gl.BLEND);
-    // 
+
     //gl.enable(gl.ALPHA_TEST);
     //gl.alphaTestFunc(gl.LEQUAL);
 
     gl.enable(gl.DEPTH_TEST);
     gl.depthFunc(gl.LEQUAL);
 
-    redrawing = setInterval(drawScene, 1000);
+    timerDrawing = setInterval(drawScene, 1000);
   }
 
 </script>
@@ -946,27 +907,24 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
 <header><h1><span id="minecraft">Minecraft</span> Skin Editor</h1></header>
 
 <section>
-<article>
- <section>
+<article id="container">
 
- <canvas id="skin-preview" style="border: 1px solid grey;" width="350" height="500">
- Sorry, you don’t have WebGL
+ <canvas id="skin-preview" width="350" height="500">
+  <img src="3d‐tease.png" width="350" height="500" alt="Minecraft Default Skin Preview" />
+  <p>Sorry, you browser does not support WebGL. Pretend the above image is rendered by your graphics card in real‐time.</p>
  </canvas>
- <input type="file" id="skin-from-file" style="position: absolute; right: 1em; top: 6em; "/>
+ <!-- Add this via JS. why? because otherwise, it is just a pointless input <input type="file" id="skin-from-file" style="position: absolute; right: 1em; top: 6em; "/>-->
 
-  <canvas id="skin-editor" style="border: 2px solid black; width: 512px; height:256px;" width="512" height="256">
-   <img src="http://www.minecraft.net/img/char.png" width="512" height="256" alt="Minecraft Default Skin" /><br />
-   Sorry, your browser does not support Canvas.
-  </canvas>
- <canvas id="skin-editor-mini" style="width: 64px; height:32px;" width="64" height="32"></canvas>
- <span id="debug" style="float: right; display: none;" ></span>
- </section>
- <footer>
-  <p>Last updated <time datetime="2011-02-14T12:00:00">14/02/2011</time></p>
- </footer>
+ <canvas id="skin-editor" width="512" height="256">
+  <img src="http://www.minecraft.net/img/char.png" width="512" height="256" alt="Minecraft Default Skin" />
+  <p>Sorry, your browser does not support Canvas. Which kinda makes this whole application redundant.</p>
+ </canvas>
+
+ <noscript><p>While I’m the first person to complain about the needs of JavaScript for many a‐website, this is an ‘application’, it can’t run without the code being used. Please toggle NoScript, or try this in a browser that supports JavaScript.</p></noscript>
+
 </article>
 </section>
 
-<footer><p>Everything <a href="http://creativecommons.org/licenses/by-sa/2.0/deed.en_GB"><svg xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle; padding-bottom:3px; width:.95em; height: .95em;" width="16px" height="16px" viewBox="-2 -2 66 66"><circle cx="32" cy="32" r="28" fill="none" stroke="black" stroke-width="7px" /><path d="m19.63,41.14 c-2.8,-1 -5.1,-4 -5.5,-7.43 -0.6,-5.06 1.327,-9 5.2,-10.75 2.1,-0.96 5.93,-0.93 8.2,0.05 1.4,0.6 4,3 4,3.6 0,0.1 -0.9,0.64 -2,1.17 l-2,1 c-0.87,-1.06 -1.9,-1.74 -3.1,-2.3 -1.37,-0.26 -3,0.35 -3.74,1.4 -1.23,1.72 -1.3,6.2 -0.15,7.974 0.6,0.92 1.6,1.6 2.6,1.6 2,0.16 2.5,-0.02 3.7,-1.26 l1.2,-1.26 1.54,0.85 c0.85,0.47 1.66,0.96 1.8,1.1 0.52,0.47 -1.86,2.9 -3.77,3.85 -1.63,0.8 -2.14,0.92 -4.3,0.9 -1.34,-0.013 -3,-0.22 -3.67,-0.46z m18.32,0 c-2.8,-1 -5.1,-4 -5.5,-7.43 -0.6,-5.06 1.327,-9 5.2,-10.75 2.1,-0.96 5.93,-0.93 8.2,0.05 1.4,0.6 4,3 4,3.6 0,0.1 -0.9,0.64 -2,1.17 l-2,1 c-0.87,-1.06 -1.9,-1.74 -3.1,-2.3 -1.37,-0.26 -3,0.35 -3.74,1.4 -1.23,1.72 -1.3,6.2 -0.15,7.974 0.6,0.92 1.6,1.6 2.6,1.6 2,0.16 2.5,-0.02 3.7,-1.26 l1.2,-1.26 1.54,0.85 c0.85,0.47 1.66,0.96 1.8,1.1 0.52,0.47 -1.86,2.9 -3.77,3.85 -1.63,0.8 -2.14,0.92 -4.3,0.9 -1.34,-0.013 -3,-0.22 -3.67,-0.46z" fill="black" stroke="black" stroke-width="1px" /><switch><g></g><foreignObject width="2em" height="1em">CC</foreignObject></switch></svg> BY‑SA</a> John Drinkwater 2002–2010</p></footer>
+<footer><p>Everything <a href="http://creativecommons.org/licenses/by-sa/2.0/deed.en_GB"><svg xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle; padding-bottom:3px; width:.95em; height: .95em;" width="16px" height="16px" viewBox="-2 -2 66 66"><circle cx="32" cy="32" r="28" fill="none" stroke="black" stroke-width="7px" /><path d="m19.63,41.14 c-2.8,-1 -5.1,-4 -5.5,-7.43 -0.6,-5.06 1.327,-9 5.2,-10.75 2.1,-0.96 5.93,-0.93 8.2,0.05 1.4,0.6 4,3 4,3.6 0,0.1 -0.9,0.64 -2,1.17 l-2,1 c-0.87,-1.06 -1.9,-1.74 -3.1,-2.3 -1.37,-0.26 -3,0.35 -3.74,1.4 -1.23,1.72 -1.3,6.2 -0.15,7.974 0.6,0.92 1.6,1.6 2.6,1.6 2,0.16 2.5,-0.02 3.7,-1.26 l1.2,-1.26 1.54,0.85 c0.85,0.47 1.66,0.96 1.8,1.1 0.52,0.47 -1.86,2.9 -3.77,3.85 -1.63,0.8 -2.14,0.92 -4.3,0.9 -1.34,-0.013 -3,-0.22 -3.67,-0.46z m18.32,0 c-2.8,-1 -5.1,-4 -5.5,-7.43 -0.6,-5.06 1.327,-9 5.2,-10.75 2.1,-0.96 5.93,-0.93 8.2,0.05 1.4,0.6 4,3 4,3.6 0,0.1 -0.9,0.64 -2,1.17 l-2,1 c-0.87,-1.06 -1.9,-1.74 -3.1,-2.3 -1.37,-0.26 -3,0.35 -3.74,1.4 -1.23,1.72 -1.3,6.2 -0.15,7.974 0.6,0.92 1.6,1.6 2.6,1.6 2,0.16 2.5,-0.02 3.7,-1.26 l1.2,-1.26 1.54,0.85 c0.85,0.47 1.66,0.96 1.8,1.1 0.52,0.47 -1.86,2.9 -3.77,3.85 -1.63,0.8 -2.14,0.92 -4.3,0.9 -1.34,-0.013 -3,-0.22 -3.67,-0.46z" fill="black" stroke="black" stroke-width="1px" /><switch><g></g><foreignObject width="2em" height="1em">CC</foreignObject></switch></svg> BY‑SA</a> John Drinkwater 2002–2011</p></footer>
 
 </body></html>
