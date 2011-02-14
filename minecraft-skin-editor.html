@@ -8,13 +8,15 @@
 <style>
 html,h1,article { margin: 0; padding: 0; }
 body { background: url(http://www.minecraft.net/img/bg.gif) #eeeeee; margin:0; }
-#skin-preview, #skin-editor { position: absolute; top: 60px; border: 2px solid grey; }
+#skin-preview, #skin-editor, #skin-editor-mini { position: absolute; top: 60px; border: 2px solid grey; }
+#skin-editor-mini { left: 374px; top:330px; }
 #skin-editor { left: 374px; cursor: crosshair; background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH2wIODxsDFVG/AgAAAClJREFUGNNjvHnz5n8GJKCmpobMZWBiIAAoV8D4//9/FDfcunWL3m4AADstCpWDR4PDAAAAAElFTkSuQmCC) }
-#skin-preview { left: 10px; background: url(http://www.minecraft.net/img/bg.gif); }
+#skin-preview { left: 10px; cursor: pointer; background: url(http://www.minecraft.net/img/bg.gif); }
 #skin-preview:after { content: "."; display: block; height: 0; clear: both; visibility: hidden; }
-#skin-selector, #skin-saver { position: absolute; top: 570px; }
+#skin-selector, #skin-saver, #skin-loader { position: absolute; top: 570px; }
 #skin-selector { left: 10px; }
-#skin-saver { width: 60px; left: 300px; }
+#skin-saver { width: 55px; left: 310px; }
+#skin-loader { width: 55px; left: 255px; }
 footer { color: black; background: transparent; position: absolute; bottom: 10px; height: 50px; }
 
 #minecraft { background: url(http://www.minecraft.net/img/logo_no_pps.png) transparent no-repeat; display: inline-block; text-indent: -9999px; min-width:270px; min-height: 70px; }
@@ -429,12 +431,13 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
     cubeVPB = makeCube( 8, 8, 8);
     // body, unsure what ‘depth’ body should be
     bodyVPB = makeCube( 8,12, 4);
-
     armVPB  = makeCube( 4,12, 4);
     legVPB  = makeCube( 4,12, 4);
 
     skintexture = gl.createTexture();
 
+    // for the following, what we could do to make it more readable/flexible,
+    // is store it in ints for x/y, then divide by 64 or 32, depending.
     headVTCB = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, headVTCB);
     var textureCoords = [
@@ -549,6 +552,58 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
     loadedImage = true;
   }
 
+  var skins = [];
+  skins['default'] = {
+      name: 'default',
+      data: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAAAgCAMAAACVQ462AAAA8FBMVEUAAAAfEAsjFwkkGAgkGAomGAsjGRUmGgomGgwoGg0nGwsoGwooGwsoHAspHAwyFxQqHQ0rHg0rHg4tHQ4sHg4sHhEvHw8tIBAvIA0vIhEyIxAzJBE0JRI6KBQ/KhVCKhJSKCZLLh0aSxpRMSU/Pz9iQy9qQDBSPYkkcCR1Ry8jfiOKTD2EUjGBUzmGUzSHVTuHWDqIWjmKWTuTW0Jra2uWX0GaY0ScY0WaZEqcZ0ifaEmcaUydak+iakeWb1ucclysdlqqfWaze2K1e2etgG20hG23gnK2iWy+iGy7iXK9i3K9jnK9jnTGloD///8AAABxqeaaAAAAAXRSTlMAQObYZgAAAAFiS0dEAIgFHUgAAAAJcEhZcwAACxMAAAsTAQCanBgAAAAHdElNRQfbAgkTHQUig98cAAAB30lEQVRIx7WUC1PTQBSFu4R2aRc2CV22QkWNlNAK3QBxixWMJoqKj/b//xvvzWaZTjuaB+OZTPcmM+fL2fQkrVYhz3PgcMikUKuuPEdKADiTUIVKNQFISQ1gCQrrAxyJe5BeYwB4KZVPAeR+C3jVAEAlpwQBuRoAOAV5Xu2/kTHa40eDwTNf7jnU9waDI96jjNleVAFQwf2h7/vDly/E3tDngiKg6EUpQLQp39/d5v63n79//Pr0nG/v7nPaFrYX5Qm6fcF64jC9T798fLi9PRQ9JvpdZntRYQtsZ+vy5vh+cfb54WyRHt9cbu3ARduLCoBu++BCX2XZ1yD4nmVX+uKg3cWHaHpR/gxY//RupuI4C87PgyyO1ezutM+E7UUpQKmZmuvrOI4DECzX7+fv5jN4IbEXE1WpC2MQFtieFx8Fsiz0eB0UnoQn5QBT5/8DAH/4pC1sAND8BoTraxDJNf0wnZJ/qgRANvyu69qhEmBTtQGLhXXmB2mewAC01lEKimDAtTrAXQEkaaqjuoA8gUsiA0hyQJI0AuCdERDVTGAEPgPQa4DRyAJGo7egvwG0AaQak8BWVgDGaFdMgWnGHXDh3MGhMzaAJM2TrAKWa3oEAKGYOwR+8M7gS6K1BH8A2DSJHSt8yKwAAAAASUVORK5CYII=',
+      thumb: '',
+    }
+
+  function loadSkinFromSkins(skin) { 
+
+    if (!skin) {
+      // XXX: this is a hack before I implementation a coverflow
+      skinName = prompt('Please name your skin', 'default');
+    } else
+      skinName = skin;
+
+    if (skins[skinName]) {
+
+      var newskin = document.createElement('img');
+      newskin.onload = loadNewSkin;
+      newskin.width=64; newskin.height=32;
+      newskin.src = skins[skinName].data;
+    }
+
+  }
+
+  function updateSkins() {
+    // we want this to update the list of Skins stored, to easier allow the
+    // user to pop
+  }
+
+  function saveCurrentSkin(skin) {
+
+    // ask user for a name?
+    // default to most recently used.
+    skinName = prompt('Please name your skin', 'default');
+
+    // generate a thumbnail!
+    skinthumb = document.createElement('canvas');
+    skinthumbc = skinthumb.getContext('2d');
+    skinthumbc.width=250; skinthumbc.height=175;
+    skinthumbc.drawImage(skinpreview, 0, 0, 250, 175);
+
+    // TODO: for now, overwrite is default
+    // or, we could use bung it into skins[]?
+    skins[skinName] = {
+      name: skinName,
+      data: skineditorm.toDataURL(),
+      thumb: skinthumb.toDataURL(),
+    }
+    //updateSkins();
+  }
+
   /*
    * helper function
    * replace this will inline code & a loop instead.
@@ -653,7 +708,7 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
    */
   var timerDrawing, timerAnimation;
   var cursorThen = [0,0], cursorNow = [0,0];
-  var skinloaderchrome;
+  var skinimporterchrome;
   var skintexture;
 
   function tick() {
@@ -662,6 +717,7 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
   }
 
   function startRotatingDude(e) {
+    skinpreview.style.cursor='move';
     if (!e) e = window.event;
     clearInterval(timerDrawing);
     // store mouse X/Y
@@ -671,10 +727,8 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
 
   function captureCursorLocation(e) {
     if (!e) e = window.event;
-
-	// what we really want to do:
-	// rotate body on X, rotate head on Y (within bounds)
-
+    // what we really want to do:
+    // rotate body on X, rotate head on Y (within bounds)
     cursorNow = [e.clientX, e.clientY];
     cursorDiffX = cursorThen[0] - cursorNow[0]
     cursorDiffY = cursorThen[1] - cursorNow[1]
@@ -682,6 +736,7 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
   }
 
   function stopRotatingDude() {
+    skinpreview.style.cursor='pointer';
     clearInterval(timerAnimation);
     // we should only redraw if: 1, invalidate 2, user draws 3, burn GPU
     timerDrawing = setInterval(drawScene, 1000);
@@ -716,16 +771,14 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
     skineditorc.clearRect( x, y, 8, 8);
   }
 
-  function saveDude(e) {
-  } 
-
   function loadNewDude(e) {
     var newskin = document.createElement('img');
     newskin.onload = loadNewSkin;
-    newskin.src = skinloaderchrome.value;
+    newskin.src = skinimporterchrome.value;
     e.preventDefault();
     return false;
   }
+
   function roundNumber(num, dec) {
     return Math.round( Math.round( num * Math.pow( 10, dec + 1 ) ) / Math.pow( 10, 1 ) ) / Math.pow(10,dec);
   }
@@ -743,7 +796,6 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
 
   /* Image.onload function */
   function loadNewSkin() {
-
     skineditor.width = skineditor.width; // need a .clear
     // if we are mozilla, tell them to stop SMOOTHING OUR SHIT
     skineditorc.mozImageSmoothingEnabled ? skineditorc.mozImageSmoothingEnabled = false : true;
@@ -759,32 +811,39 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
 
     skineditor = document.getElementById('skin-editor');
     skineditorc = skineditor.getContext('2d');
+    // thought I had a bug here, if you dont set height on the canvas, it has 300×150 default size
     skineditorm = document.createElement('canvas'); // because we are using a large texture, mirror it
-    //document.getElementById('skin-editor-mini');
-    //document.createElement('canvas'); // because we are using a large texture, mirror it
+    //skineditorm = document.getElementById('skin-editor-mini');
     skineditormc = skineditorm.getContext('2d');
-    skineditormc.width=64; skineditormc.height=32;
+    skineditorm.width=64; skineditorm.height=32;
 
     holder = document.getElementById('container');
 
-    skinloaderchrome = document.createElement('input');
-    skinloaderchrome.id = 'skin-selector';
-    skinloaderchrome.type = 'file';
-    skinloaderchrome.addEventListener('change',          loadNewDude, false);
+    skinimporterchrome = document.createElement('input');
+    skinimporterchrome.id = 'skin-selector';
+    skinimporterchrome.type = 'file';
+    skinimporterchrome.addEventListener('change',          loadNewDude, false);
 
 
     skinsaverchrome = document.createElement('input');
     skinsaverchrome.id = 'skin-saver';
     skinsaverchrome.type = 'submit';
     skinsaverchrome.value = 'Save';
-    skinsaverchrome.addEventListener('click', saveDude, false);
+    skinsaverchrome.addEventListener('click', saveCurrentSkin, false);
 
+    skinloaderchrome = document.createElement('input');
+    skinloaderchrome.id = 'skin-loader';
+    skinloaderchrome.type = 'submit';
+    skinloaderchrome.value = 'Load';
+    skinloaderchrome.addEventListener('click', loadSkinFromSkins, false);
+
+    holder.appendChild(skinimporterchrome);
     holder.appendChild(skinloaderchrome);
     holder.appendChild(skinsaverchrome);
 
-    defaultskin = document.createElement('img');
-    defaultskin.onload = loadNewSkin;
-    defaultskin.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAAAgCAMAAACVQ462AAAA8FBMVEUAAAAfEAsjFwkkGAgkGAomGAsjGRUmGgomGgwoGg0nGwsoGwooGwsoHAspHAwyFxQqHQ0rHg0rHg4tHQ4sHg4sHhEvHw8tIBAvIA0vIhEyIxAzJBE0JRI6KBQ/KhVCKhJSKCZLLh0aSxpRMSU/Pz9iQy9qQDBSPYkkcCR1Ry8jfiOKTD2EUjGBUzmGUzSHVTuHWDqIWjmKWTuTW0Jra2uWX0GaY0ScY0WaZEqcZ0ifaEmcaUydak+iakeWb1ucclysdlqqfWaze2K1e2etgG20hG23gnK2iWy+iGy7iXK9i3K9jnK9jnTGloD///8AAABxqeaaAAAAAXRSTlMAQObYZgAAAAFiS0dEAIgFHUgAAAAJcEhZcwAACxMAAAsTAQCanBgAAAAHdElNRQfbAgkTHQUig98cAAAB30lEQVRIx7WUC1PTQBSFu4R2aRc2CV22QkWNlNAK3QBxixWMJoqKj/b//xvvzWaZTjuaB+OZTPcmM+fL2fQkrVYhz3PgcMikUKuuPEdKADiTUIVKNQFISQ1gCQrrAxyJe5BeYwB4KZVPAeR+C3jVAEAlpwQBuRoAOAV5Xu2/kTHa40eDwTNf7jnU9waDI96jjNleVAFQwf2h7/vDly/E3tDngiKg6EUpQLQp39/d5v63n79//Pr0nG/v7nPaFrYX5Qm6fcF64jC9T798fLi9PRQ9JvpdZntRYQtsZ+vy5vh+cfb54WyRHt9cbu3ARduLCoBu++BCX2XZ1yD4nmVX+uKg3cWHaHpR/gxY//RupuI4C87PgyyO1ezutM+E7UUpQKmZmuvrOI4DECzX7+fv5jN4IbEXE1WpC2MQFtieFx8Fsiz0eB0UnoQn5QBT5/8DAH/4pC1sAND8BoTraxDJNf0wnZJ/qgRANvyu69qhEmBTtQGLhXXmB2mewAC01lEKimDAtTrAXQEkaaqjuoA8gUsiA0hyQJI0AuCdERDVTGAEPgPQa4DRyAJGo7egvwG0AaQak8BWVgDGaFdMgWnGHXDh3MGhMzaAJM2TrAKWa3oEAKGYOwR+8M7gS6K1BH8A2DSJHSt8yKwAAAAASUVORK5CYII=";
+    /* Assuming user hasn’t creamed default? */
+    loadSkinFromSkins('default');
+    /* figure out how we overlay localStorage before doing the above call */
 
     skinpreview.addEventListener('mousedown',     startRotatingDude, true);
     skinpreview.addEventListener('doubleclick',     toggleAnimation, true);
@@ -834,6 +893,9 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
  <canvas id="skin-editor" width="512" height="256">
   <img src="http://www.minecraft.net/img/char.png" width="512" height="256" alt="Minecraft Default Skin" />
   <p>Sorry, your browser does not support Canvas. Which kinda makes this whole application redundant.</p>
+ </canvas>
+
+ <canvas id="skin-editor-mini" width="64" height="32">
  </canvas>
 
  <noscript><p>While I’m the first person to complain about the needs of JavaScript for many a‐website, this is an ‘application’, it can’t run without the code being used. Please toggle NoScript, or try this in a browser that supports JavaScript.</p></noscript>
