@@ -438,17 +438,11 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
     headVTCB = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, headVTCB);
     var textureCoords = [
-      // Front face
       0.125, 0.5,   0.25, 0.5,   0.25, 0.75,   0.125, 0.75,
-      // Back face
       0.5, 0.5,     0.5, 0.75,   0.375, 0.75,  0.375, 0.5,
-      // Top face
       0.125, 1.0,   0.125, 0.75, 0.25, 0.75,   0.25, 1.0,
-      // Bottom face
       0.375, 1.0,   0.25, 1.0,   0.25, 0.75,   0.375, 0.75,
-      // Right face
       0.375, 0.5,   0.375, 0.75, 0.25, 0.75,   0.25, 0.5,
-      // Left face
       0.0, 0.5,     0.125, 0.5,  0.125, 0.75,  0.0, 0.75,
     ];
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoords), gl.STATIC_DRAW);
@@ -458,17 +452,11 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
     headAccessVTCB = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, headAccessVTCB);
     var textureCoords = [
-      // Front face
       0.625, 0.5,  0.75, 0.5,   0.75, 0.75,   0.625, 0.75,
-      // Back face
       1.0, 0.5,    1.0, 0.75,   0.875, 0.75,  0.875, 0.5,
-      // Top face
       0.625, 1.0,  0.625, 0.75, 0.75, 0.75,   0.75, 1.0,
-      // Bottom face
       0.875, 1.0,  0.75, 1.0,   0.75, 0.75,   0.875, 0.75,
-      // Right face
       0.875, 0.5,  0.875, 0.75, 0.75, 0.75,   0.75, 0.5,
-      // Left face
       0.5, 0.5,    0.625, 0.5,  0.625, 0.75,  0.5, 0.75,
     ];
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoords), gl.STATIC_DRAW);
@@ -478,36 +466,12 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
     bodyVTCB = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, bodyVTCB);
     var textureCoords = [
-      // Front face
-      0.3125, 0.0,
-      0.4375, 0.0,
-      0.4375, 0.375,
-      0.3125, 0.375,
-      // Back face
-      0.625, 0.0,
-      0.625, 0.375,
-      0.5, 0.375,
-      0.5, 0.0,
-      // Top face
-      0.3125, 0.5,
-      0.3125, 0.375,
-      0.4375, 0.375,
-      0.4375, 0.5,
-      // Bottom face
-      0.5625, 0.5,
-      0.4375, 0.5,
-      0.4375, 0.375,
-      0.5625, 0.375,
-      // Right face
-      0.5, 0.0,
-      0.5, 0.375,
-      0.4375, 0.375,
-      0.4375, 0.0,
-      // Left face
-      0.25, 0.0,
-      0.3125, 0.0,
-      0.3125, 0.375,
-      0.25, 0.375,
+      0.3125, 0.0, 0.4375, 0.0, 0.4375, 0.375, 0.3125, 0.375,
+      0.625, 0.0, 0.625, 0.375, 0.5, 0.375, 0.5, 0.0,
+      0.3125, 0.5, 0.3125, 0.375, 0.4375, 0.375, 0.4375, 0.5,
+      0.5625, 0.5, 0.4375, 0.5, 0.4375, 0.375, 0.5625, 0.375,
+      0.5, 0.0, 0.5, 0.375, 0.4375, 0.375, 0.4375, 0.0,
+      0.25, 0.0, 0.3125, 0.0, 0.3125, 0.375, 0.25, 0.375,
     ];
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoords), gl.STATIC_DRAW);
     bodyVTCB.itemSize = 2;
@@ -517,36 +481,12 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
     armLVTCB = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, armLVTCB);
     var textureCoords = [
-      // Front face
-      0.6875, 0.0,
-      0.75, 0.0,
-      0.75, 0.375,
-      0.6875, 0.375,
-      // Back face
-      0.875, 0.0,
-      0.875, 0.375,
-      0.8125, 0.375,
-      0.8125, 0.0,
-      // Top face
-      0.6875, 0.5,
-      0.6875, 0.375,
-      0.75, 0.375,
-      0.75, 0.5,
-      // Bottom face
-      0.8125, 0.5,
-      0.75, 0.5,
-      0.75, 0.375,
-      0.8125, 0.375,
-      // Right face
-      0.8125, 0.0,
-      0.8125, 0.375,
-      0.75, 0.375,
-      0.75, 0.0,
-      // Left face
-      0.625, 0.0,
-      0.6875, 0.0,
-      0.6875, 0.375,
-      0.625, 0.375,
+      0.6875, 0.0, 0.75, 0.0,  0.75, 0.375, 0.6875, 0.375,
+      0.875, 0.0,  0.875, 0.375, 0.8125, 0.375, 0.8125, 0.0,
+      0.6875, 0.5, 0.6875, 0.375,0.75, 0.375,0.75, 0.5,
+      0.8125, 0.5, 0.75, 0.5, 0.75, 0.375, 0.8125, 0.375,
+      0.8125, 0.0, 0.8125, 0.375, 0.75, 0.375, 0.75, 0.0,
+      0.625, 0.0,  0.6875, 0.0,   0.6875, 0.375, 0.625, 0.375,
     ];
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoords), gl.STATIC_DRAW);
     armLVTCB.itemSize = 2;
@@ -556,36 +496,12 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
     legLVTCB = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, legLVTCB);
     var textureCoords = [
-      // Front face
-      0.0625, 0.0,
-      0.125, 0.0,
-      0.125, 0.375,
-      0.0625, 0.375,
-      // Back face
-      0.25, 0.0,
-      0.25, 0.375,
-      0.1875, 0.375,
-      0.1875, 0.0,
-      // Top face
-      0.0625, 0.5,
-      0.0625, 0.375,
-      0.125, 0.375,
-      0.125, 0.5,
-      // Bottom face
-      0.1875, 0.5,
-      0.125, 0.5,
-      0.125, 0.375,
-      0.1875, 0.375,
-      // Right face
-      0.1875, 0.0,
-      0.1875, 0.375,
-      0.125, 0.375,
-      0.125, 0.0,
-      // Left face
-      0.0, 0.0,
-      0.0625, 0.0,
-      0.0625, 0.375,
-      0.0, 0.375,
+      0.0625, 0.0, 0.125, 0.0, 0.125, 0.375, 0.0625, 0.375,
+      0.25, 0.0, 0.25, 0.375, 0.1875, 0.375, 0.1875, 0.0,
+      0.0625, 0.5, 0.0625, 0.375, 0.125, 0.375, 0.125, 0.5,
+      0.1875, 0.5, 0.125, 0.5, 0.125, 0.375, 0.1875, 0.375,
+      0.1875, 0.0, 0.1875, 0.375, 0.125, 0.375, 0.125, 0.0,
+      0.0, 0.0, 0.0625, 0.0, 0.0625, 0.375, 0.0, 0.375,
     ];
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoords), gl.STATIC_DRAW);
     legLVTCB.itemSize = 2;
