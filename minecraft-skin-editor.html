@@ -8,7 +8,9 @@
 <style>
 html,h1,article { margin: 0; padding: 0; }
 body { background: url(http://www.minecraft.net/img/bg.gif) #eeeeee; margin:0; }
-#skin-editor { position: relative; background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH2wIODRAceCm/UgAAAC9JREFUOMtjvHnz5n8GPEBNTQ2fNAMTA4Vg1IDBYADj////8aaDW7dujQbi8DcAAEPDCqVzBCYkAAAAAElFTkSuQmCC)}
+#skin-editor { position: relative; cursor: crosshair; background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH2wIODxsDFVG/AgAAAClJREFUGNNjvHnz5n8GJKCmpobMZWBiIAAoV8D4//9/FDfcunWL3m4AADstCpWDR4PDAAAAAElFTkSuQmCC) }
+
+/* url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH2wIODRAceCm/UgAAAC9JREFUOMtjvHnz5n8GPEBNTQ2fNAMTA4Vg1IDBYADj////8aaDW7dujQbi8DcAAEPDCqVzBCYkAAAAAElFTkSuQmCC) } */
 #skin-preview { background: url(http://www.minecraft.net/img/bg.gif); }
 #minecraft { background: url(http://www.minecraft.net/img/logo_no_pps.png) transparent no-repeat; display: inline-block; text-indent: -9999px; min-width:270px; min-height: 70px; }
 header { margin: 0; padding-bottom: 10px; color: white; background: url(http://www.minecraft.net/img/top-bg.gif) repeat-x transparent; height:58px; }
@@ -414,7 +416,7 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
     armVPB  = makeCube( 4,12, 4);
     legVPB  = makeCube( 4,12, 4);
 
-    ourTexture = gl.createTexture();
+    skintexture = gl.createTexture();
 
     headVTCB = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, headVTCB);
@@ -624,9 +626,11 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
   }
 
   function updateTexture() {
-    gl.bindTexture(gl.TEXTURE_2D, ourTexture);
+    loadedImage = false;
+    gl.bindTexture(gl.TEXTURE_2D, skintexture);
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
     var texels = 0; // make sure 	
+    skineditormc.save();
 	try {
 	  try {
 	    //var texels = skinctx.getImageData(0,0, 64, 32);
@@ -642,6 +646,7 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
 	} catch(e) {
 	  throw new Error("unable to access image data: " + e);
 	}
+    skineditormc.restore();
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, texels);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
@@ -662,7 +667,7 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
     gl.vertexAttribPointer(shaderProgram.textureCoordAttribute, texture.itemSize, gl.FLOAT, false, 0, 0);
 
     gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, ourTexture);
+    gl.bindTexture(gl.TEXTURE_2D, skintexture);
     gl.uniform1i(shaderProgram.samplerUniform, 0);
 
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cubeVertexIndexBuffer);
@@ -766,8 +771,8 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
   var redrawing;
   var cursorThen = [0,0], cursorNow = [0,0];
   var debug;
-  var skin, skinctx, skinloader;
-  var ourTexture, newskin;
+  var skinloader;
+  var skintexture;
 
   function startRotatingDude(e) {
     if (!e) e = window.event;
@@ -802,11 +807,40 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
     animate = !animate;
   }
 
-  function drawOnDude() {
+  function drawOnDude(ev) {
+    var x, y;
+
+	  // Get the mouse position relative to the canvas element.
+	  if (ev.layerX || ev.layerX == 0) { // Firefox
+	    x = ev.layerX;
+	    y = ev.layerY;
+	  } else if (ev.offsetX || ev.offsetX == 0) { // Opera
+	    x = ev.offsetX;
+	    y = ev.offsetY;
+	  }
+    // border?
+    x -=2; y -=2;
+    // now we need to clamp them to 64×32
+    x -= x%8; y -= y%8;
+    // temp alpha
+    //skineditorc.save();
+    skineditorc.clearRect( x, y, 8, 8);
+    //skineditorc.restore();
+
+    //skineditormc.save();
+    skineditormc.clearRect( x/8, y/8, 1, 1);
+    //skineditormc.restore();
+
+    // this is failing wrt WebGL
+    //skineditormc.globalCompositeOperation = 'copy';
+    //skineditormc.fillStyle = "rgba(100,100,100,0.0)";
+
+    // FSR, this is causing errors
+    updateTexture();
   }
 
   function loadNewDude(e) {
-    newskin = document.createElement('img');
+    var newskin = document.createElement('img');
     newskin.onload = loadNewSkin;
     newskin.src = skinloader.value;
     e.preventDefault();
@@ -838,6 +872,7 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
   var skineditorc; // our drawing canvas context
 
   var loadedImage = false; // delay 3D scene if canvas is slow.
+
   var animate = true; // allow our little guy to agitate
 
   /* Image.onload function */
@@ -846,7 +881,9 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
     skineditor.width = skineditor.width; // need a .clear
     // if we are mozilla, tell them to stop SMOOTHING OUR SHIT
     skineditorc.mozImageSmoothingEnabled ? skineditorc.mozImageSmoothingEnabled = false : true;
-    skineditorc.drawImage( this, 0, 0, 384, 256 );
+    skineditorc.clearRect(0,0,512,256);
+    skineditorc.drawImage( this, 0, 0, 512, 256 );
+    skineditormc.clearRect(0,0,512,256);
     skineditormc.drawImage( this, 0, 0, 64, 32 );
     updateTexture();
   }
@@ -856,7 +893,8 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
 
     skineditor = document.getElementById('skin-editor');
     skineditorc = skineditor.getContext('2d');
-    skineditorm = document.createElement('canvas'); // because we are using a large texture, mirror it
+    skineditorm = document.getElementById('skin-editor-mini');
+    //document.createElement('canvas'); // because we are using a large texture, mirror it
     skineditormc = skineditorm.getContext('2d');
     skineditormc.width=64; skineditormc.height=32;
 
@@ -911,13 +949,16 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
 <article>
  <section>
 
- <canvas id="skin-preview" style="border: 1px solid grey;" width="350" height="500">Sorry, you don’t have WebGL</canvas>
+ <canvas id="skin-preview" style="border: 1px solid grey;" width="350" height="500">
+ Sorry, you don’t have WebGL
+ </canvas>
  <input type="file" id="skin-from-file" style="position: absolute; right: 1em; top: 6em; "/>
 
-  <canvas id="skin-editor" style="border: 2px solid black; width: 384px; height:256px;" width="384" height="256">
-   <img src="http://www.minecraft.net/img/char.png" width="384" height="256" alt="Minecraft Default Skin" /><br />
+  <canvas id="skin-editor" style="border: 2px solid black; width: 512px; height:256px;" width="512" height="256">
+   <img src="http://www.minecraft.net/img/char.png" width="512" height="256" alt="Minecraft Default Skin" /><br />
    Sorry, your browser does not support Canvas.
   </canvas>
+ <canvas id="skin-editor-mini" style="width: 64px; height:32px;" width="64" height="32"></canvas>
  <span id="debug" style="float: right; display: none;" ></span>
  </section>
  <footer>
