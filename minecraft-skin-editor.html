@@ -6,10 +6,15 @@
 <link rel="stylesheet" href="/style/" />
 <link rel="shortcut icon" type="image/x-icon" href="http://www.minecraft.net/favicon.png" />
 <style>
-html,h1,article, p { margin: 0; padding: 0; }
+html,h1,article, p, div { margin: 0; padding: 0; }
 body { background: url(http://www.minecraft.net/img/bg.gif) #eeeeee; margin:0; }
-#skin-preview, #skin-editor, #skin-editor-mini, #wip { position: absolute; top: 60px; border: 2px solid grey; }
-#wip, #skin-editor-mini { left: 374px; top:330px; width: 512px; color: red; }
+#skin-preview, #skin-editor, #skin-editor-mini, #wip, #skins-container { position: absolute; top: 60px; border: 2px solid grey; }
+#wip, #skin-editor-mini, #skins-container { left: 374px; top:330px; width: 512px; color: red; }
+#skins-container { background: rgba(0,0,0,0.8); padding:0; top: 445px; height: 143px; min-width:260px; overflow: scroll; overflow-y: hidden; white-space: nowrap; }
+#skins-container:empty { display:none; }
+#skins-container div { border: 1px solid green; margin: 1px; padding: 2px 4px; display: inline-block; text-align: center; height: 120px; width: 80px; overflow: hidden; }
+#skins-container div img, #skins-container div p { cursor: pointer; }
+
 #skin-editor { left: 374px; cursor: crosshair; background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH2wIODxsDFVG/AgAAAClJREFUGNNjvHnz5n8GJKCmpobMZWBiIAAoV8D4//9/FDfcunWL3m4AADstCpWDR4PDAAAAAElFTkSuQmCC) }
 #skin-preview { left: 10px; cursor: pointer; background: url(http://www.minecraft.net/img/bg.gif); }
 #skin-preview:after { content: "."; display: block; height: 0; clear: both; visibility: hidden; }
@@ -17,7 +22,7 @@ body { background: url(http://www.minecraft.net/img/bg.gif) #eeeeee; margin:0; }
 #skin-selector { left: 10px; }
 #skin-saver { width: 55px; left: 310px; }
 #skin-loader { width: 55px; left: 255px; }
-footer { color: black; background: transparent; position: absolute; bottom: 10px; height: 50px; }
+footer { color: black; background: transparent; position: absolute; bottom: 2px; height: 50px; }
 
 #minecraft { background: url(http://www.minecraft.net/img/logo_no_pps.png) transparent no-repeat; display: inline-block; text-indent: -9999px; min-width:270px; min-height: 70px; }
 header { margin: 0; padding-bottom: 10px; color: white; background: url(http://www.minecraft.net/img/top-bg.gif) repeat-x transparent; height:58px; }
@@ -243,17 +248,18 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
 <script type="text/javascript">
 
   var gl;
-  function initGL(canvas) {
-    try {
-      gl = canvas.getContext("experimental-webgl");
-      gl.viewportWidth = canvas.width;
-      gl.viewportHeight = canvas.height;
-    } catch(e) {
-    }
-    if (!gl) {
-      alert("Could not initialise WebGL, sorry :-(");
-    }
-  }
+	function initGL(canvas) {
+		try {
+		  gl = canvas.getContext("experimental-webgl");
+		  gl.viewportWidth = canvas.width;
+		  gl.viewportHeight = canvas.height;
+		} catch(e) { }
+		if (!gl) {
+			console.log("Could not initialise WebGL, sorry :-(");
+			return null;
+		}
+		return gl;
+	}
 
 
   function getShader(gl, id) {
@@ -284,7 +290,7 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
     gl.compileShader(shader);
 
     if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-      alert(gl.getShaderInfoLog(shader));
+      console.log(gl.getShaderInfoLog(shader));
       return null;
     }
 
@@ -303,7 +309,7 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
     gl.linkProgram(shaderProgram);
 
     if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
-      alert("Could not initialise shaders");
+      console.log("Could not initialise shaders");
     }
 
     gl.useProgram(shaderProgram);
@@ -525,32 +531,33 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
     cubeVertexIndexBuffer.numItems = 36;
   }
 
-  function updateTexture() {
-    loadedImage = false;
-    gl.bindTexture(gl.TEXTURE_2D, skintexture);
-    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-    var texels;
-    skineditormc.save();
-	try {
-	  try {
-	    texels = skineditormc.getImageData(0, 0, 64, 32);
-	  } catch(e) {
-            // if we, as the user, have asked for a local file, we expect to be able to use it
-	    // TODO: no idea what to do for Chrome here
-	    netscape ? netscape.security.PrivilegeManager.enablePrivilege("UniversalBrowserRead") : true;
-            texels = skineditormc.getImageData(0, 0, 64, 32);
+	function updateTexture() {
 
-	  }
-	} catch(e) {
-	    throw new Error("unable to access image data: " + e);
+		loadedImage = false;
+		gl.bindTexture(gl.TEXTURE_2D, skintexture);
+		gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+		var texels;
+		skineditormc.save();
+		try {
+			try {
+				texels = skineditormc.getImageData(0, 0, 64, 32);
+			} catch(e) {
+				// if we, as the user, have asked for a local file, we expect to be able to use it
+				// TODO: no idea what to do for Chrome here
+				netscape ? netscape.security.PrivilegeManager.enablePrivilege("UniversalBrowserRead") : true;
+				texels = skineditormc.getImageData(0, 0, 64, 32);
+
+			}
+		} catch(e) {
+			console.log("unable to access image data: " + e);
+		}
+		skineditormc.restore();
+		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, texels);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+		gl.bindTexture(gl.TEXTURE_2D, null);
+		loadedImage = true;
 	}
-    skineditormc.restore();
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, texels);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-    gl.bindTexture(gl.TEXTURE_2D, null);
-    loadedImage = true;
-  }
 
   // because localStorage has the poss. of updating in two tabs,
   // we need to sync them
@@ -564,219 +571,294 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
     // since it was fired, we know at least 1, it is supported, so ignore try{}?
     // ignorantly overwrite, for now
     //skins = JSON.parse(localStorage.getItem('skins'));
-    //lastSkin = localStorage.getItem('lastSkin');
-    alert('here');
+    //lastSkin = JSON.parse(localStorage.getItem('lastSkin'));
+    console.log('someone else updated our skins');
   }
 
-  function updateSkins() {
-    // we want this to update the list of Skins stored, to easier allow the
-    // user to pop
-    // first, update localStorage!
-    localStorage.setItem('skins', JSON.stringify(skins));
-    localStorage.setItem('lastSkin', JSON.stringify(lastSkin));
+	/*
+	* atm, we call this if we modify skins[]
+	*/
+  	function updateSkins() {
 
-    // we have to iterate over the object, make sure we get arrays, check for:
-    // .data, .thumb, .name
-    // then push some thumbnails!
-  }
+		console.log('Store the updated skins.');
+		// we want this to update the list of Skins stored, to easier allow the user to pop
+		try {
+			localStorage['skins']		= JSON.stringify(skins);
+			localStorage['lastSkin']	= JSON.stringify(lastSkin);
+		} catch (e) {
+			console.log('failed to store skins ' + e);
+		}
 
-  function loadSkinInSkinsButton(e) {
+		// we have to iterate over the object, make sure we get arrays, check for:
+		// .data, .thumb, .name
+		// then push some thumbnails!
 
-    loadSkinInSkins("");
-    e.preventDefault();
-    return false;
-  }
+		holder.removeChild( skinsholder );
+		// remove previous
+		if ( skinsholder.hasChildNodes() ) {
+			while ( skinsholder.childNodes.length >= 1 )
+			{
+				skinsholder.removeChild( skinsholder.firstChild );       
+			} 
+		}
 
-  function loadSkinInSkins(skin) { 
+		// iterate and add skins to GUI!
+		for (obj in skins) {
+			
+			obj = skins[obj];
+			if (obj.thumb != null) {
 
-    if (skin == "") {
-      skinName = prompt('Which skin do you want to load?', lastSkin);
-      // user aborted:
-      if (skinName == "")
-        skinName = lastSkin
-        return;
-    } else
-      skinName = skin;
+				console.log( 'Adding ‘' + obj + '’ to skinsholder.' );
+				var temp = document.createElement('div');
+				var name = document.createElement('p');
+				var preview = document.createElement('img');
+				temp.addEventListener('click', function() { loadSkinInSkins( this.skin ); }, true);
+				name.addEventListener('click', function() { renameSkinInSkins( this.skin ); }, true);
+				preview.src = obj.thumb;
+				name.innerHTML = obj.name;
+				temp.skin = name.skin = obj.name;
+				temp.appendChild(name);
+				temp.appendChild(preview);
+				skinsholder.appendChild(temp);
+			}
+		}
 
-    if (skins[skinName]) {
-
-
-      // so when we go to save, use correct name.
-      lastSkin = skinName;
-      var newskin = document.createElement('img');
-      newskin.onload = loadNewSkin;
-      newskin.width=64; newskin.height=32;
-      newskin.src = skins[skinName].data;
-    } else {
-      alert( skinName + " does not exist" );
-    }
-
-  }
-
-  function resetLocalStorage() {
-  
-    // XXX: debug function
-    localStorage.clear();
-  }
-
-  function deleteSkinInSkins(skin) {
-
-    if (skin) {
-      delete skins[skin];
-      updateSkins();
-    }
-  }
-
-  function saveSkinInSkinsButton(e) {
-    saveSkinInSkins("");
-    e.preventDefault();
-    return false;
-  }
-
-  function saveSkinInSkins(skin) {
-
-    if (skin == "") {
-      // ask user for a name?
-      // default to most recently used.
-      skinName = prompt('Please name your skin', lastSkin);
-    } else
-      skinName = skin;
-
-    // generate a thumbnail!
-    var skinthumb = document.createElement('canvas');
-    skinthumbc = skinthumb.getContext('2d');
-    skinthumbc.width=250; skinthumbc.height=175;
-    skinthumbc.drawImage(skinpreview, 0, 0, 250, 175);
-    var sthumbnail, sskin;
-	try {
-	  try {
-	    sthumbnail = skinthumb.toDataURL();
-	  } catch(e) {
-	    netscape ? netscape.security.PrivilegeManager.enablePrivilege("UniversalBrowserRead") : true;
-            sthumbnail = skinthumb.toDataURL();
-	  }
-	} catch(e) {
-	    throw new Error("unable to access image data: " + e);
-	}
-	try {
-	  try {
-	    sskin = skineditorm.toDataURL()
-	  } catch(e) {
-	    netscape ? netscape.security.PrivilegeManager.enablePrivilege("UniversalBrowserRead") : true;
-            sskin = skineditorm.toDataURL()
-	  }
-	} catch(e) {
-	    throw new Error("unable to access image data: " + e);
+		// update DOM with… laziness
+		holder.appendChild(skinsholder);
+		
 	}
 
-    // TODO: for now, overwrite is default
-    // or, we could use bung it into skins[]?
-    skins[skinName] = {
-      name: skinName,
-      data: sskin,
-      thumb: sthumbnail,
-    }
-    lastSkin = skinName;
-    updateSkins();
-  }
 
-  /*
-   * helper function
-   * replace this will inline code & a loop instead.
-   * ie, avoid function call
-   */
-  function drawAndTexture(vertices, texture) {
-    gl.bindBuffer(gl.ARRAY_BUFFER, vertices);
-    gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, vertices.itemSize, gl.FLOAT, false, 0, 0);
-    gl.bindBuffer(gl.ARRAY_BUFFER, texture);
-    gl.vertexAttribPointer(shaderProgram.textureCoordAttribute, texture.itemSize, gl.FLOAT, false, 0, 0);
-    gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, skintexture);
-    gl.uniform1i(shaderProgram.samplerUniform, 0);
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cubeVertexIndexBuffer);
-    setMatrixUniforms();
-    gl.drawElements(gl.TRIANGLES, cubeVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
-  }
+	function renameSkinInSkins( skin ) {
 
-  var xHead = 0, yHead = 0;
-  function drawScene() {
-    if (!loadedImage)
-	return;
-    gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+		if (skin == "") 
+			return;
 
-    perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0);
-    loadIdentity();
+		console.log('Renaming ‘' + skin + '’ skin.');
 
-    // move to the plain we want
-    mvTranslate([0.0, 0.5, -13.0])
-    
-    // we rotate everything
-    mvRotate(xHead, [0, 1, 0]); 
+		skinName = prompt('What do you wish to rename ‘' + skin + '’ to?', skin);
+		
+		if (skinName == null) { // user aborted
+			return;
+		} else {
+			skins[skinName] = skins[skin];
+			skins[skinName].name = skinName;
+			delete skins[skin];
+			updateSkins();
+		}
+	}
 
-    // draw body
-    mvPushMatrix();
-	    drawAndTexture(bodyVPB, bodyVTCB);
-    mvPopMatrix();
+	function loadSkinInSkinsButton(e) {
 
-    // arms
-    mvPushMatrix();
-	    mvTranslate([-1.6, 0.0, 0.0]);
-            mvRotateAbout(25, [1, 0, 0], [-0.5, 1.5, 0]);
-	    drawAndTexture(armVPB, armLVTCB);
-    mvPopMatrix();
-    mvPushMatrix();
-	    mvTranslate([1.6, 0.0, 0.0]);
-	    mvRotateAbout(25, [1, 0, 0], [-0.5, 1.25, 0]);
-            mvRotateAbout(5, [0, 0, 1], [-0.5, 1.25, 0]);
-	    mvScale([-1.0,1.0,1.0]);
-	    drawAndTexture(armVPB, armLVTCB);
-    mvPopMatrix();
+		loadSkinInSkins("");
+		e.preventDefault();
+		return false;
+	}
 
-    // legs
-    mvPushMatrix();
-	    mvTranslate([-0.51, -3, 0.0]);
-	    mvRotateAbout(10, [1, 0, 0], [0, 1.5, 0]);
-	    drawAndTexture(legVPB, legLVTCB);
-    mvPopMatrix();
-    mvPushMatrix();
-	    mvTranslate([0.51, -3, 0.0]);
-	    mvRotateAbout(-10, [1, 0, 0], [0, 1.5, 0]);
-	    mvScale([-1.0,1.0,1.0]);
-	    drawAndTexture(legVPB, legLVTCB);
-    mvPopMatrix();
+	function loadSkinInSkins(skin) { 
 
-    // draw head
-    mvPushMatrix();
-	    mvTranslate([0.0, 2.6, 0]);
-            mvRotateAbout(xHead, [0, 1, 0], [0, -1.0, 0]); 
-	    mvRotateAbout(yHead, [1, 0, 0], [0, -1.0, 0]);
-	    mvRotate( 5, [1, 0, 0]);
-	    drawAndTexture(cubeVPB, headVTCB);
-	    // 1.125 puts it as 9,9,9
- 	    mvScale([1.125,1.125,1.125]);
-	    drawAndTexture(cubeVPB, headAccessVTCB);
-    mvPopMatrix();
-  }
+		console.log('Loading ‘' + skin + '’ skin.');
+		if (skin == "") {
+			skinName = prompt('Which skin do you want to load?', lastSkin);
+		
+			if (skinName == null) { // user aborted
+				skinName = lastSkin
+				return;
+			}
+		} else {
+			skinName = skin;
+		}
+
+		if (skins[skinName]) {
+
+			// so when we go to save, use correct name.
+			// and store latest?
+			lastSkin = skinName;
+			localStorage['lastSkin']	= JSON.stringify(lastSkin);
+
+			var newskin = document.createElement('img');
+			newskin.onload = loadNewSkin;
+			newskin.width=64; newskin.height=32;
+			newskin.src = skins[skinName].data;
+		} else {
+			console.log( skinName + " does not exist" );
+		}
+	}
+
+	function resetLocalStorage() {
+
+		if (localStorage && localStorage.clear)
+			localStorage.clear();
+		// else, we need to purge our {}
+	}
+
+	function deleteSkinInSkins(skin) {
+
+		if (skin) {
+			delete skins[skin];
+			updateSkins();
+		}
+	}
+
+	function saveSkinInSkinsButton(e) {
+		saveSkinInSkins("");
+		e.preventDefault();
+		return false;
+	}
+
+	function saveSkinInSkins(skin) {
+
+		if (skin == "") {
+		  skinName = prompt('Please name your skin: ', lastSkin);
+		  if (skinName == null) {
+			skinName = lastSkin
+			return;
+		  }
+		} else
+		  skinName = skin;
+
+		console.log('Saving ‘' + skinName + '’ skin.');
+
+		// generate a thumbnail!
+		var skinthumb = document.createElement('canvas');
+		skinthumbc = skinthumb.getContext('2d');
+		skinthumbc.width=70; skinthumbc.height=100;
+		skinthumbc.drawImage(skinpreview, 0, 0, 70, 100);
+		var sthumbnail, sskin;
+		try {
+			try {
+				sthumbnail = skinthumb.toDataURL();
+			} catch(e) {
+				netscape ? netscape.security.PrivilegeManager.enablePrivilege("UniversalBrowserRead") : true;
+				sthumbnail = skinthumb.toDataURL();
+			}
+		} catch(e) {
+			console.log("unable to access image data: " + e);
+		}
+
+		try {
+			try {
+				sskin = skineditorm.toDataURL()
+			} catch(e) {
+				netscape ? netscape.security.PrivilegeManager.enablePrivilege("UniversalBrowserRead") : true;
+				sskin = skineditorm.toDataURL()
+			}
+		} catch(e) {
+			console.log("unable to access image data: " + e);
+		}
+
+		// TODO: for now, overwrite is default
+		// or, we could use bung it into skins[]?
+		skins[skinName] = {
+			name: skinName,
+			data: sskin,
+			thumb: sthumbnail,
+		}
+		lastSkin = skinName;
+		updateSkins();
+	}
+
+	  /*
+	   * helper function
+	   * replace this will inline code & a loop instead.
+	   * ie, avoid function call
+	   */
+	function drawAndTexture(vertices, texture) {
+		gl.bindBuffer(gl.ARRAY_BUFFER, vertices);
+		gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, vertices.itemSize, gl.FLOAT, false, 0, 0);
+		gl.bindBuffer(gl.ARRAY_BUFFER, texture);
+		gl.vertexAttribPointer(shaderProgram.textureCoordAttribute, texture.itemSize, gl.FLOAT, false, 0, 0);
+		gl.activeTexture(gl.TEXTURE0);
+		gl.bindTexture(gl.TEXTURE_2D, skintexture);
+		gl.uniform1i(shaderProgram.samplerUniform, 0);
+		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cubeVertexIndexBuffer);
+		setMatrixUniforms();
+		gl.drawElements(gl.TRIANGLES, cubeVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
+	}
+
+	var xHead = 0, yHead = 0;
+
+	function drawScene() {
+
+		if (!loadedImage)
+			return;
+
+		gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
+		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+		perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0);
+		loadIdentity();
+
+		// move to the plain we want
+		mvTranslate([0.0, 0.5, -13.0])
+
+		// we rotate everything
+		mvRotate(xHead, [0, 1, 0]); 
+
+		// draw body
+		mvPushMatrix();
+			drawAndTexture(bodyVPB, bodyVTCB);
+		mvPopMatrix();
+
+		// arms
+		mvPushMatrix();
+			mvTranslate([-1.55, 0.0, 0.0]);
+			mvRotateAbout(25, [1, 0, 0], [-0.5, 1.5, 0]);
+			drawAndTexture(armVPB, armLVTCB);
+		mvPopMatrix();
+		mvPushMatrix();
+			mvTranslate([1.55, 0.0, 0.0]);
+			mvRotateAbout(25, [1, 0, 0], [-0.5, 1.25, 0]);
+			mvRotateAbout(5, [0, 0, 1], [-0.5, 1.25, 0]);
+			mvScale([-1.0,1.0,1.0]);
+			drawAndTexture(armVPB, armLVTCB);
+		mvPopMatrix();
+
+		// legs
+		mvPushMatrix();
+			mvTranslate([-0.51, -3, 0.0]);
+			mvRotateAbout(10, [1, 0, 0], [0, 1.5, 0]);
+			drawAndTexture(legVPB, legLVTCB);
+		mvPopMatrix();
+		mvPushMatrix();
+			mvTranslate([0.51, -3, 0.0]);
+			mvRotateAbout(-10, [1, 0, 0], [0, 1.5, 0]);
+			mvScale([-1.0,1.0,1.0]);
+			drawAndTexture(legVPB, legLVTCB);
+		mvPopMatrix();
+
+		// draw head
+		mvPushMatrix();
+			mvTranslate([0.0, 2.6, 0]);
+			mvRotateAbout(xHead, [0, 1, 0], [0, -1.0, 0]); 
+			mvRotateAbout(yHead, [1, 0, 0], [0, -1.0, 0]);
+			mvRotate( 5, [1, 0, 0]);
+			drawAndTexture(cubeVPB, headVTCB);
+			// 1.125 puts it as 9,9,9
+			mvScale([1.125,1.125,1.125]);
+			drawAndTexture(cubeVPB, headAccessVTCB);
+		mvPopMatrix();
+	}
 
 
-  var lastTime = 0;
-  function animateScene() {
-    var timeNow = new Date().getTime();
-    if (lastTime != 0) {
-      var elapsed = timeNow - lastTime;
+	var lastTime = 0;
+	function animateScene() {
 
-      xHead -= ( cursorDiffX*2 )
-      yHead -= ( cursorDiffY*2 )
-//      if (yHead >= 32)
-//	yHead = 32;
-  //    if (yHead <= -50)
-//	yHead = -50;
+		var timeNow = new Date().getTime();
+		if (lastTime != 0) {
+			var elapsed = timeNow - lastTime;
 
-      cursorDiffX= cursorDiffY = 0
-    }
-    lastTime = timeNow;
-  }
+			xHead -= ( cursorDiffX*2 )
+			yHead -= ( cursorDiffY*2 )
+			//if (yHead >= 32)
+			//	yHead = 32;
+			//if (yHead <= -50)
+			//	yHead = -50;
+
+			cursorDiffX= cursorDiffY = 0
+		}
+		lastTime = timeNow;
+	}
 
   /**
    * we only want to ‘animate’ when the user rotates, otherwise, just
@@ -847,132 +929,193 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
     skineditorc.clearRect( x, y, 8, 8);
   }
 
-  function loadNewDude(e) {
-    var newskin = document.createElement('img');
-    newskin.onload = loadNewSkin;
-    newskin.src = skinimporterchrome.value;
-    e.preventDefault();
-    return false;
-  }
 
-  function roundNumber(num, dec) {
-    return Math.round( Math.round( num * Math.pow( 10, dec + 1 ) ) / Math.pow( 10, 1 ) ) / Math.pow(10,dec);
-  }
+	function loadSkinFromFile(e) {
 
-  var skinpreview; // our WebGL canvas
+		console.log('Loading skin from file ‘' + skinimporterchrome.value + '’.');
+		var newskin = document.createElement('img');
+		newskin.onload = loadNewSkin;
+		newskin.src = skinimporterchrome.value;
+		e.preventDefault();
+		return false;
+	}
 
-  var skineditor;  // our drawing canvas
-  var skineditorc; // our drawing canvas context
+	function roundNumber(num, dec) {
+		return Math.round( Math.round( num * Math.pow( 10, dec + 1 ) ) / Math.pow( 10, 1 ) ) / Math.pow(10,dec);
+	}
 
-  var skins = {};  // our storage pool for drawings
-  var lastSkin;    // our default skin to open
-  var loadedImage = false; // delay 3D scene if canvas is slow.
+	/* Image.onload function */
+	function loadNewSkin() {
 
-  var animate = true; // allow our little guy to agitate
+		skineditor.width = skineditor.width; // need a .clear
+		// if we are mozilla, tell them to stop SMOOTHING OUR SHIT
+		skineditorc.mozImageSmoothingEnabled ? skineditorc.mozImageSmoothingEnabled = false : true;
+		skineditorc.clearRect(0,0,512,256);
+		skineditorc.drawImage( this, 0, 0, 512, 256 );
+		skineditormc.clearRect(0,0,512,256);
+		skineditormc.drawImage( this, 0, 0, 64, 32 );
+		updateTexture();
+	}
 
-  /* Image.onload function */
-  function loadNewSkin() {
-    skineditor.width = skineditor.width; // need a .clear
-    // if we are mozilla, tell them to stop SMOOTHING OUR SHIT
-    skineditorc.mozImageSmoothingEnabled ? skineditorc.mozImageSmoothingEnabled = false : true;
-    skineditorc.clearRect(0,0,512,256);
-    skineditorc.drawImage( this, 0, 0, 512, 256 );
-    skineditormc.clearRect(0,0,512,256);
-    skineditormc.drawImage( this, 0, 0, 64, 32 );
-    updateTexture();
-  }
+
+	var skinpreview; // our WebGL canvas
+
+	var skineditor;  // our drawing canvas
+	var skineditorc; // our drawing canvas context
+	var skinsholder;
+
+	var skins = {};  // our storage pool for drawings
+	var lastSkin;    // our default skin to open
+	var loadedImage = false; // delay 3D scene if canvas is slow.
+
+	var animate = true; // allow our little guy to agitate
+
+	/*
+	 * Boot our editor
+	 */
+
+	function init() {
+
+		// discover console and fake up a work‐around
+		if (!console) {
+			console = {}
+			console.log = function(message) {
+				alert(message);
+			}
+		}
+
+		// discover localStorage and enable if possible
+
+		// default SKINS setup
+		skins = {};
+		skins['default'] = {
+			name: 'default',
+			data: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAAAgCAMAAACVQ462AAAA8FBMVEUAAAAfEAsjFwkkGAgkGAomGAsjGRUmGgomGgwoGg0nGwsoGwooGwsoHAspHAwyFxQqHQ0rHg0rHg4tHQ4sHg4sHhEvHw8tIBAvIA0vIhEyIxAzJBE0JRI6KBQ/KhVCKhJSKCZLLh0aSxpRMSU/Pz9iQy9qQDBSPYkkcCR1Ry8jfiOKTD2EUjGBUzmGUzSHVTuHWDqIWjmKWTuTW0Jra2uWX0GaY0ScY0WaZEqcZ0ifaEmcaUydak+iakeWb1ucclysdlqqfWaze2K1e2etgG20hG23gnK2iWy+iGy7iXK9i3K9jnK9jnTGloD///8AAABxqeaaAAAAAXRSTlMAQObYZgAAAAFiS0dEAIgFHUgAAAAJcEhZcwAACxMAAAsTAQCanBgAAAAHdElNRQfbAgkTHQUig98cAAAB30lEQVRIx7WUC1PTQBSFu4R2aRc2CV22QkWNlNAK3QBxixWMJoqKj/b//xvvzWaZTjuaB+OZTPcmM+fL2fQkrVYhz3PgcMikUKuuPEdKADiTUIVKNQFISQ1gCQrrAxyJe5BeYwB4KZVPAeR+C3jVAEAlpwQBuRoAOAV5Xu2/kTHa40eDwTNf7jnU9waDI96jjNleVAFQwf2h7/vDly/E3tDngiKg6EUpQLQp39/d5v63n79//Pr0nG/v7nPaFrYX5Qm6fcF64jC9T798fLi9PRQ9JvpdZntRYQtsZ+vy5vh+cfb54WyRHt9cbu3ARduLCoBu++BCX2XZ1yD4nmVX+uKg3cWHaHpR/gxY//RupuI4C87PgyyO1ezutM+E7UUpQKmZmuvrOI4DECzX7+fv5jN4IbEXE1WpC2MQFtieFx8Fsiz0eB0UnoQn5QBT5/8DAH/4pC1sAND8BoTraxDJNf0wnZJ/qgRANvyu69qhEmBTtQGLhXXmB2mewAC01lEKimDAtTrAXQEkaaqjuoA8gUsiA0hyQJI0AuCdERDVTGAEPgPQa4DRyAJGo7egvwG0AaQak8BWVgDGaFdMgWnGHXDh3MGhMzaAJM2TrAKWa3oEAKGYOwR+8M7gS6K1BH8A2DSJHSt8yKwAAAAASUVORK5CYII=',
+			thumb: 'data:image/png;base64,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',
+		}
+		skins['honeydew'] = {
+			name: 'honeydew',
+			data: 'data:image/png;base64,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',
+			thumb: '',
+		}
+		lastSkin = 'default';
+
+		/* move somewhere more suitable? */
+		if (localStorage) {
+
+			// XXX: test a work‐around
+			localStorage.domain = 'test';
+
+			console.log('We have localStorage support.');
+			if (localStorage['skins'] != null) {
+
+				console.log('We have a session!');
+				skins  						= JSON.parse(localStorage['skins']);
+				lastSkin					= JSON.parse(localStorage['lastSkin']);
+
+			} else {
+
+				console.log('We are starting a new session.');
+				try {
+					localStorage['skins']	= JSON.stringify(skins);
+					localStorage['lastSkin']= JSON.stringify(lastSkin);
+				} catch (e) {
+					// OOM seems unlikely with our usage needs.
+					console.log('Had a problem setting up localStorage: ' + e);
+				}
+			}
+
+			// Safari requires you to define your event listener on the body; IE requires it to be set on the document. Firefox doesn’t care.
+			// SERIOUSLY?! bugger Safari. maybe Chrome too.
+			document.addEventListener('storage',updateSkinsFromAnotherTime,false);
+
+		} else {
+
+			// we need to disable our ‘skins’ stuff, just do session editing
+			// or, just ask the user for the name?
+			console.log('We don’t have localStorage support.');
+			localStorage = {};
+			localStorage['skins']	= JSON.stringify(skins);
+			localStorage['lastSkin']= JSON.stringify(lastSkin);
+			// what we could always do, is localStorage = {}, use it like a assoc. array
+			// might even simplify things
+		}
+
+		// discover canvas support and continue
+	    skineditor = document.getElementById( 'skin-editor' );
+		if (skineditor && skineditor.getContext) {
+
+		    skineditorc = skineditor.getContext( '2d' );
+		    skineditor.addEventListener('click',                  drawOnDude, true);
+
+		    skineditorm = document.createElement( 'canvas' );
+		    skineditorm.width = 64; skineditorm.height = 32;
+		    skineditormc = skineditorm.getContext( '2d' );
+
+			// If we are here, we can for certain hop through skins in the editor
+
+			holder = document.getElementById('container');
+			skinsholder = document.createElement('div');
+			skinsholder.id='skins-container';
+
+			skinimporterchrome = document.createElement('input');
+			skinimporterchrome.id = 'skin-selector';
+			skinimporterchrome.type = 'file';
+			skinimporterchrome.addEventListener('change',  loadSkinFromFile, false);
+
+			skinsaverchrome = document.createElement('input');
+			skinsaverchrome.id = 'skin-saver';
+			skinsaverchrome.type = 'submit';
+			skinsaverchrome.value = 'Save';
+			skinsaverchrome.addEventListener('click', saveSkinInSkinsButton, false);
+
+			skinloaderchrome = document.createElement('input');
+			skinloaderchrome.id = 'skin-loader';
+			skinloaderchrome.type = 'submit';
+			skinloaderchrome.value = 'Load';
+			skinloaderchrome.addEventListener('click', loadSkinInSkinsButton, false);
+
+			skinpurgerchrome = document.createElement('input');
+			skinpurgerchrome.id = 'skin-puger';
+			skinpurgerchrome.type = 'submit';
+			skinpurgerchrome.value = 'Purge';
+			skinpurgerchrome.addEventListener('click',     resetLocalStorage, false);
+
+			holder.appendChild(skinimporterchrome);
+			holder.appendChild(skinloaderchrome);
+			holder.appendChild(skinsaverchrome);
+			holder.appendChild(skinpurgerchrome);
+
+			holder.appendChild(skinsholder);
+
+		} else {
+			// We don’t have to do anything here, because we have fallback in HTML
+		}
+
+		// discover WebGL support and continue
+	    skinpreview = document.getElementById( 'skin-preview' );
+    	if (skinpreview && initGL( skinpreview ) != null) {
+
+			webGLStart();
+    
+			skinpreview.addEventListener('mousedown',     startRotatingDude, true);
+			skinpreview.addEventListener('doubleclick',     toggleAnimation, true);
+			skinpreview.addEventListener('mouseup',        stopRotatingDude, true);
+			skinpreview.addEventListener('mouseout',       stopRotatingDude, true);
+			skinpreview.addEventListener('mousemove', captureCursorLocation, true);
+		} else {
+			// We don’t have to do anything here, because we have fallback in HTML
+			// maybe create a canvas perspective fallback?
+		}
+
+		// now that we are here, init our skin.
+		loadSkinInSkins( lastSkin );
+		// init our display of skins
+		updateSkins();
+	}
 
   function webGLStart() {
-    skinpreview = document.getElementById("skin-preview");
 
-    skineditor = document.getElementById('skin-editor');
-    skineditorc = skineditor.getContext('2d');
-    // thought I had a bug here, if you dont set height on the canvas, it has 300×150 default size
-    skineditorm = document.createElement('canvas'); // because we are using a large texture, mirror it
-    //skineditorm = document.getElementById('skin-editor-mini');
-    skineditormc = skineditorm.getContext('2d');
-    skineditorm.width=64; skineditorm.height=32;
-
-    holder = document.getElementById('container');
-
-    skinimporterchrome = document.createElement('input');
-    skinimporterchrome.id = 'skin-selector';
-    skinimporterchrome.type = 'file';
-    skinimporterchrome.addEventListener('change',          loadNewDude, false);
-
-
-    skinsaverchrome = document.createElement('input');
-    skinsaverchrome.id = 'skin-saver';
-    skinsaverchrome.type = 'submit';
-    skinsaverchrome.value = 'Save';
-    skinsaverchrome.addEventListener('click', saveSkinInSkinsButton, false);
-
-    skinloaderchrome = document.createElement('input');
-    skinloaderchrome.id = 'skin-loader';
-    skinloaderchrome.type = 'submit';
-    skinloaderchrome.value = 'Load';
-    skinloaderchrome.addEventListener('click', loadSkinInSkinsButton, false);
-
-
-    skinpurgerchrome = document.createElement('input');
-    skinpurgerchrome.id = 'skin-puger';
-    skinpurgerchrome.type = 'submit';
-    skinpurgerchrome.value = 'Purge';
-    skinpurgerchrome.addEventListener('click',     resetLocalStorage, false);
-
-
-    holder.appendChild(skinimporterchrome);
-    holder.appendChild(skinloaderchrome);
-    holder.appendChild(skinsaverchrome);
-    holder.appendChild(skinpurgerchrome);
-
-  // default SKINS setup
-  skins['default'] = {
-      name: 'default',
-      data: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAAAgCAMAAACVQ462AAAA8FBMVEUAAAAfEAsjFwkkGAgkGAomGAsjGRUmGgomGgwoGg0nGwsoGwooGwsoHAspHAwyFxQqHQ0rHg0rHg4tHQ4sHg4sHhEvHw8tIBAvIA0vIhEyIxAzJBE0JRI6KBQ/KhVCKhJSKCZLLh0aSxpRMSU/Pz9iQy9qQDBSPYkkcCR1Ry8jfiOKTD2EUjGBUzmGUzSHVTuHWDqIWjmKWTuTW0Jra2uWX0GaY0ScY0WaZEqcZ0ifaEmcaUydak+iakeWb1ucclysdlqqfWaze2K1e2etgG20hG23gnK2iWy+iGy7iXK9i3K9jnK9jnTGloD///8AAABxqeaaAAAAAXRSTlMAQObYZgAAAAFiS0dEAIgFHUgAAAAJcEhZcwAACxMAAAsTAQCanBgAAAAHdElNRQfbAgkTHQUig98cAAAB30lEQVRIx7WUC1PTQBSFu4R2aRc2CV22QkWNlNAK3QBxixWMJoqKj/b//xvvzWaZTjuaB+OZTPcmM+fL2fQkrVYhz3PgcMikUKuuPEdKADiTUIVKNQFISQ1gCQrrAxyJe5BeYwB4KZVPAeR+C3jVAEAlpwQBuRoAOAV5Xu2/kTHa40eDwTNf7jnU9waDI96jjNleVAFQwf2h7/vDly/E3tDngiKg6EUpQLQp39/d5v63n79//Pr0nG/v7nPaFrYX5Qm6fcF64jC9T798fLi9PRQ9JvpdZntRYQtsZ+vy5vh+cfb54WyRHt9cbu3ARduLCoBu++BCX2XZ1yD4nmVX+uKg3cWHaHpR/gxY//RupuI4C87PgyyO1ezutM+E7UUpQKmZmuvrOI4DECzX7+fv5jN4IbEXE1WpC2MQFtieFx8Fsiz0eB0UnoQn5QBT5/8DAH/4pC1sAND8BoTraxDJNf0wnZJ/qgRANvyu69qhEmBTtQGLhXXmB2mewAC01lEKimDAtTrAXQEkaaqjuoA8gUsiA0hyQJI0AuCdERDVTGAEPgPQa4DRyAJGo7egvwG0AaQak8BWVgDGaFdMgWnGHXDh3MGhMzaAJM2TrAKWa3oEAKGYOwR+8M7gS6K1BH8A2DSJHSt8yKwAAAAASUVORK5CYII=',
-      thumb: '',
-  }
-  lastSkin = 'default';
-
-  /* move somewhere more suitable? */
-  if (localStorage) {
-
-    var temp = localStorage.getItem('skins');
-    if (temp) {
-      skins = JSON.parse(temp);
-      lastSkin = JSON.parse(localStorage.getItem('lastSkin'));
-    } else {
-      try {
-        localStorage.setItem('skins', JSON.stringify(skins));
-        localStorage.setItem('lastSkin', JSON.stringify(lastSkin));
-      } catch (e) {
-        // Do we need to do anything here? OOM seems unlikely with our usage needs.
-        alert('Had a problem setting up localStorage.' + e);
-      }
-    }
-    // Safari requires you to define your event listener on the body; IE requires it to be set on the document. Firefox doesn’t care.
-    // SERIOUSLY?! bugger Safari. maybe Chrome too.
-    // document.addEventListener('storage',updateSkinsFromAnotherTime,false);
-  } else {
-    // we need to disable our ‘skins’ stuff, just do session editing
-    // or, just ask the user for the name?
-    // what we could always do, is localStorage = {}, use it like a assoc. array
-    // might even simplify things
-  }
-
-    /* Assuming user hasn’t creamed default? */
-    loadSkinInSkins(lastSkin);
-    /* figure out how we overlay localStorage before doing the above call */
-
-    skinpreview.addEventListener('mousedown',     startRotatingDude, true);
-    skinpreview.addEventListener('doubleclick',     toggleAnimation, true);
-    skinpreview.addEventListener('mouseup',        stopRotatingDude, true);
-    skinpreview.addEventListener('mouseout',       stopRotatingDude, true);
-    skinpreview.addEventListener('mousemove', captureCursorLocation, true);
-
-    skineditor.addEventListener('click',                  drawOnDude, true);
-
-    initGL(skinpreview);
     initShaders()
     initBuffers();
     updateTexture();
@@ -996,7 +1139,7 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
 
 
 </head>
-<body onload="webGLStart();">
+<body onload="init();">
 
 <header><h1><span id="minecraft">Minecraft</span> Skin Editor</h1></header>
 
