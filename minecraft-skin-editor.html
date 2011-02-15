@@ -552,7 +552,36 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
     loadedImage = true;
   }
 
+  // because localStorage has the poss. of updating in two tabs,
+  // we need to sync them
+  // XXX: assume localStorage and not sessionStorage changed. why would it?
+  function updateSkinsFromAnotherTime(key) {
+
+    // ERM. GREAT. so if the update is atomic,
+    // we get spammed with updates for each item? :|
+
+    // assume here that values have updated in another window
+    // since it was fired, we know at least 1, it is supported, so ignore try{}?
+    // ignorantly overwrite, for now
+    //skins = JSON.parse(localStorage.getItem('skins'));
+    //lastSkin = localStorage.getItem('lastSkin');
+    alert('here');
+  }
+
+  function updateSkins() {
+    // we want this to update the list of Skins stored, to easier allow the
+    // user to pop
+    // first, update localStorage!
+    localStorage.setItem('skins', JSON.stringify(skins));
+    localStorage.setItem('lastSkin', JSON.stringify(lastSkin));
+
+    // we have to iterate over the object, make sure we get arrays, check for:
+    // .data, .thumb, .name
+    // then push some thumbnails!
+  }
+
   function loadSkinInSkinsButton(e) {
+
     loadSkinInSkins("");
     e.preventDefault();
     return false;
@@ -561,39 +590,41 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
   function loadSkinInSkins(skin) { 
 
     if (skin == "") {
-      // XXX: this is a hack before I implementation a coverflow
-      skinName = prompt('Which skin do you want to load?', 'default');
+      skinName = prompt('Which skin do you want to load?', lastSkin);
+      // user aborted:
+      if (skinName == "")
+        skinName = lastSkin
+        return;
     } else
       skinName = skin;
 
     if (skins[skinName]) {
 
+
+      // so when we go to save, use correct name.
+      lastSkin = skinName;
       var newskin = document.createElement('img');
       newskin.onload = loadNewSkin;
       newskin.width=64; newskin.height=32;
       newskin.src = skins[skinName].data;
+    } else {
+      alert( skinName + " does not exist" );
     }
 
+  }
+
+  function resetLocalStorage() {
+  
+    // XXX: debug function
+    localStorage.clear();
   }
 
   function deleteSkinInSkins(skin) {
 
     if (skin) {
       delete skins[skin];
-      updateSkins(skins);
+      updateSkins();
     }
-  }
-
-  function updateSkins(s) {
-    // we want this to update the list of Skins stored, to easier allow the
-    // user to pop
-
-    // first, update localStorage!
-    localStorage.setItem('skins', JSON.stringify(s));
-
-    // we have to iterate over the object, make sure we get arrays, check for:
-    // .data, .thumb, .name
-    // then push some thumbnails!
   }
 
   function saveSkinInSkinsButton(e) {
@@ -607,7 +638,7 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
     if (skin == "") {
       // ask user for a name?
       // default to most recently used.
-      skinName = prompt('Please name your skin', 'default');
+      skinName = prompt('Please name your skin', lastSkin);
     } else
       skinName = skin;
 
@@ -645,7 +676,8 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
       data: sskin,
       thumb: sthumbnail,
     }
-    updateSkins(skins);
+    lastSkin = skinName;
+    updateSkins();
   }
 
   /*
@@ -827,13 +859,13 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
     return Math.round( Math.round( num * Math.pow( 10, dec + 1 ) ) / Math.pow( 10, 1 ) ) / Math.pow(10,dec);
   }
 
-  var defaultskin;
-
   var skinpreview; // our WebGL canvas
 
   var skineditor;  // our drawing canvas
   var skineditorc; // our drawing canvas context
-  var skins = {};
+
+  var skins = {};  // our storage pool for drawings
+  var lastSkin;    // our default skin to open
   var loadedImage = false; // delay 3D scene if canvas is slow.
 
   var animate = true; // allow our little guy to agitate
@@ -881,9 +913,18 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
     skinloaderchrome.value = 'Load';
     skinloaderchrome.addEventListener('click', loadSkinInSkinsButton, false);
 
+
+    skinpurgerchrome = document.createElement('input');
+    skinpurgerchrome.id = 'skin-puger';
+    skinpurgerchrome.type = 'submit';
+    skinpurgerchrome.value = 'Purge';
+    skinpurgerchrome.addEventListener('click',     resetLocalStorage, false);
+
+
     holder.appendChild(skinimporterchrome);
     holder.appendChild(skinloaderchrome);
     holder.appendChild(skinsaverchrome);
+    holder.appendChild(skinpurgerchrome);
 
   // default SKINS setup
   skins['default'] = {
@@ -891,25 +932,36 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
       data: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAAAgCAMAAACVQ462AAAA8FBMVEUAAAAfEAsjFwkkGAgkGAomGAsjGRUmGgomGgwoGg0nGwsoGwooGwsoHAspHAwyFxQqHQ0rHg0rHg4tHQ4sHg4sHhEvHw8tIBAvIA0vIhEyIxAzJBE0JRI6KBQ/KhVCKhJSKCZLLh0aSxpRMSU/Pz9iQy9qQDBSPYkkcCR1Ry8jfiOKTD2EUjGBUzmGUzSHVTuHWDqIWjmKWTuTW0Jra2uWX0GaY0ScY0WaZEqcZ0ifaEmcaUydak+iakeWb1ucclysdlqqfWaze2K1e2etgG20hG23gnK2iWy+iGy7iXK9i3K9jnK9jnTGloD///8AAABxqeaaAAAAAXRSTlMAQObYZgAAAAFiS0dEAIgFHUgAAAAJcEhZcwAACxMAAAsTAQCanBgAAAAHdElNRQfbAgkTHQUig98cAAAB30lEQVRIx7WUC1PTQBSFu4R2aRc2CV22QkWNlNAK3QBxixWMJoqKj/b//xvvzWaZTjuaB+OZTPcmM+fL2fQkrVYhz3PgcMikUKuuPEdKADiTUIVKNQFISQ1gCQrrAxyJe5BeYwB4KZVPAeR+C3jVAEAlpwQBuRoAOAV5Xu2/kTHa40eDwTNf7jnU9waDI96jjNleVAFQwf2h7/vDly/E3tDngiKg6EUpQLQp39/d5v63n79//Pr0nG/v7nPaFrYX5Qm6fcF64jC9T798fLi9PRQ9JvpdZntRYQtsZ+vy5vh+cfb54WyRHt9cbu3ARduLCoBu++BCX2XZ1yD4nmVX+uKg3cWHaHpR/gxY//RupuI4C87PgyyO1ezutM+E7UUpQKmZmuvrOI4DECzX7+fv5jN4IbEXE1WpC2MQFtieFx8Fsiz0eB0UnoQn5QBT5/8DAH/4pC1sAND8BoTraxDJNf0wnZJ/qgRANvyu69qhEmBTtQGLhXXmB2mewAC01lEKimDAtTrAXQEkaaqjuoA8gUsiA0hyQJI0AuCdERDVTGAEPgPQa4DRyAJGo7egvwG0AaQak8BWVgDGaFdMgWnGHXDh3MGhMzaAJM2TrAKWa3oEAKGYOwR+8M7gS6K1BH8A2DSJHSt8yKwAAAAASUVORK5CYII=',
       thumb: '',
   }
+  lastSkin = 'default';
 
   /* move somewhere more suitable? */
-  if (typeof(localStorage) != 'undefined' ) {
-    localStorage.setItem('test', 'TEST');
-    temp = localStorage.getItem('skins');
+  if (localStorage) {
+
+    var temp = localStorage.getItem('skins');
     if (temp) {
       skins = JSON.parse(temp);
+      lastSkin = JSON.parse(localStorage.getItem('lastSkin'));
     } else {
       try {
         localStorage.setItem('skins', JSON.stringify(skins));
-      } catch (e) { alert(e);
+        localStorage.setItem('lastSkin', JSON.stringify(lastSkin));
+      } catch (e) {
+        // Do we need to do anything here? OOM seems unlikely with our usage needs.
+        alert('Had a problem setting up localStorage.' + e);
       }
     }
+    // Safari requires you to define your event listener on the body; IE requires it to be set on the document. Firefox doesn’t care.
+    // SERIOUSLY?! bugger Safari. maybe Chrome too.
+    // document.addEventListener('storage',updateSkinsFromAnotherTime,false);
   } else {
     // we need to disable our ‘skins’ stuff, just do session editing
+    // or, just ask the user for the name?
+    // what we could always do, is localStorage = {}, use it like a assoc. array
+    // might even simplify things
   }
 
     /* Assuming user hasn’t creamed default? */
-    loadSkinInSkins('default');
+    loadSkinInSkins(lastSkin);
     /* figure out how we overlay localStorage before doing the above call */
 
     skinpreview.addEventListener('mousedown',     startRotatingDude, true);
