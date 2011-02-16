@@ -533,6 +533,8 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
 
 	function updateTexture() {
 
+		// TODO Opera gets here, for some reason… 
+
 		loadedImage = false;
 		gl.bindTexture(gl.TEXTURE_2D, skintexture);
 		gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
@@ -723,6 +725,7 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
 		var skinthumb = document.createElement('canvas');
 		skinthumbc = skinthumb.getContext('2d');
 		skinthumbc.width=70; skinthumbc.height=100;
+		// TODO for browsers without WebGL, but with canvas, this will produce something empty
 		skinthumbc.drawImage(skinpreview, 0, 0, 70, 100);
 		var sthumbnail, sskin;
 		try {
@@ -735,6 +738,7 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
 		} catch(e) {
 			console.log("unable to access image data: " + e);
 		}
+		console.log(skinName + ": " + sthumbnail );
 
 		try {
 			try {
@@ -921,12 +925,13 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
     x -= x%8; y -= y%8;
 
     skineditormc.clearRect( x/8, y/8, 1, 1);
+	// XXX moved back above the webgl update, incase browser doesnt support it
+    skineditorc.clearRect( x, y, 8, 8);
 
     updateTexture();
     drawScene();
     timerDrawing = setInterval(drawScene, 1000);
 
-    skineditorc.clearRect( x, y, 8, 8);
   }
 
 
@@ -950,8 +955,16 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
 		skineditor.width = skineditor.width; // need a .clear
 		// if we are mozilla, tell them to stop SMOOTHING OUR SHIT
 		skineditorc.mozImageSmoothingEnabled ? skineditorc.mozImageSmoothingEnabled = false : true;
+		// TODO OPERA SMUDGES THIS SHIT
 		skineditorc.clearRect(0,0,512,256);
 		skineditorc.drawImage( this, 0, 0, 512, 256 );
+
+		// attempted to fix Opera issue, but no cigar
+		//skineditorc.save()
+		//skineditorc.scale(8,8);
+		//skineditorc.drawImage( this, 0, 0, 64, 32 );
+		//skineditorc.restore();
+
 		skineditormc.clearRect(0,0,512,256);
 		skineditormc.drawImage( this, 0, 0, 64, 32 );
 		updateTexture();
