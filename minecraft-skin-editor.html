@@ -940,9 +940,10 @@ vTextureCoord = aTextureCoord;
 
 	}
 
-
 	function loadSkinFromFile(e) {
 
+		//
+		console.log(skinimporterchrome.files);
 		console.log('Loading skin from file ‘' + skinimporterchrome.value + '’.');
 		var newskin = document.createElement('img');
 		newskin.onload = loadNewSkin;
@@ -1024,6 +1025,9 @@ vTextureCoord = aTextureCoord;
 				alert(message);
 			}
 		}
+		// push messages to Opera debug
+		if (opera && opera.postError)
+			console.log = opera.postError
 
 		// default SKINS setup
 		// TODO: make this an ‘initial’ blob, so that if localStorage is purged, we can restore
@@ -1066,7 +1070,6 @@ vTextureCoord = aTextureCoord;
 				console.log('We are starting a new session.');
 				// copy values from defaults
 				skins = initialSkins.clone();
-				alert(skins);
 				lastSkin = new String(initialLastSkin);
 				try {
 					localStorage['skins']	= JSON.stringify(skins);
