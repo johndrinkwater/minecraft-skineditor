@@ -673,9 +673,18 @@ vTextureCoord = aTextureCoord;
 
 	function resetLocalStorage() {
 
+		console.log('Purging localStorage');
+
 		if (localStorage && localStorage.clear)
 			localStorage.clear();
-		// else, we need to purge our {}
+		else {
+			localStorage = {};
+		}
+		// reset to defaults
+		skins = initialSkins.clone();
+		lastSkin = new String(initialLastSkin);
+
+		updateSkins();
 	}
 
 	function deleteSkinInSkins(skin) {
@@ -964,22 +973,43 @@ vTextureCoord = aTextureCoord;
 	}
 
 
-	var skinpreview; // our WebGL canvas
+	/* because JS lacks it */
+	/* http://my.opera.com/GreyWyvern/blog/show.dml/1725165 */
+	Object.prototype.clone = function() {
+		var newObj = (this instanceof Array) ? [] : {};
+		for (i in this) {
+			if (i == 'clone')
+				continue;
+			if (this[i] && typeof this[i] == "object") {
+			  newObj[i] = this[i].clone();
+			} else 
+				newObj[i] = this[i]
+		}
+		return newObj;
+	};
 
-	var skineditor;	// our drawing canvas
-	var skineditorc; // our drawing canvas context
-	var skinsholder;
 
-	var skins = {};	// our storage pool for drawings
-	var lastSkin;		// our default skin to open
+	var skinpreview; 	// our WebGL canvas
+
+	var skineditor,		// our drawing canvas
+		skineditorc, 	// our drawing canvas context
+		skinsholder;
+
+	var skins = {},		// our storage pool for drawings
+		initialSkins = {},
+		lastSkin,		// our default skin to open
+		initialLastSkin;
+
+	// TODO: rename to loadedSkin?
 	var loadedImage = false; // delay 3D scene if canvas is slow.
 
 	var animate = true; // allow our little guy to agitate
 	// features we want to use, test for ’em
-	var fDataUrlSupport = false;
-	var fCanvasSupport = false;
-	var fWebGLSupport = false;
-	var flStorageSupport = false;
+	var fDataUrlSupport 	= false,
+		fJSONSupport		= false,
+		fCanvasSupport 		= false,
+		fWebGLSupport 		= false,
+		flStorageSupport	= false;
 
 	/*
 	 * Boot our editor
@@ -998,17 +1028,26 @@ vTextureCoord = aTextureCoord;
 		// default SKINS setup
 		// TODO: make this an ‘initial’ blob, so that if localStorage is purged, we can restore
 		skins = {};
-		skins['default'] = {
+		initialSkins = {};
+		initialSkins['default'] = {
 			name: 'default',
 			data: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAAAgCAMAAACVQ462AAAA8FBMVEUAAAAfEAsjFwkkGAgkGAomGAsjGRUmGgomGgwoGg0nGwsoGwooGwsoHAspHAwyFxQqHQ0rHg0rHg4tHQ4sHg4sHhEvHw8tIBAvIA0vIhEyIxAzJBE0JRI6KBQ/KhVCKhJSKCZLLh0aSxpRMSU/Pz9iQy9qQDBSPYkkcCR1Ry8jfiOKTD2EUjGBUzmGUzSHVTuHWDqIWjmKWTuTW0Jra2uWX0GaY0ScY0WaZEqcZ0ifaEmcaUydak+iakeWb1ucclysdlqqfWaze2K1e2etgG20hG23gnK2iWy+iGy7iXK9i3K9jnK9jnTGloD///8AAABxqeaaAAAAAXRSTlMAQObYZgAAAAFiS0dEAIgFHUgAAAAJcEhZcwAACxMAAAsTAQCanBgAAAAHdElNRQfbAgkTHQUig98cAAAB30lEQVRIx7WUC1PTQBSFu4R2aRc2CV22QkWNlNAK3QBxixWMJoqKj/b//xvvzWaZTjuaB+OZTPcmM+fL2fQkrVYhz3PgcMikUKuuPEdKADiTUIVKNQFISQ1gCQrrAxyJe5BeYwB4KZVPAeR+C3jVAEAlpwQBuRoAOAV5Xu2/kTHa40eDwTNf7jnU9waDI96jjNleVAFQwf2h7/vDly/E3tDngiKg6EUpQLQp39/d5v63n79//Pr0nG/v7nPaFrYX5Qm6fcF64jC9T798fLi9PRQ9JvpdZntRYQtsZ+vy5vh+cfb54WyRHt9cbu3ARduLCoBu++BCX2XZ1yD4nmVX+uKg3cWHaHpR/gxY//RupuI4C87PgyyO1ezutM+E7UUpQKmZmuvrOI4DECzX7+fv5jN4IbEXE1WpC2MQFtieFx8Fsiz0eB0UnoQn5QBT5/8DAH/4pC1sAND8BoTraxDJNf0wnZJ/qgRANvyu69qhEmBTtQGLhXXmB2mewAC01lEKimDAtTrAXQEkaaqjuoA8gUsiA0hyQJI0AuCdERDVTGAEPgPQa4DRyAJGo7egvwG0AaQak8BWVgDGaFdMgWnGHXDh3MGhMzaAJM2TrAKWa3oEAKGYOwR+8M7gS6K1BH8A2DSJHSt8yKwAAAAASUVORK5CYII=',
 			thumb: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASwAAACWCAYAAABkW7XSAAAErUlEQVR4nO3dvYtUVxzHYcugmKhkSRTfwFVkTSJEGwkisbGIVSRNNhCwiER3MQyaZkn4GYS4CdgEtrKyDLHyJYVo6b91UoQZh91xZvSce+beneeBT+GsO/fcW3zBYRd37ADokNDIgBYKGSzoipDBgq4IGSzoipDBgq4IGSzoipDBgq4IGSzoipDBgq6Ipjt9dHfqd+rw/50+8sGgkwd3pZMHd6XFj98bdOLAznTiwM7B3z91eHdaOvS6CucGWiiazmABpUTTlR6sT4/uMVgwp6LphkdnVGcW96Yzi3vTxaV9gy4sLaQLSwvpk8PvD+oPW40zT3powGxE0xksoJRouuFxera+kp6tr6QX93uDXm1EerUR6cWfvdfdv5Ve3L+V/vn520Fnj+9LZ4/vM1gwx6LpDBZQSjSdwQJKiab7+5cfUr8nd1fTk7urafi1R7GaHsVqetD7btDz9V56vt5LD368vKUaZ5700IDZiKYzWEAp0XT9kXpydzX1fX1+fdDTtWvp6dq1wUg9X+8NvjasP3A1zjzpoQGzEU1nsIBSoukMFlBKNN3jtatpc//+1hv01WeHtvTy3kp6eW9ly/c9XrtqsGCORdMZLKCUaLq/li+mfv3RGR6nPy6f31L/a8ND1X+PGmee9NCA2YimM1hAKdF0BgsoJZpueLD6jfrcalSjvrfGmSc9NGA2oukMFlBKNN3tS6dTyTa//5E9u9LmCpwbaKHIbdRgTNOdK+fSnSvn0sPrl9LD65cGfx7uXd+7wH0BLRQ5veugND1YBUYLaKHIyWABNUVOOYOyebhKDZXBgu0rcjJYQE2RU4lhaarMewNaKHKa9SgZLJgvkdMshujzjz40WDCnIqemRmkUgwVETgYLqClymsU/CTe+/9JgwZyKnIb/u65xlR6saa6ZeW9AC0VOBguoKXJq02Bt3FxOGzeXDRZsY5HbmwajqcEavqbBgvkSuRksoJbIbdxg9V8rPVjjrmWwYPuK3NoyWD50h+0vchs3Gk0P1rjRyrwvoIUiN4MF1BK5GSyglsjNYAG1RG61f3B02mtm3hfQQpHbLAarwq/nAC0UuU3zQ5yLPy2+Vcf2L6Rj+xfeOFi/f/PFG69lsGD7itzaNljDn29l3BfQQpHbqA/Ah1/buLlcfLA2X9dgwXyI3JoYrM3DNTxeo67bv3aJ+9lhsKC1okZTjdOvx6aq0pmBFooaGSyghKjRtGNksIBxokYGCyghamSwgBKiRgYLKCFqZLCAEqJGBgsoIWpksIASokYGCyghamSwgBKiRgYLKCFqZLCAEqJGBgsoIWpksIASokYGCyghamSwgBKiRgYLKCFqZLCAEqJGBgsoIWpksIASokYGCyghamSwgBKiRgYLKCFqZLCAEqJGN27cSKWqdGaghaJGJQer0mgBLRSVSpMyWMAkUamJg/WWNX1eoIWiRRksYKxoUQYLGCtksKArQgYLuiJksKArQgYLuiJksKArQgYLuiJksKArQgYLuiJksKArQgYLAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKjhP+A11Y+9BdLyAAAAAElFTkSuQmCC',
 		}
-		skins['honeydew'] = {
+		initialSkins['honeydew'] = {
 			name: 'honeydew',
 			data: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAAAgCAYAAACinX6EAAADG0lEQVRogd1YO26kQBDlCg4mICCzLDn12KlTEvLdDYcT+Ba2z0BqiXCEJpjABARIHACJjMDyPeiNqlUUVf1zW7PrlkpjaLrp9/pV9cNJYmnloVSm+Ly7Usf9TnV5pj7vrvQ1/G2b/59vAPTPr9+rgPtdnongj/vdzyAAAGPw8AuA4bfLs5UiLr3+Lzdu9zERsNtUBT+GgKauVpLHKdHU1QZw7BRo6ko1dbWZR7ofvQEBmAS4bupKA/94e14FEBHj/RclwFYEOfAQXZ79/ylgOwYl8BCXXr+1caCaujKCjjWmPJTRpB2cEtyi5nHwBhIyhiNgHgc1j4M3kNBxSf74oGjM47C6vr25ZsM0xjWSJEnovPM4qNubaw1Gej/uhzFSvzg+ZNExw7QG0yZF63+5T5UUUMiKotgUN3zPNIctvCUbu1Hrukwn7eyW6aSW6aTSNN0YnjRNdT8Yn2U66WeoIaImCTtFaqW5DymXPjo/xii6VLo4AAH3AOAynVRRFKooitU9OpZzhjZCKHj6dcn5CeijxFKisCOFeVbX3O5zllby+/RllBQXn4CVgH+h0Z3lXCZcU5DejRYK27FFW5dnLNDjfqfyxwedNlLY5ueOUnxaBYGmBOAFSZVVarBT1BJ3eRaVgL49rwiAYzk6AdLZKjXTl+F3EhBVASYTZBvPVVvI3e9MgWAFSCahb8+qb89WI0MB4CJFq7rPPBCShbaty7VmiTbRNbhF41MBBywOagMF40qAi5KAhCACJPm7EkCPwuN+p9X08fa8Ate3Z/1OuE+f8QWPSfAmAMvHhQTp5SD/Ls80yL49b3YX5y+AwwS4pkpoTWHPfch/l1zjXvr++qQdJa4pGBglgKYCfTY0vBTAGR+bCmwSxHnP5TcmABfdGOC9CYiVAlQl0m6Wh1LPw6mBm8s3vAn4ShHkFmCSMnaLkhpC/svkY903KcCFiQBpDABzlSqnANP80RQgFUCfQiiBfn990gXRhQApHXxqEt0cKwF4YpPrkvqwjDEg/GnsQoAtHbjNcFGlcwrYCAg5BXxJkNQQogLAY8P/F6CbuIFTQdIoAAAAAElFTkSuQmCC',
 			thumb: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASwAAACWCAYAAABkW7XSAAAE00lEQVR4nO3dO24bVxiGYW0hRQoW6oIAaR2oVcuGm4hXkCX8XZB9pE/hwkVcqPAa3AfZhyfVCOPxXA51LjojPg/wFSFkXlS8yFDD4d0dwIGELQ7oUJhgwVGECRYcRZhgwVGECRYcRZhgwVGECRYcRZhgwVGECRYcRdTe+9/eD6XX4HkDHYraEyyglKg9wQJKido7YKxi75cGvI6ovTE0v/z8U/YEC25b1N758WE4Pz4UCdb58UGw4IZF7QkWUErU3hisUmvxnPd+acDriNoTLKCUqD3BAkqJ2vv3rz+GcZfLZbhcLsP0tq2NPz/9Ny2e894vDXgdUXuCBZQStSdYQClRe1+/fBjGnU6n4XQ6Df+9++F5T+f74el8/81t043/ZryPFs9575cGvI6oPcECSonamwZrKUh7wRonWEDU3FKYns73wzRi0/epxm0Fblzl5w50KGpOsICSoubWgpV6SPj3rz8KFvAsam8an3Fb72U9ne9Xf/bpfO89LLhhUXvj+VMlgrV0Hlali/wBHYrczWPx+dPH4fOnj9/cthWha4J1fnz47nHmjyVY8HZFzpb+72YtWGshWnoPa/yZacTGDz/PH6vSpZSBDkXO5pFYu8JCyWAtTbDgNkTOlkKxFJSU0xT2JlhA5CwlWHtnuucG6+uXD4vxynxtQIciZ0uRmgZqa/PDv6VDwukb61v3L1hwGyJnPQar0JVJgQ5Fzq6NVK1gLcUr87UBHYqc5QRr/tfB6V8Ex0hNv+JrvE2w4HZFzl4SqtrBKnQZGqBDkbNrI/XPn78/b7xtPPxbeh9qekg4fsRHsOB2Rc4EC2gpcpZzSDh/z2lp0y+kuPZ+M18b0KHI2WsEK/VN/szXBnQoctc6WKmPmfm6gA5F7krFaSlUayFKud/M1wV0KHKXEqDSwUq5j8zXBXQocpcaodRI7b3BvvaYrtYAb1/kbu0CeinXyXppsFIeM/N1AR2K3PUULIeE8LZF7kocAl57Qqj3sOA2Re4EC2glcjcGYvpB5fm2ojT9uM78Yztrwdp6LMGCtyty12uwMqMFdChyt3VYNkZkKTzjZWXm/z29LSVYlQ4LgQ5F7noLVqFTG4AORe6WTiuYH6aVDtbdwmGhYMHbF7l7abDWwrV2W0qwSryeO8GCbkWLpQRrerG++RdPFDxdIXVAh6LFUs6bEixgT7RYSpwEC9gTLZYSrK1zq6Zr9JyBDkWLpcZIsIAt0WLXRmnrnK5GzxnoULSYYAElRIulhEiwgD3RYikhWvt4zfyk1EbPGehQtFhKiAQL2BMtlhKi6W1Lpz0UulZ76oAORYulhEiwgD3RYoIFlBAtdm2wKn59V+qADkWLXRslwQKWRItd+92F/koILIkWc1oDUEK0mGABJUSL+WgOUEK0mGABJUSLpVwiOXWNnjPQoWgxwQJKiBYTLKCEaLHUL51IWaPnDHQoWkywgBKixXw0ByghWqxksBpFC+hQtJhgASVEiwkWUEL0MsEC9kQvEyxgT5hgwVGECRYcRZhgwVGECRYcRZhgwVGECRYcRZhgwVGECRYcRZhgwVGECRYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA0ML/oph5AFcbNvcAAAAASUVORK5CYII=',
 		}
 		lastSkin = 'default';
+		initialLastSkin = 'default';
+
+		// discover if we have JSON library in the browser
+		if (JSON) {
+			fJSONSupport = true;
+		} else {
+			console.log('TODO: write thing. lols' );
+		}
 
 		// discover localStorage and enable if possible
 
@@ -1019,12 +1058,16 @@ vTextureCoord = aTextureCoord;
 			if (localStorage['skins'] != null) {
 
 				console.log('We have a session!');
-				skins							= JSON.parse(localStorage['skins']);
+				skins						= JSON.parse(localStorage['skins']);
 				lastSkin					= JSON.parse(localStorage['lastSkin']);
 
 			} else {
 
 				console.log('We are starting a new session.');
+				// copy values from defaults
+				skins = initialSkins.clone();
+				alert(skins);
+				lastSkin = new String(initialLastSkin);
 				try {
 					localStorage['skins']	= JSON.stringify(skins);
 					localStorage['lastSkin']= JSON.stringify(lastSkin);
@@ -1044,6 +1087,8 @@ vTextureCoord = aTextureCoord;
 			// or, just ask the user for the name?
 			console.log('We don’t have localStorage support.');
 			localStorage = {};
+			skins = initialSkins.clone();
+			lastSkin = new String(initialLastSkin);
 			localStorage['skins']	= JSON.stringify(skins);
 			localStorage['lastSkin']= JSON.stringify(lastSkin);
 			// what we could always do, is localStorage = {}, use it like a assoc. array
@@ -1128,10 +1173,10 @@ vTextureCoord = aTextureCoord;
 			webGLStart();
 		
 			skinpreview.addEventListener('mousedown',		 startRotatingDude, true);
-			skinpreview.addEventListener('doubleclick',		 toggleAnimation, true);
-			skinpreview.addEventListener('mouseup',				stopRotatingDude, true);
-			skinpreview.addEventListener('mouseout',			 stopRotatingDude, true);
-			skinpreview.addEventListener('mousemove', captureCursorLocation, true);
+			skinpreview.addEventListener('doubleclick',		   toggleAnimation, true);
+			skinpreview.addEventListener('mouseup',			  stopRotatingDude, true);
+			skinpreview.addEventListener('mouseout',		  stopRotatingDude, true);
+			skinpreview.addEventListener('mousemove',	 captureCursorLocation, true);
 		} else {
 			// We don’t have to do anything here, because we have fallback in HTML
 			// maybe create a canvas perspective fallback?
