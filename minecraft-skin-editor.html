@@ -943,11 +943,21 @@ vTextureCoord = aTextureCoord;
 	function loadSkinFromFile(e) {
 
 		//
-		console.log(skinimporterchrome.files);
-		console.log('Loading skin from file ‘' + skinimporterchrome.value + '’.');
-		var newskin = document.createElement('img');
-		newskin.onload = loadNewSkin;
-		newskin.src = skinimporterchrome.value;
+		if (skinimporterchrome.files) {
+			var oF = skinimporterchrome.files[0];
+			console.log('Loading skin from file ‘' + oF.name + '’.');
+		    var reader = new FileReader();
+			console.log(reader);
+			reader.onload = (function(aImg, read) { return function(e) { console.log(read); aImg.src = e.target.result; }; })(newskin, reader);
+			console.log(reader);
+			reader.readAsDataURL(oF);
+		} else {
+			// We are positively in a non‐HTML5 browser. Firefox 3.6?
+			console.log('Loading skin from file ‘' + skinimporterchrome.value + '’.');
+			var newskin = document.createElement('img');
+			newskin.onload = loadNewSkin;
+			newskin.src = skinimporterchrome.value;
+		}
 		e.preventDefault();
 		return false;
 	}
@@ -959,6 +969,7 @@ vTextureCoord = aTextureCoord;
 	/* Image.onload function */
 	function loadNewSkin() {
 
+		console.log('loadNewSkin called.');
 		skineditor.width = skineditor.width; // need a .clear
 		// if we are mozilla, tell them to stop SMOOTHING OUR SHIT
 		skineditorc.mozImageSmoothingEnabled ? skineditorc.mozImageSmoothingEnabled = false : true;
@@ -1026,7 +1037,7 @@ vTextureCoord = aTextureCoord;
 			}
 		}
 		// push messages to Opera debug
-		if (opera && opera.postError)
+		if (window.opera && opera.postError)
 			console.log = opera.postError
 
 		// default SKINS setup
