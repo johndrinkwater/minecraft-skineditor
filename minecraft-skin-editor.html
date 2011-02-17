@@ -15,8 +15,11 @@ body { background: url(http://www.minecraft.net/img/bg.gif) #eeeeee; margin:0; }
 #skins-container div { border: 1px solid green; margin: 1px; padding: 2px 4px; display: inline-block; text-align: center; height: 120px; width: 80px; overflow: hidden; }
 #skins-container div img, #skins-container div p { cursor: pointer; }
 
-#skin-editor { left: 374px; cursor: crosshair; background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH2wIODxsDFVG/AgAAAClJREFUGNNjvHnz5n8GJKCmpobMZWBiIAAoV8D4//9/FDfcunWL3m4AADstCpWDR4PDAAAAAElFTkSuQmCC) }
-#skin-preview { left: 10px; cursor: pointer; background: url(http://www.minecraft.net/img/bg.gif); }
+#skin-editor { left: 374px; background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH2wIODxsDFVG/AgAAAClJREFUGNNjvHnz5n8GJKCmpobMZWBiIAAoV8D4//9/FDfcunWL3m4AADstCpWDR4PDAAAAAElFTkSuQmCC) }
+#skin-preview { left: 10px; }
+#skin-preview.enabled { cursor: pointer; }
+#skin-editor.enabled  { cursor: crosshair; }
+
 #skin-preview:after { content: "."; display: block; height: 0; clear: both; visibility: hidden; }
 #skin-selector, #skin-saver, #skin-loader { position: absolute; top: 570px; }
 #skin-selector { left: 10px; }
@@ -40,129 +43,110 @@ eval(function(p,a,c,k,e,r){e=function(c){return(c<a?'':e(parseInt(c/a)))+((c=c%a
 // augment Sylvester some
 Matrix.Translation = function (v)
 {
-  if (v.elements.length == 2) {
-    var r = Matrix.I(3);
-    r.elements[2][0] = v.elements[0];
-    r.elements[2][1] = v.elements[1];
-    return r;
-  }
+	if (v.elements.length == 2) {
+		var r = Matrix.I(3);
+		r.elements[2][0] = v.elements[0];
+		r.elements[2][1] = v.elements[1];
+		return r;
+	}
 
-  if (v.elements.length == 3) {
-    var r = Matrix.I(4);
-    r.elements[0][3] = v.elements[0];
-    r.elements[1][3] = v.elements[1];
-    r.elements[2][3] = v.elements[2];
-    return r;
-  }
+	if (v.elements.length == 3) {
+		var r = Matrix.I(4);
+		r.elements[0][3] = v.elements[0];
+		r.elements[1][3] = v.elements[1];
+		r.elements[2][3] = v.elements[2];
+		return r;
+	}
 
-  throw "Invalid length for Translation";
+	throw "Invalid length for Translation";
 }
 
 Matrix.prototype.flatten = function ()
 {
-    var result = [];
-    if (this.elements.length == 0)
-        return [];
+		var result = [];
+		if (this.elements.length == 0)
+				return [];
 
 
-    for (var j = 0; j < this.elements[0].length; j++)
-        for (var i = 0; i < this.elements.length; i++)
-            result.push(this.elements[i][j]);
-    return result;
+		for (var j = 0; j < this.elements[0].length; j++)
+				for (var i = 0; i < this.elements.length; i++)
+						result.push(this.elements[i][j]);
+		return result;
 }
 
 Matrix.prototype.ensure4x4 = function()
 {
-    if (this.elements.length == 4 &&
-        this.elements[0].length == 4)
-        return this;
+	if (this.elements.length == 4 &&
+		this.elements[0].length == 4)
+		return this;
 
-    if (this.elements.length > 4 ||
-        this.elements[0].length > 4)
-        return null;
+	if (this.elements.length > 4 ||
+		this.elements[0].length > 4)
+		return null;
 
-    for (var i = 0; i < this.elements.length; i++) {
-        for (var j = this.elements[i].length; j < 4; j++) {
-            if (i == j)
-                this.elements[i].push(1);
-            else
-                this.elements[i].push(0);
-        }
-    }
+	for (var i = 0; i < this.elements.length; i++) {
+		for (var j = this.elements[i].length; j < 4; j++) {
+			if (i == j)
+				this.elements[i].push(1);
+			else
+				this.elements[i].push(0);
+		}
+	}
 
-    for (var i = this.elements.length; i < 4; i++) {
-        if (i == 0)
-            this.elements.push([1, 0, 0, 0]);
-        else if (i == 1)
-            this.elements.push([0, 1, 0, 0]);
-        else if (i == 2)
-            this.elements.push([0, 0, 1, 0]);
-        else if (i == 3)
-            this.elements.push([0, 0, 0, 1]);
-    }
+	for (var i = this.elements.length; i < 4; i++) {
+		if (i == 0)
+			this.elements.push([1, 0, 0, 0]);
+		else if (i == 1)
+			this.elements.push([0, 1, 0, 0]);
+		else if (i == 2)
+			this.elements.push([0, 0, 1, 0]);
+		else if (i == 3)
+			this.elements.push([0, 0, 0, 1]);
+	}
 
-    return this;
+	return this;
 };
 
 Matrix.prototype.make3x3 = function()
 {
-    if (this.elements.length != 4 ||
-        this.elements[0].length != 4)
-        return null;
+	if (this.elements.length != 4 || this.elements[0].length != 4)
+		return null;
 
-    return Matrix.create([[this.elements[0][0], this.elements[0][1], this.elements[0][2]],
-                          [this.elements[1][0], this.elements[1][1], this.elements[1][2]],
-                          [this.elements[2][0], this.elements[2][1], this.elements[2][2]]]);
+	return Matrix.create([[this.elements[0][0], this.elements[0][1], this.elements[0][2]],
+						[this.elements[1][0], this.elements[1][1], this.elements[1][2]],
+						[this.elements[2][0], this.elements[2][1], this.elements[2][2]]]);
 };
 
 Vector.prototype.flatten = function ()
 {
-    return this.elements;
+	return this.elements;
 };
 
-function mht(m) {
-    var s = "";
-    if (m.length == 16) {
-        for (var i = 0; i < 4; i++) {
-            s += "<span style='font-family: monospace'>[" + m[i*4+0].toFixed(4) + "," + m[i*4+1].toFixed(4) + "," + m[i*4+2].toFixed(4) + "," + m[i*4+3].toFixed(4) + "]</span><br>";
-        }
-    } else if (m.length == 9) {
-        for (var i = 0; i < 3; i++) {
-            s += "<span style='font-family: monospace'>[" + m[i*3+0].toFixed(4) + "," + m[i*3+1].toFixed(4) + "," + m[i*3+2].toFixed(4) + "]</font><br>";
-        }
-    } else {
-        return m.toString();
-    }
-    return s;
-}
 
 //
 // gluLookAt
 //
-function makeLookAt(ex, ey, ez,
-                    cx, cy, cz,
-                    ux, uy, uz)
-{
-    var eye = $V([ex, ey, ez]);
-    var center = $V([cx, cy, cz]);
-    var up = $V([ux, uy, uz]);
+function makeLookAt(ex, ey, ez, cx, cy, cz,	ux, uy, uz) {
+	var eye = $V([ex, ey, ez]);
+	var center = $V([cx, cy, cz]);
+	var up = $V([ux, uy, uz]);
 
-    var mag;
+	var mag;
 
-    var z = eye.subtract(center).toUnitVector();
-    var x = up.cross(z).toUnitVector();
-    var y = z.cross(x).toUnitVector();
+	var z = eye.subtract(center).toUnitVector();
+	var x = up.cross(z).toUnitVector();
+	var y = z.cross(x).toUnitVector();
 
-    var m = $M([[x.e(1), x.e(2), x.e(3), 0],
-                [y.e(1), y.e(2), y.e(3), 0],
-                [z.e(1), z.e(2), z.e(3), 0],
-                [0, 0, 0, 1]]);
+	var m = $M([[x.e(1), x.e(2), x.e(3), 0],
+				[y.e(1), y.e(2), y.e(3), 0],
+				[z.e(1), z.e(2), z.e(3), 0],
+				[0, 0, 0, 1]]);
 
-    var t = $M([[1, 0, 0, -ex],
-                [0, 1, 0, -ey],
-                [0, 0, 1, -ez],
-                [0, 0, 0, 1]]);
-    return m.x(t);
+	var t = $M([[1, 0, 0, -ex],
+				[0, 1, 0, -ey],
+				[0, 0, 1, -ez],
+				[0, 0, 0, 1]]);
+	return m.x(t);
 }
 
 //
@@ -170,32 +154,32 @@ function makeLookAt(ex, ey, ez,
 //
 function makePerspective(fovy, aspect, znear, zfar)
 {
-    var ymax = znear * Math.tan(fovy * Math.PI / 360.0);
-    var ymin = -ymax;
-    var xmin = ymin * aspect;
-    var xmax = ymax * aspect;
+	var ymax = znear * Math.tan(fovy * Math.PI / 360.0);
+	var ymin = -ymax;
+	var xmin = ymin * aspect;
+	var xmax = ymax * aspect;
 
-    return makeFrustum(xmin, xmax, ymin, ymax, znear, zfar);
+	return makeFrustum(xmin, xmax, ymin, ymax, znear, zfar);
 }
 
 //
 // glFrustum
 //
 function makeFrustum(left, right,
-                     bottom, top,
-                     znear, zfar)
+										 bottom, top,
+										 znear, zfar)
 {
-    var X = 2*znear/(right-left);
-    var Y = 2*znear/(top-bottom);
-    var A = (right+left)/(right-left);
-    var B = (top+bottom)/(top-bottom);
-    var C = -(zfar+znear)/(zfar-znear);
-    var D = -2*zfar*znear/(zfar-znear);
+		var X = 2*znear/(right-left);
+		var Y = 2*znear/(top-bottom);
+		var A = (right+left)/(right-left);
+		var B = (top+bottom)/(top-bottom);
+		var C = -(zfar+znear)/(zfar-znear);
+		var D = -2*zfar*znear/(zfar-znear);
 
-    return $M([[X, 0, A, 0],
-               [0, Y, B, 0],
-               [0, 0, C, D],
-               [0, 0, -1, 0]]);
+		return $M([[X, 0, A, 0],
+							 [0, Y, B, 0],
+							 [0, 0, C, D],
+							 [0, 0, -1, 0]]);
 }
 
 //
@@ -203,56 +187,56 @@ function makeFrustum(left, right,
 //
 function makeOrtho(left, right, bottom, top, znear, zfar)
 {
-    var tx = - (right + left) / (right - left);
-    var ty = - (top + bottom) / (top - bottom);
-    var tz = - (zfar + znear) / (zfar - znear);
+		var tx = - (right + left) / (right - left);
+		var ty = - (top + bottom) / (top - bottom);
+		var tz = - (zfar + znear) / (zfar - znear);
 
-    return $M([[2 / (right - left), 0, 0, tx],
-           [0, 2 / (top - bottom), 0, ty],
-           [0, 0, -2 / (zfar - znear), tz],
-           [0, 0, 0, 1]]);
+		return $M([[2 / (right - left), 0, 0, tx],
+					 [0, 2 / (top - bottom), 0, ty],
+					 [0, 0, -2 / (zfar - znear), tz],
+					 [0, 0, 0, 1]]);
 }
 
 </script>
 
 <script id="shader-fs" type="x-shader/x-fragment">
-  #ifdef GL_ES
-  precision highp float;
-  #endif
+#ifdef GL_ES
+precision highp float;
+#endif
 
-  varying vec2 vTextureCoord;
+varying vec2 vTextureCoord;
 
-  uniform sampler2D uSampler;
+uniform sampler2D uSampler;
 
-  void main(void) {
-    gl_FragColor = texture2D(uSampler, vec2(vTextureCoord.s, vTextureCoord.t));
-  }
+void main(void) {
+gl_FragColor = texture2D(uSampler, vec2(vTextureCoord.s, vTextureCoord.t));
+}
 </script>
 
 <script id="shader-vs" type="x-shader/x-vertex">
-  attribute vec3 aVertexPosition;
-  attribute vec2 aTextureCoord;
+attribute vec3 aVertexPosition;
+attribute vec2 aTextureCoord;
 
-  uniform mat4 uMVMatrix;
-  uniform mat4 uPMatrix;
+uniform mat4 uMVMatrix;
+uniform mat4 uPMatrix;
 
-  varying vec2 vTextureCoord;
+varying vec2 vTextureCoord;
 
-  void main(void) {
-    gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
-    vTextureCoord = aTextureCoord;
-  }
+void main(void) {
+gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+vTextureCoord = aTextureCoord;
+}
 </script>
 
 
 <script type="text/javascript">
 
-  var gl;
+	var gl;
 	function initGL(canvas) {
 		try {
-		  gl = canvas.getContext("experimental-webgl");
-		  gl.viewportWidth = canvas.width;
-		  gl.viewportHeight = canvas.height;
+			gl = canvas.getContext("experimental-webgl");
+			gl.viewportWidth = canvas.width;
+			gl.viewportHeight = canvas.height;
 		} catch(e) { }
 		if (!gl) {
 			console.log("Could not initialise WebGL, sorry :-(");
@@ -262,274 +246,274 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
 	}
 
 
-  function getShader(gl, id) {
-    var shaderScript = document.getElementById(id);
-    if (!shaderScript) {
-      return null;
-    }
+	function getShader(gl, id) {
+		var shaderScript = document.getElementById(id);
+		if (!shaderScript) {
+			return null;
+		}
 
-    var str = "";
-    var k = shaderScript.firstChild;
-    while (k) {
-      if (k.nodeType == 3) {
-        str += k.textContent;
-      }
-      k = k.nextSibling;
-    }
+		var str = "";
+		var k = shaderScript.firstChild;
+		while (k) {
+			if (k.nodeType == 3) {
+				str += k.textContent;
+			}
+			k = k.nextSibling;
+		}
 
-    var shader;
-    if (shaderScript.type == "x-shader/x-fragment") {
-      shader = gl.createShader(gl.FRAGMENT_SHADER);
-    } else if (shaderScript.type == "x-shader/x-vertex") {
-      shader = gl.createShader(gl.VERTEX_SHADER);
-    } else {
-      return null;
-    }
+		var shader;
+		if (shaderScript.type == "x-shader/x-fragment") {
+			shader = gl.createShader(gl.FRAGMENT_SHADER);
+		} else if (shaderScript.type == "x-shader/x-vertex") {
+			shader = gl.createShader(gl.VERTEX_SHADER);
+		} else {
+			return null;
+		}
 
-    gl.shaderSource(shader, str);
-    gl.compileShader(shader);
+		gl.shaderSource(shader, str);
+		gl.compileShader(shader);
 
-    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-      console.log(gl.getShaderInfoLog(shader));
-      return null;
-    }
+		if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+			console.log(gl.getShaderInfoLog(shader));
+			return null;
+		}
 
-    return shader;
-  }
-
-
-  var shaderProgram;
-  function initShaders() {
-    var fragmentShader = getShader(gl, "shader-fs");
-    var vertexShader = getShader(gl, "shader-vs");
-
-    shaderProgram = gl.createProgram();
-    gl.attachShader(shaderProgram, vertexShader);
-    gl.attachShader(shaderProgram, fragmentShader);
-    gl.linkProgram(shaderProgram);
-
-    if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
-      console.log("Could not initialise shaders");
-    }
-
-    gl.useProgram(shaderProgram);
-
-    shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition");
-    gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
-
-    shaderProgram.textureCoordAttribute = gl.getAttribLocation(shaderProgram, "aTextureCoord");
-    gl.enableVertexAttribArray(shaderProgram.textureCoordAttribute);
-
-    shaderProgram.pMatrixUniform = gl.getUniformLocation(shaderProgram, "uPMatrix");
-    shaderProgram.mvMatrixUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
-    shaderProgram.samplerUniform = gl.getUniformLocation(shaderProgram, "uSampler");
-
-  }
+		return shader;
+	}
 
 
-  var mvMatrix;
-  var mvMatrixStack = [];
+	var shaderProgram;
+	function initShaders() {
+		var fragmentShader = getShader(gl, "shader-fs");
+		var vertexShader = getShader(gl, "shader-vs");
 
-  function mvPushMatrix(m) {
-    if (m) {
-      mvMatrixStack.push(m.dup());
-      mvMatrix = m.dup();
-    } else {
-      mvMatrixStack.push(mvMatrix.dup());
-    }
-  }
+		shaderProgram = gl.createProgram();
+		gl.attachShader(shaderProgram, vertexShader);
+		gl.attachShader(shaderProgram, fragmentShader);
+		gl.linkProgram(shaderProgram);
 
-  function mvPopMatrix() {
-    if (mvMatrixStack.length == 0) {
-      throw "Invalid popMatrix!";
-    }
-    mvMatrix = mvMatrixStack.pop();
-    return mvMatrix;
-  }
+		if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
+			console.log("Could not initialise shaders");
+		}
 
-  function loadIdentity() {
-    mvMatrix = Matrix.I(4);
-  }
+		gl.useProgram(shaderProgram);
 
+		shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition");
+		gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
 
-  function multMatrix(m) {
-    mvMatrix = mvMatrix.x(m);
-  }
+		shaderProgram.textureCoordAttribute = gl.getAttribLocation(shaderProgram, "aTextureCoord");
+		gl.enableVertexAttribArray(shaderProgram.textureCoordAttribute);
 
-  function mvTranslate(v) {
-    var m = Matrix.Translation($V([v[0], v[1], v[2]])).ensure4x4();
-    multMatrix(m);
-  }
-  function mvTranslateN(v) {
-    var m = Matrix.Translation($V([-v[0], -v[1], -v[2]])).ensure4x4();
-    multMatrix(m);
-  }
-  function mvScale(v) {
-    var m = Matrix.Diagonal([v[0], v[1], v[2], 1]);
-    multMatrix(m);
-  }
-  function mvInvert() {
-    mvMatrix = mvMatrix.inv();
-  }
+		shaderProgram.pMatrixUniform = gl.getUniformLocation(shaderProgram, "uPMatrix");
+		shaderProgram.mvMatrixUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
+		shaderProgram.samplerUniform = gl.getUniformLocation(shaderProgram, "uSampler");
 
-  function mvRotate(ang, v) {
-    var arad = ang * Math.PI / 180.0;
-    var m = Matrix.Rotation(arad, $V([v[0], v[1], v[2]])).ensure4x4();
-    multMatrix(m);
-  }
-  function mvRotateAbout(ang, v, v2) {
-    mvTranslate(v2);
-    mvRotate(ang, v);
-    mvTranslateN(v2);
-  }
-
-  var pMatrix;
-  function perspective(fovy, aspect, znear, zfar) {
-    pMatrix = makePerspective(fovy, aspect, znear, zfar);
-  }
+	}
 
 
-  function setMatrixUniforms() {
-    gl.uniformMatrix4fv(shaderProgram.pMatrixUniform, false, new Float32Array(pMatrix.flatten()));
-    gl.uniformMatrix4fv(shaderProgram.mvMatrixUniform, false, new Float32Array(mvMatrix.flatten()));
-  }
+	var mvMatrix;
+	var mvMatrixStack = [];
 
-  /*
-   * helper function, just to reduce code size
-   */
-  function makeCube(width, height, depth) {
-    // we are passed in something like 8, 10, 12.
-    // we convert these to floats, based around 8!
-    var w,h,d;
-    w = width / 8;
-    h = height / 8;
-    d = depth / 8;
+	function mvPushMatrix(m) {
+		if (m) {
+			mvMatrixStack.push(m.dup());
+			mvMatrix = m.dup();
+		} else {
+			mvMatrixStack.push(mvMatrix.dup());
+		}
+	}
 
-    var buffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-    vertices = [
-      // Front face
-      -w,-h, d, w,-h, d, w, h, d,-w, h, d,
-      // Back face
-      -w,-h,-d,-w, h,-d, w, h,-d, w,-h,-d,
-      // Top face
-      -w, h,-d,-w, h, d, w, h, d, w, h,-d,
-      // Bottom face
-      -w,-h,-d, w,-h,-d, w,-h, d,-w,-h, d,
-      // Right face
-       w,-h,-d, w, h,-d, w, h, d, w,-h, d,
-      // Left face
-      -w,-h,-d,-w,-h, d,-w, h, d,-w, h,-d,
-    ];
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
-    buffer.itemSize = 3;
-    buffer.numItems = 24;
-    return buffer;
-  }
+	function mvPopMatrix() {
+		if (mvMatrixStack.length == 0) {
+			throw "Invalid popMatrix!";
+		}
+		mvMatrix = mvMatrixStack.pop();
+		return mvMatrix;
+	}
+
+	function loadIdentity() {
+		mvMatrix = Matrix.I(4);
+	}
 
 
-  var cubeVPB, bodyVPB, armVPB, legVPB;
-  var headVTCB, headAccessVTCB, bodyVTCB, armLVTCB, legVTCB;
-  var cubeVertexIndexBuffer;
-  function initBuffers() {
+	function multMatrix(m) {
+		mvMatrix = mvMatrix.x(m);
+	}
 
-    // for head, and head accessories
-    cubeVPB = makeCube( 8, 8, 8);
-    // body, unsure what ‘depth’ body should be
-    bodyVPB = makeCube( 8,12, 4);
-    armVPB  = makeCube( 4,12, 4);
-    legVPB  = makeCube( 4,12, 4);
+	function mvTranslate(v) {
+		var m = Matrix.Translation($V([v[0], v[1], v[2]])).ensure4x4();
+		multMatrix(m);
+	}
+	function mvTranslateN(v) {
+		var m = Matrix.Translation($V([-v[0], -v[1], -v[2]])).ensure4x4();
+		multMatrix(m);
+	}
+	function mvScale(v) {
+		var m = Matrix.Diagonal([v[0], v[1], v[2], 1]);
+		multMatrix(m);
+	}
+	function mvInvert() {
+		mvMatrix = mvMatrix.inv();
+	}
 
-    skintexture = gl.createTexture();
+	function mvRotate(ang, v) {
+		var arad = ang * Math.PI / 180.0;
+		var m = Matrix.Rotation(arad, $V([v[0], v[1], v[2]])).ensure4x4();
+		multMatrix(m);
+	}
+	function mvRotateAbout(ang, v, v2) {
+		mvTranslate(v2);
+		mvRotate(ang, v);
+		mvTranslateN(v2);
+	}
 
-    // for the following, what we could do to make it more readable/flexible,
-    // is store it in ints for x/y, then divide by 64 or 32, depending.
-    headVTCB = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, headVTCB);
-    var textureCoords = [
-      0.125, 0.5,   0.25, 0.5,   0.25, 0.75,   0.125, 0.75,
-      0.5, 0.5,     0.5, 0.75,   0.375, 0.75,  0.375, 0.5,
-      0.125, 1.0,   0.125, 0.75, 0.25, 0.75,   0.25, 1.0,
-      0.375, 1.0,   0.25, 1.0,   0.25, 0.75,   0.375, 0.75,
-      0.375, 0.5,   0.375, 0.75, 0.25, 0.75,   0.25, 0.5,
-      0.0, 0.5,     0.125, 0.5,  0.125, 0.75,  0.0, 0.75,
-    ];
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoords), gl.STATIC_DRAW);
-    headVTCB.itemSize = 2;
-    headVTCB.numItems = 24;
-
-    headAccessVTCB = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, headAccessVTCB);
-    var textureCoords = [
-      0.625, 0.5,  0.75, 0.5,   0.75, 0.75,   0.625, 0.75,
-      1.0, 0.5,    1.0, 0.75,   0.875, 0.75,  0.875, 0.5,
-      0.625, 1.0,  0.625, 0.75, 0.75, 0.75,   0.75, 1.0,
-      0.875, 1.0,  0.75, 1.0,   0.75, 0.75,   0.875, 0.75,
-      0.875, 0.5,  0.875, 0.75, 0.75, 0.75,   0.75, 0.5,
-      0.5, 0.5,    0.625, 0.5,  0.625, 0.75,  0.5, 0.75,
-    ];
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoords), gl.STATIC_DRAW);
-    headAccessVTCB.itemSize = 2;
-    headAccessVTCB.numItems = 24;
-
-    bodyVTCB = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, bodyVTCB);
-    var textureCoords = [
-      0.3125, 0.0, 0.4375, 0.0, 0.4375, 0.375, 0.3125, 0.375,
-      0.625, 0.0, 0.625, 0.375, 0.5, 0.375, 0.5, 0.0,
-      0.3125, 0.5, 0.3125, 0.375, 0.4375, 0.375, 0.4375, 0.5,
-      0.5625, 0.5, 0.4375, 0.5, 0.4375, 0.375, 0.5625, 0.375,
-      0.5, 0.0, 0.5, 0.375, 0.4375, 0.375, 0.4375, 0.0,
-      0.25, 0.0, 0.3125, 0.0, 0.3125, 0.375, 0.25, 0.375,
-    ];
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoords), gl.STATIC_DRAW);
-    bodyVTCB.itemSize = 2;
-    bodyVTCB.numItems = 24;
+	var pMatrix;
+	function perspective(fovy, aspect, znear, zfar) {
+		pMatrix = makePerspective(fovy, aspect, znear, zfar);
+	}
 
 
-    armLVTCB = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, armLVTCB);
-    var textureCoords = [
-      0.6875, 0.0, 0.75, 0.0,  0.75, 0.375, 0.6875, 0.375,
-      0.875, 0.0,  0.875, 0.375, 0.8125, 0.375, 0.8125, 0.0,
-      0.6875, 0.5, 0.6875, 0.375,0.75, 0.375,0.75, 0.5,
-      0.8125, 0.5, 0.75, 0.5, 0.75, 0.375, 0.8125, 0.375,
-      0.8125, 0.0, 0.8125, 0.375, 0.75, 0.375, 0.75, 0.0,
-      0.625, 0.0,  0.6875, 0.0,   0.6875, 0.375, 0.625, 0.375,
-    ];
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoords), gl.STATIC_DRAW);
-    armLVTCB.itemSize = 2;
-    armLVTCB.numItems = 24;
+	function setMatrixUniforms() {
+		gl.uniformMatrix4fv(shaderProgram.pMatrixUniform, false, new Float32Array(pMatrix.flatten()));
+		gl.uniformMatrix4fv(shaderProgram.mvMatrixUniform, false, new Float32Array(mvMatrix.flatten()));
+	}
+
+	/*
+	 * helper function, just to reduce code size
+	 */
+	function makeCube(width, height, depth) {
+		// we are passed in something like 8, 10, 12.
+		// we convert these to floats, based around 8!
+		var w,h,d;
+		w = width / 8;
+		h = height / 8;
+		d = depth / 8;
+
+		var buffer = gl.createBuffer();
+		gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+		vertices = [
+			// Front face
+			-w,-h, d, w,-h, d, w, h, d,-w, h, d,
+			// Back face
+			-w,-h,-d,-w, h,-d, w, h,-d, w,-h,-d,
+			// Top face
+			-w, h,-d,-w, h, d, w, h, d, w, h,-d,
+			// Bottom face
+			-w,-h,-d, w,-h,-d, w,-h, d,-w,-h, d,
+			// Right face
+			 w,-h,-d, w, h,-d, w, h, d, w,-h, d,
+			// Left face
+			-w,-h,-d,-w,-h, d,-w, h, d,-w, h,-d,
+		];
+		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+		buffer.itemSize = 3;
+		buffer.numItems = 24;
+		return buffer;
+	}
 
 
-    legLVTCB = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, legLVTCB);
-    var textureCoords = [
-      0.0625, 0.0, 0.125, 0.0, 0.125, 0.375, 0.0625, 0.375,
-      0.25, 0.0, 0.25, 0.375, 0.1875, 0.375, 0.1875, 0.0,
-      0.0625, 0.5, 0.0625, 0.375, 0.125, 0.375, 0.125, 0.5,
-      0.1875, 0.5, 0.125, 0.5, 0.125, 0.375, 0.1875, 0.375,
-      0.1875, 0.0, 0.1875, 0.375, 0.125, 0.375, 0.125, 0.0,
-      0.0, 0.0, 0.0625, 0.0, 0.0625, 0.375, 0.0, 0.375,
-    ];
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoords), gl.STATIC_DRAW);
-    legLVTCB.itemSize = 2;
-    legLVTCB.numItems = 24;
+	var cubeVPB, bodyVPB, armVPB, legVPB;
+	var headVTCB, headAccessVTCB, bodyVTCB, armLVTCB, legVTCB;
+	var cubeVertexIndexBuffer;
+	function initBuffers() {
 
-    cubeVertexIndexBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cubeVertexIndexBuffer);
-    var cubeVertexIndices = [
-      0, 1, 2,      0, 2, 3,    // Front face
-      4, 5, 6,      4, 6, 7,    // Back face
-      8, 9, 10,     8, 10, 11,  // Top face
-      12, 13, 14,   12, 14, 15, // Bottom face
-      16, 17, 18,   16, 18, 19, // Right face
-      20, 21, 22,   20, 22, 23  // Left face
-    ]
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(cubeVertexIndices), gl.STATIC_DRAW);
-    cubeVertexIndexBuffer.itemSize = 1;
-    cubeVertexIndexBuffer.numItems = 36;
-  }
+		// for head, and head accessories
+		cubeVPB = makeCube( 8, 8, 8);
+		// body, unsure what ‘depth’ body should be
+		bodyVPB = makeCube( 8,12, 4);
+		armVPB	= makeCube( 4,12, 4);
+		legVPB	= makeCube( 4,12, 4);
+
+		skintexture = gl.createTexture();
+
+		// for the following, what we could do to make it more readable/flexible,
+		// is store it in ints for x/y, then divide by 64 or 32, depending.
+		headVTCB = gl.createBuffer();
+		gl.bindBuffer(gl.ARRAY_BUFFER, headVTCB);
+		var textureCoords = [
+			0.125, 0.5,	 0.25, 0.5,	 0.25, 0.75,	 0.125, 0.75,
+			0.5, 0.5,		 0.5, 0.75,	 0.375, 0.75,	0.375, 0.5,
+			0.125, 1.0,	 0.125, 0.75, 0.25, 0.75,	 0.25, 1.0,
+			0.375, 1.0,	 0.25, 1.0,	 0.25, 0.75,	 0.375, 0.75,
+			0.375, 0.5,	 0.375, 0.75, 0.25, 0.75,	 0.25, 0.5,
+			0.0, 0.5,		 0.125, 0.5,	0.125, 0.75,	0.0, 0.75,
+		];
+		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoords), gl.STATIC_DRAW);
+		headVTCB.itemSize = 2;
+		headVTCB.numItems = 24;
+
+		headAccessVTCB = gl.createBuffer();
+		gl.bindBuffer(gl.ARRAY_BUFFER, headAccessVTCB);
+		var textureCoords = [
+			0.625, 0.5,	0.75, 0.5,	 0.75, 0.75,	 0.625, 0.75,
+			1.0, 0.5,		1.0, 0.75,	 0.875, 0.75,	0.875, 0.5,
+			0.625, 1.0,	0.625, 0.75, 0.75, 0.75,	 0.75, 1.0,
+			0.875, 1.0,	0.75, 1.0,	 0.75, 0.75,	 0.875, 0.75,
+			0.875, 0.5,	0.875, 0.75, 0.75, 0.75,	 0.75, 0.5,
+			0.5, 0.5,		0.625, 0.5,	0.625, 0.75,	0.5, 0.75,
+		];
+		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoords), gl.STATIC_DRAW);
+		headAccessVTCB.itemSize = 2;
+		headAccessVTCB.numItems = 24;
+
+		bodyVTCB = gl.createBuffer();
+		gl.bindBuffer(gl.ARRAY_BUFFER, bodyVTCB);
+		var textureCoords = [
+			0.3125, 0.0, 0.4375, 0.0, 0.4375, 0.375, 0.3125, 0.375,
+			0.625, 0.0, 0.625, 0.375, 0.5, 0.375, 0.5, 0.0,
+			0.3125, 0.5, 0.3125, 0.375, 0.4375, 0.375, 0.4375, 0.5,
+			0.5625, 0.5, 0.4375, 0.5, 0.4375, 0.375, 0.5625, 0.375,
+			0.5, 0.0, 0.5, 0.375, 0.4375, 0.375, 0.4375, 0.0,
+			0.25, 0.0, 0.3125, 0.0, 0.3125, 0.375, 0.25, 0.375,
+		];
+		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoords), gl.STATIC_DRAW);
+		bodyVTCB.itemSize = 2;
+		bodyVTCB.numItems = 24;
+
+
+		armLVTCB = gl.createBuffer();
+		gl.bindBuffer(gl.ARRAY_BUFFER, armLVTCB);
+		var textureCoords = [
+			0.6875, 0.0, 0.75, 0.0,	0.75, 0.375, 0.6875, 0.375,
+			0.875, 0.0,	0.875, 0.375, 0.8125, 0.375, 0.8125, 0.0,
+			0.6875, 0.5, 0.6875, 0.375,0.75, 0.375,0.75, 0.5,
+			0.8125, 0.5, 0.75, 0.5, 0.75, 0.375, 0.8125, 0.375,
+			0.8125, 0.0, 0.8125, 0.375, 0.75, 0.375, 0.75, 0.0,
+			0.625, 0.0,	0.6875, 0.0,	 0.6875, 0.375, 0.625, 0.375,
+		];
+		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoords), gl.STATIC_DRAW);
+		armLVTCB.itemSize = 2;
+		armLVTCB.numItems = 24;
+
+
+		legLVTCB = gl.createBuffer();
+		gl.bindBuffer(gl.ARRAY_BUFFER, legLVTCB);
+		var textureCoords = [
+			0.0625, 0.0, 0.125, 0.0, 0.125, 0.375, 0.0625, 0.375,
+			0.25, 0.0, 0.25, 0.375, 0.1875, 0.375, 0.1875, 0.0,
+			0.0625, 0.5, 0.0625, 0.375, 0.125, 0.375, 0.125, 0.5,
+			0.1875, 0.5, 0.125, 0.5, 0.125, 0.375, 0.1875, 0.375,
+			0.1875, 0.0, 0.1875, 0.375, 0.125, 0.375, 0.125, 0.0,
+			0.0, 0.0, 0.0625, 0.0, 0.0625, 0.375, 0.0, 0.375,
+		];
+		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoords), gl.STATIC_DRAW);
+		legLVTCB.itemSize = 2;
+		legLVTCB.numItems = 24;
+
+		cubeVertexIndexBuffer = gl.createBuffer();
+		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cubeVertexIndexBuffer);
+		var cubeVertexIndices = [
+			0, 1, 2,			0, 2, 3,		// Front face
+			4, 5, 6,			4, 6, 7,		// Back face
+			8, 9, 10,		 8, 10, 11,	// Top face
+			12, 13, 14,	 12, 14, 15, // Bottom face
+			16, 17, 18,	 16, 18, 19, // Right face
+			20, 21, 22,	 20, 22, 23	// Left face
+		]
+		gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(cubeVertexIndices), gl.STATIC_DRAW);
+		cubeVertexIndexBuffer.itemSize = 1;
+		cubeVertexIndexBuffer.numItems = 36;
+	}
 
 	function updateTexture() {
 
@@ -561,26 +545,26 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
 		loadedImage = true;
 	}
 
-  // because localStorage has the poss. of updating in two tabs,
-  // we need to sync them
-  // XXX: assume localStorage and not sessionStorage changed. why would it?
-  function updateSkinsFromAnotherTime(key) {
+	// because localStorage has the poss. of updating in two tabs,
+	// we need to sync them
+	// XXX: assume localStorage and not sessionStorage changed. why would it?
+	function updateSkinsFromAnotherTime(key) {
 
-    // ERM. GREAT. so if the update is atomic,
-    // we get spammed with updates for each item? :|
+		// ERM. GREAT. so if the update is atomic,
+		// we get spammed with updates for each item? :|
 
-    // assume here that values have updated in another window
-    // since it was fired, we know at least 1, it is supported, so ignore try{}?
-    // ignorantly overwrite, for now
-    //skins = JSON.parse(localStorage.getItem('skins'));
-    //lastSkin = JSON.parse(localStorage.getItem('lastSkin'));
-    console.log('someone else updated our skins');
-  }
+		// assume here that values have updated in another window
+		// since it was fired, we know at least 1, it is supported, so ignore try{}?
+		// ignorantly overwrite, for now
+		//skins = JSON.parse(localStorage.getItem('skins'));
+		//lastSkin = JSON.parse(localStorage.getItem('lastSkin'));
+		console.log('someone else updated our skins');
+	}
 
 	/*
 	* atm, we call this if we modify skins[]
 	*/
-  	function updateSkins() {
+		function updateSkins() {
 
 		console.log('Store the updated skins.');
 		// we want this to update the list of Skins stored, to easier allow the user to pop
@@ -600,7 +584,7 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
 		if ( skinsholder.hasChildNodes() ) {
 			while ( skinsholder.childNodes.length >= 1 )
 			{
-				skinsholder.removeChild( skinsholder.firstChild );       
+				skinsholder.removeChild( skinsholder.firstChild );			 
 			} 
 		}
 
@@ -610,7 +594,7 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
 			obj = skins[obj];
 			if (obj.thumb != null) {
 
-				console.log( 'Adding ‘' + obj + '’ to skinsholder.' );
+				// console.log( 'Adding ‘' + obj + '’ to skinsholder.' );
 				var temp = document.createElement('div');
 				var name = document.createElement('p');
 				var preview = document.createElement('img');
@@ -711,13 +695,13 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
 	function saveSkinInSkins(skin) {
 
 		if (skin == "") {
-		  skinName = prompt('Please name your skin: ', lastSkin);
-		  if (skinName == null) {
+			skinName = prompt('Please name your skin: ', lastSkin);
+			if (skinName == null) {
 			skinName = lastSkin
 			return;
-		  }
+			}
 		} else
-		  skinName = skin;
+			skinName = skin;
 
 		console.log('Saving ‘' + skinName + '’ skin.');
 
@@ -738,7 +722,6 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
 		} catch(e) {
 			console.log("unable to access image data: " + e);
 		}
-		console.log(skinName + ": " + sthumbnail );
 
 		try {
 			try {
@@ -750,6 +733,7 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
 		} catch(e) {
 			console.log("unable to access image data: " + e);
 		}
+		console.log(skinName + ": " + sskin );
 
 		// TODO: for now, overwrite is default
 		// or, we could use bung it into skins[]?
@@ -762,11 +746,11 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
 		updateSkins();
 	}
 
-	  /*
-	   * helper function
-	   * replace this will inline code & a loop instead.
-	   * ie, avoid function call
-	   */
+		/*
+		 * helper function
+		 * replace this will inline code & a loop instead.
+		 * ie, avoid function call
+		 */
 	function drawAndTexture(vertices, texture) {
 		gl.bindBuffer(gl.ARRAY_BUFFER, vertices);
 		gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, vertices.itemSize, gl.FLOAT, false, 0, 0);
@@ -806,12 +790,13 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
 
 		// arms
 		mvPushMatrix();
-			mvTranslate([-1.55, 0.0, 0.0]);
+			mvTranslate([-1.5, 0.0, 0.0]);
 			mvRotateAbout(25, [1, 0, 0], [-0.5, 1.5, 0]);
+			mvRotateAbout(-5, [0, 0, 1], [-0.5, 1.25, 0]);
 			drawAndTexture(armVPB, armLVTCB);
 		mvPopMatrix();
 		mvPushMatrix();
-			mvTranslate([1.55, 0.0, 0.0]);
+			mvTranslate([1.5, 0.0, 0.0]);
 			mvRotateAbout(25, [1, 0, 0], [-0.5, 1.25, 0]);
 			mvRotateAbout(5, [0, 0, 1], [-0.5, 1.25, 0]);
 			mvScale([-1.0,1.0,1.0]);
@@ -820,12 +805,12 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
 
 		// legs
 		mvPushMatrix();
-			mvTranslate([-0.51, -3, 0.0]);
+			mvTranslate([-0.5, -3, 0.0]);
 			mvRotateAbout(10, [1, 0, 0], [0, 1.5, 0]);
 			drawAndTexture(legVPB, legLVTCB);
 		mvPopMatrix();
 		mvPushMatrix();
-			mvTranslate([0.51, -3, 0.0]);
+			mvTranslate([0.5, -3, 0.0]);
 			mvRotateAbout(-10, [1, 0, 0], [0, 1.5, 0]);
 			mvScale([-1.0,1.0,1.0]);
 			drawAndTexture(legVPB, legLVTCB);
@@ -864,75 +849,87 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
 		lastTime = timeNow;
 	}
 
-  /**
-   * we only want to ‘animate’ when the user rotates, otherwise, just
-   * redraw
-   */
-  var timerDrawing, timerAnimation;
-  var cursorThen = [0,0], cursorNow = [0,0];
-  var skinimporterchrome;
-  var skintexture;
+	/**
+	 * we only want to ‘animate’ when the user rotates, otherwise, just
+	 * redraw
+	 */
+	var timerDrawing, timerAnimation;
+	var cursorThen = [0,0], cursorNow = [0,0];
+	var skinimporterchrome;
+	var skintexture;
 
-  function tick() {
-    animateScene();
-    drawScene();
-  }
+	function tick() {
+		animateScene();
+		drawScene();
+	}
 
-  function startRotatingDude(e) {
-    skinpreview.style.cursor='move';
-    if (!e) e = window.event;
-    clearInterval(timerDrawing);
-    // store mouse X/Y
-    cursorThen = [e.clientX, e.clientY];
-    timerAnimation = setInterval(tick, 100);
-  }
+	function startRotatingDude(e) {
 
-  function captureCursorLocation(e) {
-    if (!e) e = window.event;
-    // what we really want to do:
-    // rotate body on X, rotate head on Y (within bounds)
-    cursorNow = [e.clientX, e.clientY];
-    cursorDiffX = cursorThen[0] - cursorNow[0]
-    cursorDiffY = cursorThen[1] - cursorNow[1]
-    cursorThen = cursorNow
-  }
+		if (!fWebGLSupport)
+			return;
+		skinpreview.style.cursor='move';
+		if (!e) e = window.event;
+		clearInterval(timerDrawing);
+		// store mouse X/Y
+		cursorThen = [e.clientX, e.clientY];
 
-  function stopRotatingDude() {
-    skinpreview.style.cursor='pointer';
-    clearInterval(timerAnimation);
-    // we should only redraw if: 1, invalidate 2, user draws 3, burn GPU
-    timerDrawing = setInterval(drawScene, 1000);
-  }
+		timerAnimation = setInterval(tick, 100);
+	}
 
-  function toggleAnimation() {
-    animate = !animate;
-  }
+	function captureCursorLocation(e) {
+		if (!e) e = window.event;
+		// what we really want to do:
+		// rotate body on X, rotate head on Y (within bounds)
+		cursorNow = [e.clientX, e.clientY];
+		cursorDiffX = cursorThen[0] - cursorNow[0]
+		cursorDiffY = cursorThen[1] - cursorNow[1]
+		cursorThen = cursorNow
+	}
 
-  function drawOnDude(ev) {
-    var x, y;
-    clearInterval(timerDrawing);
-    if (!ev) ev = window.event;
-  
-  // Get the mouse position relative to the canvas element.
-  if (ev.layerX || ev.layerX == 0) { // Firefox
-    x = ev.layerX; y = ev.layerY;
-  } else if (ev.offsetX || ev.offsetX == 0) { // Opera
-    x = ev.offsetX; y = ev.offsetY;
-  }
-    // border?
-    x -=2; y -=2;
-    // now we need to clamp them to 64×32
-    x -= x%8; y -= y%8;
+	function stopRotatingDude() {
 
-    skineditormc.clearRect( x/8, y/8, 1, 1);
+		if (!fWebGLSupport)
+			return;
+		skinpreview.style.cursor='pointer';
+		clearInterval(timerAnimation);
+		// we should only redraw if: 1, invalidate 2, user draws 3, burn GPU
+		timerDrawing = setInterval(drawScene, 1000);
+	}
+
+	function toggleAnimation() {
+
+		if (!fWebGLSupport)
+			return;
+		animate = !animate;
+	}
+
+	function drawOnDude(ev) {
+		var x, y;
+		clearInterval(timerDrawing);
+		if (!ev) ev = window.event;
+	
+	// Get the mouse position relative to the canvas element.
+	if (ev.layerX || ev.layerX == 0) { // Firefox
+		x = ev.layerX; y = ev.layerY;
+	} else if (ev.offsetX || ev.offsetX == 0) { // Opera
+		x = ev.offsetX; y = ev.offsetY;
+	}
+		// border?
+		x -=2; y -=2;
+		// now we need to clamp them to 64×32
+		x -= x%8; y -= y%8;
+
+		skineditormc.clearRect( x/8, y/8, 1, 1);
 	// XXX moved back above the webgl update, incase browser doesnt support it
-    skineditorc.clearRect( x, y, 8, 8);
+		skineditorc.clearRect( x, y, 8, 8);
 
-    updateTexture();
-    drawScene();
-    timerDrawing = setInterval(drawScene, 1000);
+		if (fWebGLSupport) {
+			updateTexture();
+			drawScene();
+			timerDrawing = setInterval(drawScene, 1000);
+		}
 
-  }
+	}
 
 
 	function loadSkinFromFile(e) {
@@ -959,29 +956,30 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
 		skineditorc.clearRect(0,0,512,256);
 		skineditorc.drawImage( this, 0, 0, 512, 256 );
 
-		// attempted to fix Opera issue, but no cigar
-		//skineditorc.save()
-		//skineditorc.scale(8,8);
-		//skineditorc.drawImage( this, 0, 0, 64, 32 );
-		//skineditorc.restore();
-
 		skineditormc.clearRect(0,0,512,256);
 		skineditormc.drawImage( this, 0, 0, 64, 32 );
-		updateTexture();
+
+		if (fWebGLSupport)
+			updateTexture();
 	}
 
 
 	var skinpreview; // our WebGL canvas
 
-	var skineditor;  // our drawing canvas
+	var skineditor;	// our drawing canvas
 	var skineditorc; // our drawing canvas context
 	var skinsholder;
 
-	var skins = {};  // our storage pool for drawings
-	var lastSkin;    // our default skin to open
+	var skins = {};	// our storage pool for drawings
+	var lastSkin;		// our default skin to open
 	var loadedImage = false; // delay 3D scene if canvas is slow.
 
 	var animate = true; // allow our little guy to agitate
+	// features we want to use, test for ’em
+	var fDataUrlSupport = false;
+	var fCanvasSupport = false;
+	var fWebGLSupport = false;
+	var flStorageSupport = false;
 
 	/*
 	 * Boot our editor
@@ -997,33 +995,31 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
 			}
 		}
 
-		// discover localStorage and enable if possible
-
 		// default SKINS setup
+		// TODO: make this an ‘initial’ blob, so that if localStorage is purged, we can restore
 		skins = {};
 		skins['default'] = {
 			name: 'default',
 			data: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAAAgCAMAAACVQ462AAAA8FBMVEUAAAAfEAsjFwkkGAgkGAomGAsjGRUmGgomGgwoGg0nGwsoGwooGwsoHAspHAwyFxQqHQ0rHg0rHg4tHQ4sHg4sHhEvHw8tIBAvIA0vIhEyIxAzJBE0JRI6KBQ/KhVCKhJSKCZLLh0aSxpRMSU/Pz9iQy9qQDBSPYkkcCR1Ry8jfiOKTD2EUjGBUzmGUzSHVTuHWDqIWjmKWTuTW0Jra2uWX0GaY0ScY0WaZEqcZ0ifaEmcaUydak+iakeWb1ucclysdlqqfWaze2K1e2etgG20hG23gnK2iWy+iGy7iXK9i3K9jnK9jnTGloD///8AAABxqeaaAAAAAXRSTlMAQObYZgAAAAFiS0dEAIgFHUgAAAAJcEhZcwAACxMAAAsTAQCanBgAAAAHdElNRQfbAgkTHQUig98cAAAB30lEQVRIx7WUC1PTQBSFu4R2aRc2CV22QkWNlNAK3QBxixWMJoqKj/b//xvvzWaZTjuaB+OZTPcmM+fL2fQkrVYhz3PgcMikUKuuPEdKADiTUIVKNQFISQ1gCQrrAxyJe5BeYwB4KZVPAeR+C3jVAEAlpwQBuRoAOAV5Xu2/kTHa40eDwTNf7jnU9waDI96jjNleVAFQwf2h7/vDly/E3tDngiKg6EUpQLQp39/d5v63n79//Pr0nG/v7nPaFrYX5Qm6fcF64jC9T798fLi9PRQ9JvpdZntRYQtsZ+vy5vh+cfb54WyRHt9cbu3ARduLCoBu++BCX2XZ1yD4nmVX+uKg3cWHaHpR/gxY//RupuI4C87PgyyO1ezutM+E7UUpQKmZmuvrOI4DECzX7+fv5jN4IbEXE1WpC2MQFtieFx8Fsiz0eB0UnoQn5QBT5/8DAH/4pC1sAND8BoTraxDJNf0wnZJ/qgRANvyu69qhEmBTtQGLhXXmB2mewAC01lEKimDAtTrAXQEkaaqjuoA8gUsiA0hyQJI0AuCdERDVTGAEPgPQa4DRyAJGo7egvwG0AaQak8BWVgDGaFdMgWnGHXDh3MGhMzaAJM2TrAKWa3oEAKGYOwR+8M7gS6K1BH8A2DSJHSt8yKwAAAAASUVORK5CYII=',
-			thumb: 'data:image/png;base64,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',
+			thumb: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASwAAACWCAYAAABkW7XSAAAErUlEQVR4nO3dvYtUVxzHYcugmKhkSRTfwFVkTSJEGwkisbGIVSRNNhCwiER3MQyaZkn4GYS4CdgEtrKyDLHyJYVo6b91UoQZh91xZvSce+beneeBT+GsO/fcW3zBYRd37ADokNDIgBYKGSzoipDBgq4IGSzoipDBgq4IGSzoipDBgq4IGSzoipDBgq6Ipjt9dHfqd+rw/50+8sGgkwd3pZMHd6XFj98bdOLAznTiwM7B3z91eHdaOvS6CucGWiiazmABpUTTlR6sT4/uMVgwp6LphkdnVGcW96Yzi3vTxaV9gy4sLaQLSwvpk8PvD+oPW40zT3powGxE0xksoJRouuFxera+kp6tr6QX93uDXm1EerUR6cWfvdfdv5Ve3L+V/vn520Fnj+9LZ4/vM1gwx6LpDBZQSjSdwQJKiab7+5cfUr8nd1fTk7urafi1R7GaHsVqetD7btDz9V56vt5LD368vKUaZ5700IDZiKYzWEAp0XT9kXpydzX1fX1+fdDTtWvp6dq1wUg9X+8NvjasP3A1zjzpoQGzEU1nsIBSoukMFlBKNN3jtatpc//+1hv01WeHtvTy3kp6eW9ly/c9XrtqsGCORdMZLKCUaLq/li+mfv3RGR6nPy6f31L/a8ND1X+PGmee9NCA2YimM1hAKdF0BgsoJZpueLD6jfrcalSjvrfGmSc9NGA2oukMFlBKNN3tS6dTyTa//5E9u9LmCpwbaKHIbdRgTNOdK+fSnSvn0sPrl9LD65cGfx7uXd+7wH0BLRQ5veugND1YBUYLaKHIyWABNUVOOYOyebhKDZXBgu0rcjJYQE2RU4lhaarMewNaKHKa9SgZLJgvkdMshujzjz40WDCnIqemRmkUgwVETgYLqClymsU/CTe+/9JgwZyKnIb/u65xlR6saa6ZeW9AC0VOBguoKXJq02Bt3FxOGzeXDRZsY5HbmwajqcEavqbBgvkSuRksoJbIbdxg9V8rPVjjrmWwYPuK3NoyWD50h+0vchs3Gk0P1rjRyrwvoIUiN4MF1BK5GSyglsjNYAG1RG61f3B02mtm3hfQQpHbLAarwq/nAC0UuU3zQ5yLPy2+Vcf2L6Rj+xfeOFi/f/PFG69lsGD7itzaNljDn29l3BfQQpHbqA/Ah1/buLlcfLA2X9dgwXyI3JoYrM3DNTxeo67bv3aJ+9lhsKC1okZTjdOvx6aq0pmBFooaGSyghKjRtGNksIBxokYGCyghamSwgBKiRgYLKCFqZLCAEqJGBgsoIWpksIASokYGCyghamSwgBKiRgYLKCFqZLCAEqJGBgsoIWpksIASokYGCyghamSwgBKiRgYLKCFqZLCAEqJGBgsoIWpksIASokYGCyghamSwgBKiRgYLKCFqZLCAEqJGN27cSKWqdGaghaJGJQer0mgBLRSVSpMyWMAkUamJg/WWNX1eoIWiRRksYKxoUQYLGCtksKArQgYLuiJksKArQgYLuiJksKArQgYLuiJksKArQgYLuiJksKArQgYLAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKjhP+A11Y+9BdLyAAAAAElFTkSuQmCC',
 		}
 		skins['honeydew'] = {
 			name: 'honeydew',
-			data: 'data:image/png;base64,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',
-			thumb: '',
+			data: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAAAgCAYAAACinX6EAAADG0lEQVRogd1YO26kQBDlCg4mICCzLDn12KlTEvLdDYcT+Ba2z0BqiXCEJpjABARIHACJjMDyPeiNqlUUVf1zW7PrlkpjaLrp9/pV9cNJYmnloVSm+Ly7Usf9TnV5pj7vrvQ1/G2b/59vAPTPr9+rgPtdnongj/vdzyAAAGPw8AuA4bfLs5UiLr3+Lzdu9zERsNtUBT+GgKauVpLHKdHU1QZw7BRo6ko1dbWZR7ofvQEBmAS4bupKA/94e14FEBHj/RclwFYEOfAQXZ79/ylgOwYl8BCXXr+1caCaujKCjjWmPJTRpB2cEtyi5nHwBhIyhiNgHgc1j4M3kNBxSf74oGjM47C6vr25ZsM0xjWSJEnovPM4qNubaw1Gej/uhzFSvzg+ZNExw7QG0yZF63+5T5UUUMiKotgUN3zPNIctvCUbu1Hrukwn7eyW6aSW6aTSNN0YnjRNdT8Yn2U66WeoIaImCTtFaqW5DymXPjo/xii6VLo4AAH3AOAynVRRFKooitU9OpZzhjZCKHj6dcn5CeijxFKisCOFeVbX3O5zllby+/RllBQXn4CVgH+h0Z3lXCZcU5DejRYK27FFW5dnLNDjfqfyxwedNlLY5ueOUnxaBYGmBOAFSZVVarBT1BJ3eRaVgL49rwiAYzk6AdLZKjXTl+F3EhBVASYTZBvPVVvI3e9MgWAFSCahb8+qb89WI0MB4CJFq7rPPBCShbaty7VmiTbRNbhF41MBBywOagMF40qAi5KAhCACJPm7EkCPwuN+p9X08fa8Ate3Z/1OuE+f8QWPSfAmAMvHhQTp5SD/Ls80yL49b3YX5y+AwwS4pkpoTWHPfch/l1zjXvr++qQdJa4pGBglgKYCfTY0vBTAGR+bCmwSxHnP5TcmABfdGOC9CYiVAlQl0m6Wh1LPw6mBm8s3vAn4ShHkFmCSMnaLkhpC/svkY903KcCFiQBpDABzlSqnANP80RQgFUCfQiiBfn990gXRhQApHXxqEt0cKwF4YpPrkvqwjDEg/GnsQoAtHbjNcFGlcwrYCAg5BXxJkNQQogLAY8P/F6CbuIFTQdIoAAAAAElFTkSuQmCC',
+			thumb: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASwAAACWCAYAAABkW7XSAAAE00lEQVR4nO3dO24bVxiGYW0hRQoW6oIAaR2oVcuGm4hXkCX8XZB9pE/hwkVcqPAa3AfZhyfVCOPxXA51LjojPg/wFSFkXlS8yFDD4d0dwIGELQ7oUJhgwVGECRYcRZhgwVGECRYcRZhgwVGECRYcRZhgwVGECRYcRdTe+9/eD6XX4HkDHYraEyyglKg9wQJKido7YKxi75cGvI6ovTE0v/z8U/YEC25b1N758WE4Pz4UCdb58UGw4IZF7QkWUErU3hisUmvxnPd+acDriNoTLKCUqD3BAkqJ2vv3rz+GcZfLZbhcLsP0tq2NPz/9Ny2e894vDXgdUXuCBZQStSdYQClRe1+/fBjGnU6n4XQ6Df+9++F5T+f74el8/81t043/ZryPFs9575cGvI6oPcECSonamwZrKUh7wRonWEDU3FKYns73wzRi0/epxm0Fblzl5w50KGpOsICSoubWgpV6SPj3rz8KFvAsam8an3Fb72U9ne9Xf/bpfO89LLhhUXvj+VMlgrV0Hlali/wBHYrczWPx+dPH4fOnj9/cthWha4J1fnz47nHmjyVY8HZFzpb+72YtWGshWnoPa/yZacTGDz/PH6vSpZSBDkXO5pFYu8JCyWAtTbDgNkTOlkKxFJSU0xT2JlhA5CwlWHtnuucG6+uXD4vxynxtQIciZ0uRmgZqa/PDv6VDwukb61v3L1hwGyJnPQar0JVJgQ5Fzq6NVK1gLcUr87UBHYqc5QRr/tfB6V8Ex0hNv+JrvE2w4HZFzl4SqtrBKnQZGqBDkbNrI/XPn78/b7xtPPxbeh9qekg4fsRHsOB2Rc4EC2gpcpZzSDh/z2lp0y+kuPZ+M18b0KHI2WsEK/VN/szXBnQoctc6WKmPmfm6gA5F7krFaSlUayFKud/M1wV0KHKXEqDSwUq5j8zXBXQocpcaodRI7b3BvvaYrtYAb1/kbu0CeinXyXppsFIeM/N1AR2K3PUULIeE8LZF7kocAl57Qqj3sOA2Re4EC2glcjcGYvpB5fm2ojT9uM78Yztrwdp6LMGCtyty12uwMqMFdChyt3VYNkZkKTzjZWXm/z29LSVYlQ4LgQ5F7noLVqFTG4AORe6WTiuYH6aVDtbdwmGhYMHbF7l7abDWwrV2W0qwSryeO8GCbkWLpQRrerG++RdPFDxdIXVAh6LFUs6bEixgT7RYSpwEC9gTLZYSrK1zq6Zr9JyBDkWLpcZIsIAt0WLXRmnrnK5GzxnoULSYYAElRIulhEiwgD3RYikhWvt4zfyk1EbPGehQtFhKiAQL2BMtlhKi6W1Lpz0UulZ76oAORYulhEiwgD3RYoIFlBAtdm2wKn59V+qADkWLXRslwQKWRItd+92F/koILIkWc1oDUEK0mGABJUSL+WgOUEK0mGABJUSLpVwiOXWNnjPQoWgxwQJKiBYTLKCEaLHUL51IWaPnDHQoWkywgBKixXw0ByghWqxksBpFC+hQtJhgASVEiwkWUEL0MsEC9kQvEyxgT5hgwVGECRYcRZhgwVGECRYcRZhgwVGECRYcRZhgwVGECRYcRZhgwVGECRYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA0ML/oph5AFcbNvcAAAAASUVORK5CYII=',
 		}
 		lastSkin = 'default';
 
-		/* move somewhere more suitable? */
-		if (localStorage) {
+		// discover localStorage and enable if possible
 
-			// XXX: test a work‐around
-			localStorage.domain = 'test';
+		if (localStorage) {
+			flStorageSupport = true;
 
 			console.log('We have localStorage support.');
 			if (localStorage['skins'] != null) {
 
 				console.log('We have a session!');
-				skins  						= JSON.parse(localStorage['skins']);
+				skins							= JSON.parse(localStorage['skins']);
 				lastSkin					= JSON.parse(localStorage['lastSkin']);
 
 			} else {
@@ -1054,51 +1050,68 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
 			// might even simplify things
 		}
 
+		// discover dataURL support and continue
+		// takes too long. All browsers that do canvas currently also support data:
+		// so assume. :\
+		/*
+		var dataTest = document.createElement('img');
+		dataTest.onload = dataTest.onerror = function() {
+			console.log('testing');
+			if (this.width == 1 && this.height == 1)
+				fDataUrlSupport = true;
+		}
+		dataTest.src = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
+		*/
+
 		// discover canvas support and continue
-	    skineditor = document.getElementById( 'skin-editor' );
+		skineditor = document.getElementById( 'skin-editor' );
+
 		if (skineditor && skineditor.getContext) {
 
-		    skineditorc = skineditor.getContext( '2d' );
-		    skineditor.addEventListener('click',                  drawOnDude, true);
+			fCanvasSupport = true;
+			skineditor.className += ' enabled';
+			skineditorc = skineditor.getContext( '2d' );
+			skineditor.addEventListener('click',			drawOnDude, true);
 
-		    skineditorm = document.createElement( 'canvas' );
-		    skineditorm.width = 64; skineditorm.height = 32;
-		    skineditormc = skineditorm.getContext( '2d' );
-
-			// If we are here, we can for certain hop through skins in the editor
+			// TODO: turn this back into a <canvas> because we need it for
+			// the save image option
+			skineditorm = document.createElement( 'canvas' );
+			skineditorm.width = 64; skineditorm.height = 32;
+			skineditormc = skineditorm.getContext( '2d' );
 
 			holder = document.getElementById('container');
-			skinsholder = document.createElement('div');
-			skinsholder.id='skins-container';
 
 			skinimporterchrome = document.createElement('input');
 			skinimporterchrome.id = 'skin-selector';
 			skinimporterchrome.type = 'file';
-			skinimporterchrome.addEventListener('change',  loadSkinFromFile, false);
+			skinimporterchrome.addEventListener('change',	 loadSkinFromFile, false);
 
 			skinsaverchrome = document.createElement('input');
 			skinsaverchrome.id = 'skin-saver';
 			skinsaverchrome.type = 'submit';
 			skinsaverchrome.value = 'Save';
-			skinsaverchrome.addEventListener('click', saveSkinInSkinsButton, false);
+			skinsaverchrome.addEventListener('click',	saveSkinInSkinsButton, false);
 
 			skinloaderchrome = document.createElement('input');
 			skinloaderchrome.id = 'skin-loader';
 			skinloaderchrome.type = 'submit';
 			skinloaderchrome.value = 'Load';
-			skinloaderchrome.addEventListener('click', loadSkinInSkinsButton, false);
+			skinloaderchrome.addEventListener('click',	loadSkinInSkinsButton, false);
 
 			skinpurgerchrome = document.createElement('input');
 			skinpurgerchrome.id = 'skin-puger';
 			skinpurgerchrome.type = 'submit';
 			skinpurgerchrome.value = 'Purge';
-			skinpurgerchrome.addEventListener('click',     resetLocalStorage, false);
+			skinpurgerchrome.addEventListener('click',		resetLocalStorage, false);
 
 			holder.appendChild(skinimporterchrome);
 			holder.appendChild(skinloaderchrome);
 			holder.appendChild(skinsaverchrome);
 			holder.appendChild(skinpurgerchrome);
 
+			// even without data: URL support, we want this gutter to display
+			skinsholder = document.createElement('div');
+			skinsholder.id='skins-container';
 			holder.appendChild(skinsholder);
 
 		} else {
@@ -1106,53 +1119,58 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
 		}
 
 		// discover WebGL support and continue
-	    skinpreview = document.getElementById( 'skin-preview' );
-    	if (skinpreview && initGL( skinpreview ) != null) {
+		skinpreview = document.getElementById( 'skin-preview' );
 
+		if (skinpreview && initGL( skinpreview ) != null) {
+
+			fWebGLSupport = true;
+			skinpreview.className += ' enabled';
 			webGLStart();
-    
-			skinpreview.addEventListener('mousedown',     startRotatingDude, true);
-			skinpreview.addEventListener('doubleclick',     toggleAnimation, true);
-			skinpreview.addEventListener('mouseup',        stopRotatingDude, true);
-			skinpreview.addEventListener('mouseout',       stopRotatingDude, true);
+		
+			skinpreview.addEventListener('mousedown',		 startRotatingDude, true);
+			skinpreview.addEventListener('doubleclick',		 toggleAnimation, true);
+			skinpreview.addEventListener('mouseup',				stopRotatingDude, true);
+			skinpreview.addEventListener('mouseout',			 stopRotatingDude, true);
 			skinpreview.addEventListener('mousemove', captureCursorLocation, true);
 		} else {
 			// We don’t have to do anything here, because we have fallback in HTML
 			// maybe create a canvas perspective fallback?
 		}
-
+	
 		// now that we are here, init our skin.
 		loadSkinInSkins( lastSkin );
 		// init our display of skins
 		updateSkins();
 	}
 
-  function webGLStart() {
+	function webGLStart() {
 
-    initShaders()
-    initBuffers();
-    updateTexture();
+		initShaders()
+		initBuffers();
+		updateTexture();
 
-    // if we put 0.0 for alpha, we see the background!
-    gl.clearColor(0.0, 0.0, 0.0, 0.5);
-    gl.clearDepth(1.0);
-    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-    gl.enable(gl.BLEND);
+		// if we put 0.0 for alpha, we see the background!
+		gl.clearColor(0.0, 0.0, 0.0, 0.5);
+		gl.clearDepth(1.0);
+		gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+		gl.enable(gl.BLEND);
 
-    //gl.enable(gl.ALPHA_TEST);
-    //gl.alphaTestFunc(gl.LEQUAL);
+		//gl.enable(gl.ALPHA_TEST);
+		//gl.alphaTestFunc(gl.LEQUAL);
 
-    gl.enable(gl.DEPTH_TEST);
-    gl.depthFunc(gl.LEQUAL);
+		gl.enable(gl.DEPTH_TEST);
+		gl.depthFunc(gl.LEQUAL);
 
-    timerDrawing = setInterval(drawScene, 1000);
-  }
+		timerDrawing = setInterval(drawScene, 1000);
+	}
 
+
+document.addEventListener("DOMContentLoaded", init, false);
 </script>
 
 
 </head>
-<body onload="init();">
+<body>
 
 <header><h1><span id="minecraft">Minecraft</span> Skin Editor</h1></header>
 
@@ -1178,6 +1196,6 @@ function makeOrtho(left, right, bottom, top, znear, zfar)
 </article>
 </section>
 
-<footer><p>Everything <a href="http://creativecommons.org/licenses/by-sa/2.0/deed.en_GB"><svg xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle; padding-bottom:3px; width:.95em; height: .95em;" width="16px" height="16px" viewBox="-2 -2 66 66"><circle cx="32" cy="32" r="28" fill="none" stroke="black" stroke-width="7px" /><path d="m19.63,41.14 c-2.8,-1 -5.1,-4 -5.5,-7.43 -0.6,-5.06 1.327,-9 5.2,-10.75 2.1,-0.96 5.93,-0.93 8.2,0.05 1.4,0.6 4,3 4,3.6 0,0.1 -0.9,0.64 -2,1.17 l-2,1 c-0.87,-1.06 -1.9,-1.74 -3.1,-2.3 -1.37,-0.26 -3,0.35 -3.74,1.4 -1.23,1.72 -1.3,6.2 -0.15,7.974 0.6,0.92 1.6,1.6 2.6,1.6 2,0.16 2.5,-0.02 3.7,-1.26 l1.2,-1.26 1.54,0.85 c0.85,0.47 1.66,0.96 1.8,1.1 0.52,0.47 -1.86,2.9 -3.77,3.85 -1.63,0.8 -2.14,0.92 -4.3,0.9 -1.34,-0.013 -3,-0.22 -3.67,-0.46z m18.32,0 c-2.8,-1 -5.1,-4 -5.5,-7.43 -0.6,-5.06 1.327,-9 5.2,-10.75 2.1,-0.96 5.93,-0.93 8.2,0.05 1.4,0.6 4,3 4,3.6 0,0.1 -0.9,0.64 -2,1.17 l-2,1 c-0.87,-1.06 -1.9,-1.74 -3.1,-2.3 -1.37,-0.26 -3,0.35 -3.74,1.4 -1.23,1.72 -1.3,6.2 -0.15,7.974 0.6,0.92 1.6,1.6 2.6,1.6 2,0.16 2.5,-0.02 3.7,-1.26 l1.2,-1.26 1.54,0.85 c0.85,0.47 1.66,0.96 1.8,1.1 0.52,0.47 -1.86,2.9 -3.77,3.85 -1.63,0.8 -2.14,0.92 -4.3,0.9 -1.34,-0.013 -3,-0.22 -3.67,-0.46z" fill="black" stroke="black" stroke-width="1px" /><switch><g></g><foreignObject width="2em" height="1em">CC</foreignObject></switch></svg> BY‑SA</a> John Drinkwater 2002–2011</p></footer>
+<!-- <footer><p>Everything <a href="http://creativecommons.org/licenses/by-sa/2.0/deed.en_GB"><svg xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle; padding-bottom:3px; width:.95em; height: .95em;" width="16px" height="16px" viewBox="-2 -2 66 66"><circle cx="32" cy="32" r="28" fill="none" stroke="black" stroke-width="7px" /><path d="m19.63,41.14 c-2.8,-1 -5.1,-4 -5.5,-7.43 -0.6,-5.06 1.327,-9 5.2,-10.75 2.1,-0.96 5.93,-0.93 8.2,0.05 1.4,0.6 4,3 4,3.6 0,0.1 -0.9,0.64 -2,1.17 l-2,1 c-0.87,-1.06 -1.9,-1.74 -3.1,-2.3 -1.37,-0.26 -3,0.35 -3.74,1.4 -1.23,1.72 -1.3,6.2 -0.15,7.974 0.6,0.92 1.6,1.6 2.6,1.6 2,0.16 2.5,-0.02 3.7,-1.26 l1.2,-1.26 1.54,0.85 c0.85,0.47 1.66,0.96 1.8,1.1 0.52,0.47 -1.86,2.9 -3.77,3.85 -1.63,0.8 -2.14,0.92 -4.3,0.9 -1.34,-0.013 -3,-0.22 -3.67,-0.46z m18.32,0 c-2.8,-1 -5.1,-4 -5.5,-7.43 -0.6,-5.06 1.327,-9 5.2,-10.75 2.1,-0.96 5.93,-0.93 8.2,0.05 1.4,0.6 4,3 4,3.6 0,0.1 -0.9,0.64 -2,1.17 l-2,1 c-0.87,-1.06 -1.9,-1.74 -3.1,-2.3 -1.37,-0.26 -3,0.35 -3.74,1.4 -1.23,1.72 -1.3,6.2 -0.15,7.974 0.6,0.92 1.6,1.6 2.6,1.6 2,0.16 2.5,-0.02 3.7,-1.26 l1.2,-1.26 1.54,0.85 c0.85,0.47 1.66,0.96 1.8,1.1 0.52,0.47 -1.86,2.9 -3.77,3.85 -1.63,0.8 -2.14,0.92 -4.3,0.9 -1.34,-0.013 -3,-0.22 -3.67,-0.46z" fill="black" stroke="black" stroke-width="1px" /><switch><g></g><foreignObject width="2em" height="1em">CC</foreignObject></switch></svg> BY‑SA</a> John Drinkwater 2002–2011</p></footer> -->
 
 </body></html>
