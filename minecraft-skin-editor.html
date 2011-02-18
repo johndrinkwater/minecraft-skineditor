@@ -945,12 +945,20 @@ vTextureCoord = aTextureCoord;
 		//
 		if (skinimporterchrome.files) {
 			var oF = skinimporterchrome.files[0];
-			console.log('Loading skin from file ‘' + oF.name + '’.');
+			console.log('Loading skin from file ‘' + oF.name + '’ using FileAPI.');
+			var newskin = document.createElement('img');
+			newskin.onload = loadNewSkin;
+			newskin.file = oF;
+
+			// For Chrome that doesn’t wont to load via .file 
 		    var reader = new FileReader();
-			console.log(reader);
-			reader.onload = (function(aImg, read) { return function(e) { console.log(read); aImg.src = e.target.result; }; })(newskin, reader);
-			console.log(reader);
 			reader.readAsDataURL(oF);
+			reader.onload = function () {
+				console.log('I got here');
+			}
+			/*reader.onload = (function(aImg, read) { return function(e) { console.log(read.data); aImg.src = e.target.result; }; })(newskin, reader);*/
+			console.log(reader);
+
 		} else {
 			// We are positively in a non‐HTML5 browser. Firefox 3.6?
 			console.log('Loading skin from file ‘' + skinimporterchrome.value + '’.');
@@ -1143,6 +1151,7 @@ vTextureCoord = aTextureCoord;
 			skinimporterchrome = document.createElement('input');
 			skinimporterchrome.id = 'skin-selector';
 			skinimporterchrome.type = 'file';
+			skinimporterchrome.accept = 'image/png'; // ask for PNG images
 			skinimporterchrome.addEventListener('change',	 loadSkinFromFile, false);
 
 			skinsaverchrome = document.createElement('input');
@@ -1163,7 +1172,9 @@ vTextureCoord = aTextureCoord;
 			skinpurgerchrome.value = 'Purge';
 			skinpurgerchrome.addEventListener('click',		resetLocalStorage, false);
 
+			// need to disable for Opera & Chrome, they refuse to open files
 			holder.appendChild(skinimporterchrome);
+			
 			holder.appendChild(skinloaderchrome);
 			holder.appendChild(skinsaverchrome);
 			holder.appendChild(skinpurgerchrome);
