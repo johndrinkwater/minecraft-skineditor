@@ -1240,7 +1240,9 @@ document.addEventListener("DOMContentLoaded", init, false);
 	#minecraft { background: url(i/minecraft.png) transparent no-repeat; display: inline-block; text-indent: -9999px; min-width:270px; min-height: 60px; }
 	header { margin: 0; font-family: Munro, sans-serif; color: white; background: url(i/top-bg.gif) repeat-x transparent; height:60px; }
 
-	canvas, .box { border: 2px solid grey; background: transparent; background: rgba(0,0,0,0.4); font-family: Munro, monospace; border-image: url(i/window-border.png) 10 stretch stretch; }
+	canvas, .box { border: 2px solid grey; background: transparent; background: rgba(0,0,0,0.4); font-family: Munro, monospace; border-image: url(i/window-border.png) 10 round round; }
+	canvas, .box { -moz-border-image: url(i/window-border.png) 10 round round; }
+	canvas, .box { -webkit-border-image: url(i/window-border.png) 10 round round; }
 
 	.sign { padding: 6px 4px; text-align:center; color: black; margin: 2px; border: 0; background: url(i/sign.png) no-repeat #ab8c55; background-size: 100% 100%; }
 
