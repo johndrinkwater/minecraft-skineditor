@@ -1247,21 +1247,23 @@ document.addEventListener("DOMContentLoaded", init, false);
 
 	.sign { padding: 6px 4px; text-align:center; color: black; margin: 2px; border: 0; background: url(i/sign.png) no-repeat #ab8c55; background-size: 100% 100%; }
 
-	#skin-preview, #skin-editor, #wip, #skins-container { position: absolute; }
-	#wip, #skins-container { left: 374px; width: 512px; }
+	#skin-preview, #skin-editor, #wip, #skins-container, #colourpalette { position: absolute; }
+	#wip, #colourpalette, #skins-container { left: 374px; width: 512px; }
 
 	#wip { font-size: 115%; top:330px; left: 438px; height: 130px; width: 324px; }
 	#wip code {font-family: Munro, monospace; }
 	#wip a { color: black !important;}
 
 	/* skin preview box */
-	#skins-container { padding:0; background: rgba(0,0,0,0.5); top: 445px; height: 150px; min-width:260px; overflow: auto; overflow-y: hidden; white-space: nowrap; }
+	#skins-container { padding:0; background: rgba(0,0,0,0.5); top: 445px; height: 150px; min-width:260px; overflow: scroll; overflow-y: hidden; white-space: nowrap; }
 	#skins-container:empty { display:none; }
 	#skins-container div { padding: 2px 4px; display: inline-block; text-align: center; height: 124px; width: 80px; overflow: hidden; }
 	#skins-container p { color: white; background: transparent; overflow: ellipsis; }
 	#skins-container div img { margin: 0 5px;}
-
 	#skins-container div img, #skins-container div p { cursor: pointer; }
+
+	#colourpalette { border: 3px outset #ccc; top: 330px; color: #999; background: #ccc; padding: 4px; padding-top: 0; width: 506px; }
+	#colourpalette span { display: inline-block; text-indent: -9999px; background: #888; overflow: hidden; width: 21px; height: 21px; border: 2px inset lightgrey; }
 
 	#skin-editor, #skin-preview { top: 60px; }
 	#skin-editor { left: 374px; }
@@ -1269,7 +1271,8 @@ document.addEventListener("DOMContentLoaded", init, false);
 
 	/* if the user doesn’t have JS, or Canvas support, no point doing this */
 	#skin-preview.enabled { cursor: pointer; }
-	#skin-editor.enabled  { cursor: crosshair; background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH2wIODxsDFVG/AgAAAClJREFUGNNjvHnz5n8GJKCmpobMZWBiIAAoV8D4//9/FDfcunWL3m4AADstCpWDR4PDAAAAAElFTkSuQmCC); }
+	#skin-editor.enabled  { cursor: crosshair; }
+	#skin-editor.enabled, #colourpalette #erase {  background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH2wIODxsDFVG/AgAAAClJREFUGNNjvHnz5n8GJKCmpobMZWBiIAAoV8D4//9/FDfcunWL3m4AADstCpWDR4PDAAAAAElFTkSuQmCC); }
 
 	#skin-preview:after { content: "."; display: block; height: 0; clear: both; visibility: hidden; }
 	#skin-selector, #skin-saver, #skin-loader { position: absolute; top: 570px; }
@@ -1293,6 +1296,9 @@ Demo of: <code>&lt;canvas&gt;</code>, <code>WebGL</code>, &amp; <code>localStora
   <img src="i/char.png" width="512" height="256" alt="Minecraft Default Skin" />
   <p>Sorry, your browser does not support Canvas. Which kinda makes this whole application redundant.</p>
  </canvas>
+
+ <!-- WIP palette, move into JS -->
+ <div id="colourpalette" class="box"><p>Palette</p><span id="erase">erase</span><span>pink</span></div>
 
  <!-- make a preview/save skin lightbox here -->
  <!--<canvas id="skin-editor-mini" width="64" height="32"></canvas>-->
