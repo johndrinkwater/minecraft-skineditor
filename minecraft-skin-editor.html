@@ -958,14 +958,39 @@ vTextureCoord = aTextureCoord;
 
 		console.log('loadNewSkin called.');
 		skineditor.width = skineditor.width; // need a .clear
-		// if we are mozilla, tell them to stop SMOOTHING OUR SHIT
-		skineditorc.mozImageSmoothingEnabled ? skineditorc.mozImageSmoothingEnabled = false : true;
-		// TODO OPERA SMUDGES THIS SHIT
-		skineditorc.clearRect(0,0,512,256);
-		skineditorc.drawImage( this, 0, 0, 512, 256 );
 
-		skineditormc.clearRect(0,0,512,256);
+		skineditormc.clearRect(0,0,64,32);
 		skineditormc.drawImage( this, 0, 0, 64, 32 );
+
+		skineditorc.clearRect(0,0,512,256);
+
+		if ( skineditorc.mozImageSmoothingEnabled ) {
+			// if we are mozilla, tell them to stop SMOOTHING OUR SHIT
+			skineditorc.mozImageSmoothingEnabled ? skineditorc.mozImageSmoothingEnabled = false : true;
+			skineditorc.drawImage( this, 0, 0, 512, 256 );
+		} else {
+			// we *arent* Gecko. assume, for now, that thats everything that can do what we need
+			// XXX we need to toggle on Opera/Chrome to do a more expensive 
+			console.log('Working around a flaw in your browser engine, initial load will be slower that Firefox.');
+
+			var pixels = skineditormc.getImageData(0, 0, 64, 32);
+			skineditorc.save();
+			for (var x = 0; x<=64; x++ ) {
+				for (var y = 0; y<=32; y++ ) {
+
+					/* XXX avoid doing work for empty pixels */
+					if ( pixels.data[((y *(pixels.width*4)) + (x*4)) + 3] != 0 ) {
+
+						skineditorc.fillStyle = 'rgba(' +	pixels.data[((y *(pixels.width*4)) + (x*4))] + ',' + 
+														pixels.data[((y *(pixels.width*4)) + (x*4)) + 1] + ','+
+														pixels.data[((y *(pixels.width*4)) + (x*4)) + 2] + ','+
+														pixels.data[((y *(pixels.width*4)) + (x*4)) + 3] + ')';
+						skineditorc.fillRect(x*8, y*8, 8, 8);
+					}
+				}
+			}
+			skineditorc.restore();
+		}
 
 		if (fWebGLSupport)
 			updateTexture();
