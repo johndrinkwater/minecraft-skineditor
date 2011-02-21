@@ -572,12 +572,12 @@ vTextureCoord = aTextureCoord;
 				temp.className = 'box'; // TODO DOMy method please.
 				var name = document.createElement('p');
 				var preview = document.createElement('img');
-				temp.addEventListener('click', function() { loadSkinInSkins( this.skin ); }, true);
+				preview.addEventListener('click', function() { loadSkinInSkins( this.skin ); }, true);
 				name.addEventListener('click', function() { renameSkinInSkins( this.skin ); }, true);
 				preview.src = obj.thumb;
 				preview.width
 				name.innerHTML = obj.name;
-				temp.skin = name.skin = obj.name;
+				preview.skin = name.skin = obj.name;
 				temp.className = 'box';
 				temp.appendChild(name);
 				temp.appendChild(preview);
@@ -600,10 +600,11 @@ vTextureCoord = aTextureCoord;
 
 		skinName = prompt('What do you wish to rename ‘' + skin + "’ to?\nTo delete, rename to ''.", skin);
 		
-		if (skinName == null) { // user aborted
+		if (skinName === null) { // user aborted
 			return;
-		} else if (skinName == "") { // user wants to delete
-			deleteSkinInSkins(skinName);
+		} else if (skinName === "") { // user wants to delete
+			console.log('Deleting ‘' + skin + '’ skin.');
+			deleteSkinInSkins(skin);
 		} else {
 			skins[skinName] = skins[skin];
 			skins[skinName].name = skinName;
