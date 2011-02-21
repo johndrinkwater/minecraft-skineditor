@@ -538,7 +538,7 @@ vTextureCoord = aTextureCoord;
 	/*
 	* atm, we call this if we modify skins[]
 	*/
-		function updateSkins() {
+	function updateSkins() {
 
 		console.log('Store the updated skins.');
 		// we want this to update the list of Skins stored, to easier allow the user to pop
@@ -568,15 +568,17 @@ vTextureCoord = aTextureCoord;
 			obj = skins[obj];
 			if (obj.thumb != null) {
 
-				// console.log( 'Adding ‘' + obj + '’ to skinsholder.' );
 				var temp = document.createElement('div');
+				temp.className = 'box'; // TODO DOMy method please.
 				var name = document.createElement('p');
 				var preview = document.createElement('img');
 				temp.addEventListener('click', function() { loadSkinInSkins( this.skin ); }, true);
 				name.addEventListener('click', function() { renameSkinInSkins( this.skin ); }, true);
 				preview.src = obj.thumb;
+				preview.width
 				name.innerHTML = obj.name;
 				temp.skin = name.skin = obj.name;
+				temp.className = 'box';
 				temp.appendChild(name);
 				temp.appendChild(preview);
 				skinsholder.appendChild(temp);
@@ -596,10 +598,12 @@ vTextureCoord = aTextureCoord;
 
 		console.log('Renaming ‘' + skin + '’ skin.');
 
-		skinName = prompt('What do you wish to rename ‘' + skin + '’ to?', skin);
+		skinName = prompt('What do you wish to rename ‘' + skin + "’ to?\nTo delete, rename to ''.", skin);
 		
 		if (skinName == null) { // user aborted
 			return;
+		} else if (skinName == "") { // user wants to delete
+			deleteSkinInSkins(skinName);
 		} else {
 			skins[skinName] = skins[skin];
 			skins[skinName].name = skinName;
@@ -664,6 +668,7 @@ vTextureCoord = aTextureCoord;
 	function deleteSkinInSkins(skin) {
 
 		if (skin) {
+			skins[skin] = {}
 			delete skins[skin];
 			updateSkins();
 		}
@@ -691,7 +696,7 @@ vTextureCoord = aTextureCoord;
 		// generate a thumbnail!
 		var skinthumb = document.createElement('canvas');
 		skinthumbc = skinthumb.getContext('2d');
-		skinthumbc.width=70; skinthumbc.height=100;
+		skinthumb.width=70; skinthumb.height=100;
 		// TODO for browsers without WebGL, but with canvas, this will produce something empty
 		skinthumbc.drawImage(skinpreview, 0, 0, 70, 100);
 		var sthumbnail, sskin;
@@ -705,6 +710,7 @@ vTextureCoord = aTextureCoord;
 		} catch(e) {
 			console.log("unable to access image data: " + e);
 		}
+		console.log(skinName + ": " + sthumbnail );
 
 		try {
 			try {
@@ -916,6 +922,7 @@ vTextureCoord = aTextureCoord;
 
 	function loadSkinFromFile(e) {
 
+		console.log('loadSkinFromFile called.');
 		//
 		if (skinimporterchrome.files) {
 			var oF = skinimporterchrome.files[0];
@@ -1229,21 +1236,24 @@ document.addEventListener("DOMContentLoaded", init, false);
 	#minecraft { background: url(i/minecraft.png) transparent no-repeat; display: inline-block; text-indent: -9999px; min-width:270px; min-height: 60px; }
 	header { margin: 0; font-family: Munro, sans-serif; color: white; background: url(i/top-bg.gif) repeat-x transparent; height:60px; }
 
-	canvas, .box { border: 2px solid grey; background: transparent; background: rgba(0,0,0,0.3); font-family: Munro, monospace; border-image: url(i/window-border.png) 10 stretch stretch; }
+	canvas, .box { border: 2px solid grey; background: transparent; background: rgba(0,0,0,0.4); font-family: Munro, monospace; border-image: url(i/window-border.png) 10 stretch stretch; }
 
 	.sign { padding: 6px 4px; text-align:center; color: black; margin: 2px; border: 0; background: url(i/sign.png) no-repeat #ab8c55; background-size: 100% 100%; }
 
 	#skin-preview, #skin-editor, #wip, #skins-container { position: absolute; }
 	#wip, #skins-container { left: 374px; width: 512px; }
 
-	#wip { font-size: 115%; top:330px; left: 438px; height: 140px; width: 324px; }
+	#wip { font-size: 115%; top:330px; left: 438px; height: 130px; width: 324px; }
 	#wip code {font-family: Munro, monospace; }
 	#wip a { color: black !important;}
 
 	/* skin preview box */
-	#skins-container { padding:0; top: 445px; height: 143px; min-width:260px; overflow: scroll; overflow-y: hidden; white-space: nowrap; }
+	#skins-container { padding:0; top: 445px; height: 148px; min-width:260px; overflow: auto; overflow-y: hidden; white-space: nowrap; }
 	#skins-container:empty { display:none; }
-	#skins-container div { border: 1px solid green; margin: 1px; padding: 2px 4px; display: inline-block; text-align: center; height: 120px; width: 80px; overflow: hidden; }
+	#skins-container div { padding: 2px 4px; display: inline-block; text-align: center; height: 124px; width: 80px; overflow: hidden; }
+	#skins-container p { color: white; background: transparent; overflow: ellipsis; }
+	#skins-container div img { margin: 0 5px;}
+
 	#skins-container div img, #skins-container div p { cursor: pointer; }
 
 	#skin-editor, #skin-preview { top: 60px; }
