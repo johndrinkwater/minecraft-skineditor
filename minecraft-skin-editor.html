@@ -3,34 +3,8 @@
 <meta http-equiv="content-type" content="text/html;charset=utf-8" />
 <meta charset="utf-8" />
 <title>Minecraft ‐ Skin</title>
-<link rel="stylesheet" href="/style/" />
 <link rel="shortcut icon" type="image/x-icon" href="http://www.minecraft.net/favicon.png" />
-<style>
-html,h1,article, p, div { margin: 0; padding: 0; }
-body { background: url(http://www.minecraft.net/img/bg.gif) #eeeeee; margin:0; }
-#skin-preview, #skin-editor, #skin-editor-mini, #wip, #skins-container { position: absolute; top: 60px; border: 2px solid grey; }
-#wip, #skin-editor-mini, #skins-container { left: 374px; top:330px; width: 512px; color: red; }
-#skins-container { background: rgba(0,0,0,0.8); padding:0; top: 445px; height: 143px; min-width:260px; overflow: scroll; overflow-y: hidden; white-space: nowrap; }
-#skins-container:empty { display:none; }
-#skins-container div { border: 1px solid green; margin: 1px; padding: 2px 4px; display: inline-block; text-align: center; height: 120px; width: 80px; overflow: hidden; }
-#skins-container div img, #skins-container div p { cursor: pointer; }
 
-#skin-editor { left: 374px; background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH2wIODxsDFVG/AgAAAClJREFUGNNjvHnz5n8GJKCmpobMZWBiIAAoV8D4//9/FDfcunWL3m4AADstCpWDR4PDAAAAAElFTkSuQmCC) }
-#skin-preview { left: 10px; }
-#skin-preview.enabled { cursor: pointer; }
-#skin-editor.enabled  { cursor: crosshair; }
-
-#skin-preview:after { content: "."; display: block; height: 0; clear: both; visibility: hidden; }
-#skin-selector, #skin-saver, #skin-loader { position: absolute; top: 570px; }
-#skin-selector { left: 10px; }
-#skin-saver { width: 55px; left: 310px; }
-#skin-loader { width: 55px; left: 255px; }
-footer { color: black; background: transparent; position: absolute; bottom: 2px; height: 50px; }
-
-#minecraft { background: url(http://www.minecraft.net/img/logo_no_pps.png) transparent no-repeat; display: inline-block; text-indent: -9999px; min-width:270px; min-height: 70px; }
-header { margin: 0; padding-bottom: 10px; color: white; background: url(http://www.minecraft.net/img/top-bg.gif) repeat-x transparent; height:58px; }
-
-</style>
 <!-- <script type="text/javascript" src="sylvester.js"></script> -->
 <script type="text/javascript">
 
@@ -1246,19 +1220,64 @@ document.addEventListener("DOMContentLoaded", init, false);
 
 <section>
 <article id="container">
+	
+ <style>
+	html, h1, article, p, div { margin: 0; padding: 0; }
+	@font-face { font-family: Munro; src: url(i/munro.ttf); }
+
+	body { background: url(i/bg.gif) #eeeeee; margin:0; font-family: Munro, sans-serif; }
+	#minecraft { background: url(i/minecraft.png) transparent no-repeat; display: inline-block; text-indent: -9999px; min-width:270px; min-height: 60px; }
+	header { margin: 0; font-family: Munro, sans-serif; color: white; background: url(i/top-bg.gif) repeat-x transparent; height:60px; }
+
+	canvas, .box { border: 2px solid grey; background: transparent; background: rgba(0,0,0,0.3); font-family: Munro, monospace; border-image: url(i/window-border.png) 10 stretch stretch; }
+
+	.sign { padding: 6px 4px; text-align:center; color: black; margin: 2px; border: 0; background: url(i/sign.png) no-repeat #ab8c55; background-size: 100% 100%; }
+
+	#skin-preview, #skin-editor, #wip, #skins-container { position: absolute; }
+	#wip, #skins-container { left: 374px; width: 512px; }
+
+	#wip { font-size: 115%; top:330px; left: 438px; height: 140px; width: 324px; }
+	#wip code {font-family: Munro, monospace; }
+	#wip a { color: black !important;}
+
+	/* skin preview box */
+	#skins-container { padding:0; top: 445px; height: 143px; min-width:260px; overflow: scroll; overflow-y: hidden; white-space: nowrap; }
+	#skins-container:empty { display:none; }
+	#skins-container div { border: 1px solid green; margin: 1px; padding: 2px 4px; display: inline-block; text-align: center; height: 120px; width: 80px; overflow: hidden; }
+	#skins-container div img, #skins-container div p { cursor: pointer; }
+
+	#skin-editor, #skin-preview { top: 60px; }
+	#skin-editor { left: 374px; }
+	#skin-preview { left: 10px; }
+
+	/* if the user doesn’t have JS, or Canvas support, no point doing this */
+	#skin-preview.enabled { cursor: pointer; }
+	#skin-editor.enabled  { cursor: crosshair; background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH2wIODxsDFVG/AgAAAClJREFUGNNjvHnz5n8GJKCmpobMZWBiIAAoV8D4//9/FDfcunWL3m4AADstCpWDR4PDAAAAAElFTkSuQmCC); }
+
+	#skin-preview:after { content: "."; display: block; height: 0; clear: both; visibility: hidden; }
+	#skin-selector, #skin-saver, #skin-loader { position: absolute; top: 570px; }
+	#skin-selector { left: 10px; }
+	#skin-saver { width: 55px; left: 310px; }
+	#skin-loader { width: 55px; left: 255px; }
+	footer { color: black; background: transparent; position: absolute; bottom: 2px; height: 50px; }
+
+ </style>
+
+ <p id="wip" class="sign box">Work‐in‐progress. Please send suggestions to jdrinkwater@gmail.com. Code history <a href="">here</a>, licensed AGPL where applicable. <br/>
+© <A href="http://johndrinkwater.name/">JD</a>, <a href="">Mojang</a>, <a href="http://www.tenbytwenty.com/munro.php">10×20</a>, <a href="http://learningwebgl.com/blog/">learningWebGL</a>.<br />
+Demo of: <code>&lt;canvas&gt;</code>, <code>WebGL</code>, &amp; <code>localStorage</code>.</p>
 
  <canvas id="skin-preview" width="350" height="500">
-  <img src="3d‐tease.png" width="350" height="500" alt="Minecraft Default Skin Preview" />
+  <img src="i/3d-tease.png" width="350" height="500" alt="Minecraft Default Skin Preview" />
   <p>Sorry, you browser does not support WebGL. Pretend the above image is rendered by your graphics card in real‐time.</p>
  </canvas>
- <!-- Add this via JS. why? because otherwise, it is just a pointless input <input type="file" id="skin-from-file" style="position: absolute; right: 1em; top: 6em; "/>-->
 
  <canvas id="skin-editor" width="512" height="256">
-  <img src="http://www.minecraft.net/img/char.png" width="512" height="256" alt="Minecraft Default Skin" />
+  <img src="i/char.png" width="512" height="256" alt="Minecraft Default Skin" />
   <p>Sorry, your browser does not support Canvas. Which kinda makes this whole application redundant.</p>
  </canvas>
 
- <p id="wip">This is currently a work‐in‐progress, a few days old. Please understand that, if you have suggestions, i’ll gladly take them at jdrinkwater@gmail.com. The code is hosted in git on %LINK%, licensed under AGPL where applicable. Remaining copyrights belong to Mojang AB. Note I have never touched <code>WebGL</code>, <code>&lt;canvas&gt;</code> or <code>localStorage</code> before.</p>
+ <!-- make a preview/save skin lightbox here -->
  <!--<canvas id="skin-editor-mini" width="64" height="32"></canvas>-->
 
  <noscript><p>While I’m the first person to complain about the needs of JavaScript for many a‐website, this is an ‘application’, it can’t run without the code being used. Please toggle NoScript, or try this in a browser that supports JavaScript.</p></noscript>
