@@ -935,10 +935,12 @@ vTextureCoord = aTextureCoord;
 			// For Chrome that doesn’t wont to load via .file 
 		    var reader = new FileReader();
 			reader.readAsDataURL(oF);
+			/* instead, 
 			reader.onload = function () {
+				// this.result == data URL
 				console.log('I got here');
-			}
-			/*reader.onload = (function(aImg, read) { return function(e) { console.log(read.data); aImg.src = e.target.result; }; })(newskin, reader);*/
+			}*/
+			reader.onload = (function(aImg, read) { return function(e) { console.log('Loaded image'); aImg.src = e.target.result; }; })(newskin, reader);
 			console.log(reader);
 
 		} else {
