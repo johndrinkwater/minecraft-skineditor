@@ -1048,10 +1048,10 @@ vTextureCoord = aTextureCoord;
 		delete warning;
 
 		// discover console and fake up a work‐around
-		if (!console) {
+		if (typeof console == 'undefined') {
 			console = {}
 			console.log = function(message) {
-				alert(message);
+				// alert(message);
 			}
 		}
 		// push messages to Opera debug
@@ -1089,7 +1089,7 @@ vTextureCoord = aTextureCoord;
 
 		// discover localStorage and enable if possible
 
-		if (localStorage) {
+		if (typeof localStorage != 'undefined') {
 			flStorageSupport = true;
 
 			console.log('We have localStorage support.');
@@ -1218,8 +1218,23 @@ vTextureCoord = aTextureCoord;
 			skinpreview.addEventListener('mouseout',		  stopRotatingDude, true);
 			skinpreview.addEventListener('mousemove',	 captureCursorLocation, true);
 		} else {
-			// We don’t have to do anything here, because we have fallback in HTML
-			// maybe create a canvas perspective fallback?
+			// XXX we *could* do some canvas‐generated perspective fallback here
+
+			// Be cheeky, swap out the missing webgl support with the existing fallback image.
+			var temp = document.createElement('div');
+			// temp.id = 'skin-preview';
+			temp.width = '350px'; temp.height = '500px';
+			if ( skinpreview.hasChildNodes() ) {
+				while ( skinpreview.childNodes.length >= 1 ) {
+					temp.appendChild( skinpreview.removeChild( skinpreview.firstChild ) );
+				}
+			}
+			holder.replaceChild(temp, skinpreview);
+			delete skinpreview;
+			temp.id= 'skin-preview';
+			// we dont need to clone listeners because we can’t interact! 
+			skinpreview = document.getElementById( 'skin-preview' );
+
 		}
 	
 		// now that we are here, init our skin.
@@ -1265,7 +1280,7 @@ document.addEventListener("DOMContentLoaded", init, false);
 	
  <style>
 	html, h1, article, p, div { margin: 0; padding: 0; }
-	@font-face { font-family: Munro; src: url(i/munro.ttf); }
+	@font-face { font-family: Munro; src: url(i/munro.ttf); text-rendering: optimizeLegibility; }
 
 	body { background: url(i/bg.gif) #eeeeee; margin:0; font-family: Munro, sans-serif; }
 	a { color: black; background: transparent; }
@@ -1273,12 +1288,15 @@ document.addEventListener("DOMContentLoaded", init, false);
 	#minecraft { background: url(i/minecraft.png) transparent no-repeat; display: inline-block; text-indent: -9999px; min-width:270px; min-height: 60px; }
 	header { margin: 0; font-family: Munro, sans-serif; color: white; background: url(i/top-bg.gif) repeat-x transparent; height:60px; }
 
-	canvas, .box { border: 2px solid grey; background: transparent; background: rgba(0,0,0,0.4); font-family: Munro, monospace; }
-	canvas, .box { border-image: url(i/window-border.png) 4 3 3 4 round round; border 4px; }
-	canvas, .box { -moz-border-image: url(i/window-border.png) 4 3 3 4 round round; border: 4px; }
-	canvas, .box { -webkit-border-image: url(i/window-border.png) 4 3 3 4 stretch stretch; border: 4px; }
+	canvas, .box, div#skin-preview { border: 3px solid grey; background: transparent; background: rgba(0,0,0,0.4); font-family: Munro, monospace; }
+	canvas, .box { border-image: url(i/window-border.png) 4 3 3 4 round round; }
+	canvas, .box { -moz-border-image: url(i/window-border.png) 4 3 3 4 round round; }
+	canvas, .box { -webkit-border-image: url(i/window-border.png) 4 3 3 4 stretch stretch; }
 
 	.sign { padding: 6px 4px; text-align:center; color: black; margin: 2px; border: 0; background: url(i/sign.png) no-repeat #ab8c55; background-size: 100% 100%; }
+
+	div#skin-preview { overflow: hidden; /* need a better way to overlay the text here */ }
+	div#skin-preview p { position: absolute; color: white; background: transparent; top: 5px; left: 5px; }
 
 	#skin-preview, #skin-editor, #wip, #skins-container, #colourpalette { position: absolute; }
 	#wip, #colourpalette, #skins-container { left: 374px; width: 512px; }
@@ -1322,7 +1340,7 @@ Demo of: <code>&lt;canvas&gt;</code>, <code>WebGL</code>, &amp; <code>localStora
 
  <canvas id="skin-preview" width="350" height="500">
   <img src="i/3d-tease.png" width="350" height="500" alt="Minecraft Default Skin Preview" />
-  <p>Sorry, you browser does not support WebGL. Pretend the above image is rendered by your graphics card in real‐time.</p>
+  <p>Sorry, you browser does not support WebGL. Pretend this image is rendered by your graphics card in real‐time.</p>
  </canvas>
 
  <canvas id="skin-editor" width="512" height="256">
