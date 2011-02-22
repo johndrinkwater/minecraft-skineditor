@@ -320,7 +320,7 @@ vTextureCoord = aTextureCoord;
 		var m = Matrix.Translation($V([v[0], v[1], v[2]])).ensure4x4();
 		multMatrix(m);
 	}
-	function mvTranslateN(v) {
+	function mvTranslateNeg(v) {
 		var m = Matrix.Translation($V([-v[0], -v[1], -v[2]])).ensure4x4();
 		multMatrix(m);
 	}
@@ -340,7 +340,7 @@ vTextureCoord = aTextureCoord;
 	function mvRotateAbout(ang, v, v2) {
 		mvTranslate(v2);
 		mvRotate(ang, v);
-		mvTranslateN(v2);
+		mvTranslateNeg(v2);
 	}
 
 	var pMatrix;
@@ -407,12 +407,13 @@ vTextureCoord = aTextureCoord;
 		headVTCB = gl.createBuffer();
 		gl.bindBuffer(gl.ARRAY_BUFFER, headVTCB);
 		var textureCoords = [
-			0.125, 0.5,	 0.25, 0.5,	 0.25, 0.75,	 0.125, 0.75,
-			0.5, 0.5,		 0.5, 0.75,	 0.375, 0.75,	0.375, 0.5,
-			0.125, 1.0,	 0.125, 0.75, 0.25, 0.75,	 0.25, 1.0,
-			0.375, 1.0,	 0.25, 1.0,	 0.25, 0.75,	 0.375, 0.75,
-			0.375, 0.5,	 0.375, 0.75, 0.25, 0.75,	 0.25, 0.5,
-			0.0, 0.5,		 0.125, 0.5,	0.125, 0.75,	0.0, 0.75,
+			0.125,	0.5,	0.25,	0.5,	0.25,	0.75,	0.125,	0.75,
+			0.5,	0.5,	0.5,	0.75,	0.375,	0.75,	0.375,	0.5,
+			0.125,	1.0,	0.125,	0.75,	0.25,	0.75,	0.25,	1.0,
+			0.25,	0.75,	0.375,	0.75,	0.375,	1.0,	0.25,	1.0,
+			0.375,	1.0,	0.25,	1.0,	0.25,	0.75,	0.375,	0.75,
+			0.375,	0.5,	0.375,	0.75,	0.25,	0.75,	0.25,	0.5,
+			0.0,	0.5,	0.125,	0.5,	0.125,	0.75,	0.0,	0.75,
 		];
 		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoords), gl.STATIC_DRAW);
 		headVTCB.itemSize = 2;
@@ -819,7 +820,7 @@ vTextureCoord = aTextureCoord;
 			mvTranslate([0.0, 2.6, 0]);
 			mvRotateAbout(xHead, [0, 1, 0], [0, -1.0, 0]); 
 			mvRotateAbout(yHead, [1, 0, 0], [0, -1.0, 0]);
-			mvRotate( 5, [1, 0, 0]);
+			mvRotateAbout( 5, [1, 0, 0], [0, -1.0, 0]);
 			drawAndTexture(cubeVPB, headVTCB);
 			// 1.125 puts it as 9,9,9
 			mvScale([1.125,1.125,1.125]);
@@ -957,7 +958,7 @@ vTextureCoord = aTextureCoord;
 			newskin.file = oF;
 
 			// For Chrome that doesn’t wont to load via .file 
-		    var reader = new FileReader();
+			var reader = new FileReader();
 			reader.readAsDataURL(oF);
 			reader.onload = (function(aImg, read) { return function(e) { console.log('Loaded image'); aImg.src = e.target.result; }; })(newskin, reader);
 			reader.onerror = function(){ console.log('Failed to load. TODO: verbosity'); }
@@ -1031,7 +1032,7 @@ vTextureCoord = aTextureCoord;
 			if (i == 'clone')
 				continue;
 			if (this[i] && typeof this[i] == "object") {
-			  newObj[i] = this[i].clone();
+				newObj[i] = this[i].clone();
 			} else 
 				newObj[i] = this[i]
 		}
@@ -1254,7 +1255,7 @@ vTextureCoord = aTextureCoord;
 			rubber = document.getElementById( 'erase' );
 			rubber.addEventListener('click', function() { paintMode = ERASE; paintColour = 'rgba(0,0,0,0)'; skineditor.className = 'enabled erasing'; }, true);
 			pink = document.getElementById( 'pink' );
-			pink.addEventListener('click', function() { paintMode = PAINT; paintColour = 'pink'; skineditor.className = 'enabled painting';  }, true);
+			pink.addEventListener('click', function() { paintMode = PAINT; paintColour = 'pink'; skineditor.className = 'enabled painting'; }, true);
 
 		} else {
 			// We don’t have to do anything here, because we have fallback in HTML
@@ -1269,11 +1270,11 @@ vTextureCoord = aTextureCoord;
 			skinpreview.className += ' enabled';
 			webGLStart();
 		
-			skinpreview.addEventListener('mousedown',		 startRotatingDude, true);
-			skinpreview.addEventListener('doubleclick',		   toggleAnimation, true);
-			skinpreview.addEventListener('mouseup',			  stopRotatingDude, true);
-			skinpreview.addEventListener('mouseout',		  stopRotatingDude, true);
-			skinpreview.addEventListener('mousemove',	 captureCursorLocation, true);
+			skinpreview.addEventListener('mousedown',		startRotatingDude, true);
+			skinpreview.addEventListener('doubleclick',		toggleAnimation, true);
+			skinpreview.addEventListener('mouseup',			stopRotatingDude, true);
+			skinpreview.addEventListener('mouseout',		stopRotatingDude, true);
+			skinpreview.addEventListener('mousemove',		captureCursorLocation, true);
 		} else if (fCanvasSupport) {
 			// XXX we *could* do some canvas‐generated perspective fallback here
 
@@ -1395,8 +1396,8 @@ else {
 	/* if the user doesn’t have JS, or Canvas support, no point doing this */
 	#skin-preview.enabled { cursor: pointer; }
 	#noscript.disabled { display: none; }
-	/*#skin-editor.enabled  { cursor: crosshair; }*/
-	#skin-editor.enabled, #colourpalette #erase, #skin-editor-img {  background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH2wIODxsDFVG/AgAAAClJREFUGNNjvHnz5n8GJKCmpobMZWBiIAAoV8D4//9/FDfcunWL3m4AADstCpWDR4PDAAAAAElFTkSuQmCC); }
+	/*#skin-editor.enabled { cursor: crosshair; }*/
+	#skin-editor.enabled, #colourpalette #erase, #skin-editor-img { background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH2wIODxsDFVG/AgAAAClJREFUGNNjvHnz5n8GJKCmpobMZWBiIAAoV8D4//9/FDfcunWL3m4AADstCpWDR4PDAAAAAElFTkSuQmCC); }
 
 	#skin-preview:after { content: "."; display: block; height: 0; clear: both; visibility: hidden; }
 	#skin-selector, #skin-saver, #skin-loader { position: absolute; top: 570px; }
