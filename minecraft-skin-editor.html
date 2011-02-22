@@ -542,6 +542,9 @@ vTextureCoord = aTextureCoord;
 	*/
 	function updateSkins() {
 
+		if (!fCanvasSupport)
+			return;
+
 		console.log('Store the updated skins.');
 		// we want this to update the list of Skins stored, to easier allow the user to pop
 		try {
@@ -563,6 +566,7 @@ vTextureCoord = aTextureCoord;
 				skinsholder.removeChild( skinsholder.firstChild );			 
 			} 
 		}
+		holder.appendChild( skinsholder );
 
 		// iterate and add skins to GUI!
 		for (obj in skins) {
@@ -571,9 +575,12 @@ vTextureCoord = aTextureCoord;
 			if (obj.thumb != null) {
 
 				var temp = document.createElement('div');
-				temp.className = 'box'; // TODO DOMy method please.
+				skinsholder.appendChild(temp);
 				var name = document.createElement('p');
 				var preview = document.createElement('img');
+				temp.appendChild(name);
+				temp.appendChild(preview);
+				temp.className = 'box'; // TODO DOMy method please.
 				preview.addEventListener('click', function() { loadSkinInSkins( this.skin ); }, true);
 				name.addEventListener('click', function() { renameSkinInSkins( this.skin ); }, true);
 				preview.src = obj.thumb;
@@ -581,15 +588,9 @@ vTextureCoord = aTextureCoord;
 				name.innerHTML = obj.name;
 				preview.skin = name.skin = obj.name;
 				temp.className = 'box';
-				temp.appendChild(name);
-				temp.appendChild(preview);
-				skinsholder.appendChild(temp);
 			}
 		}
 
-		// update DOM with… laziness
-		holder.appendChild(skinsholder);
-		
 	}
 
 
@@ -979,6 +980,8 @@ vTextureCoord = aTextureCoord;
 	/* Image.onload function */
 	function loadNewSkin() {
 
+		if (!fCanvasSupport)
+			return;
 		console.log('loadNewSkin called.');
 		skineditor.width = skineditor.width; // need a .clear
 
@@ -1071,6 +1074,10 @@ vTextureCoord = aTextureCoord;
 
 	function init() {
 
+		// Why don’t we use a large library like modernisr?
+		// Well, we have a few features to test. Beyond that, we are already pushing
+		// 64k before I’ve tidied. No sense making it bigger than it needs to be.
+
 		// remove our noscript block
 		warning = document.getElementById( 'noscript' );
 		warning.className = 'disabled';
@@ -1088,6 +1095,18 @@ vTextureCoord = aTextureCoord;
 		// push messages to Opera debug
 		if (window.opera && opera.postError)
 			console.log = opera.postError
+
+		// discover if we are IE?
+		if (true) {
+			document.createElement('header');
+			document.createElement('hgroup');
+			document.createElement('nav');
+			document.createElement('menu');
+			document.createElement('section');
+			document.createElement('article');
+			document.createElement('aside');
+			document.createElement('footer');
+		}
 
 		// default SKINS setup
 		// TODO: make this an ‘initial’ blob, so that if localStorage is purged, we can restore
@@ -1147,7 +1166,9 @@ vTextureCoord = aTextureCoord;
 
 			// Safari requires you to define your event listener on the body; IE requires it to be set on the document. Firefox doesn’t care.
 			// SERIOUSLY?! bugger Safari. maybe Chrome too.
-			document.addEventListener('storage',updateSkinsFromAnotherTime,false);
+			// IE: If we dont have this, wont have ‘storage’
+			if (document.addEventListener)
+				document.addEventListener('storage',updateSkinsFromAnotherTime,false);
 
 		} else {
 
@@ -1178,6 +1199,7 @@ vTextureCoord = aTextureCoord;
 
 		// discover canvas support and continue
 		skineditor = document.getElementById( 'skin-editor' );
+		holder = document.getElementById('container');
 
 		if (skineditor && skineditor.getContext) {
 
@@ -1192,44 +1214,40 @@ vTextureCoord = aTextureCoord;
 			skineditorm.width = 64; skineditorm.height = 32;
 			skineditormc = skineditorm.getContext( '2d' );
 
-			holder = document.getElementById('container');
-
+			// need to disable for file:// Opera & Chrome, they refuse to open files
 			skinimporterchrome = document.createElement('input');
+			holder.appendChild(skinimporterchrome);
 			skinimporterchrome.id = 'skin-selector';
 			skinimporterchrome.type = 'file';
 			skinimporterchrome.accept = 'image/png'; // ask for PNG images
 			skinimporterchrome.addEventListener('change',	 loadSkinFromFile, false);
 
 			skinsaverchrome = document.createElement('input');
+			holder.appendChild(skinsaverchrome);
 			skinsaverchrome.id = 'skin-saver';
 			skinsaverchrome.type = 'submit';
 			skinsaverchrome.value = 'Save';
 			skinsaverchrome.addEventListener('click',	saveSkinInSkinsButton, false);
 
 			skinloaderchrome = document.createElement('input');
+			holder.appendChild(skinloaderchrome);
 			skinloaderchrome.id = 'skin-loader';
 			skinloaderchrome.type = 'submit';
 			skinloaderchrome.value = 'Load';
 			skinloaderchrome.addEventListener('click',	loadSkinInSkinsButton, false);
 
 			skinpurgerchrome = document.createElement('input');
+			// holder.appendChild(skinpurgerchrome);
 			skinpurgerchrome.id = 'skin-puger';
 			skinpurgerchrome.type = 'submit';
 			skinpurgerchrome.value = 'Purge';
 			skinpurgerchrome.addEventListener('click',		resetLocalStorage, false);
 
-			// need to disable for Opera & Chrome, they refuse to open files
-			holder.appendChild(skinimporterchrome);
-			
-			holder.appendChild(skinloaderchrome);
-			holder.appendChild(skinsaverchrome);
-			//holder.appendChild(skinpurgerchrome);
-
 			// even without data: URL support, we want this gutter to display
 			skinsholder = document.createElement('div');
+			holder.appendChild(skinsholder);
 			skinsholder.id='skins-container';
 			skinsholder.className = 'box';
-			holder.appendChild(skinsholder);
 
 			// now, for the EDITING!
 			palette = document.getElementById( 'colourpalette' ); 
@@ -1256,24 +1274,29 @@ vTextureCoord = aTextureCoord;
 			skinpreview.addEventListener('mouseup',			  stopRotatingDude, true);
 			skinpreview.addEventListener('mouseout',		  stopRotatingDude, true);
 			skinpreview.addEventListener('mousemove',	 captureCursorLocation, true);
-		} else {
+		} else if (fCanvasSupport) {
 			// XXX we *could* do some canvas‐generated perspective fallback here
 
 			// Be cheeky, swap out the missing webgl support with the existing fallback image.
+			// XXX This should run for Opera, Firefox, Chrome without WebGL support
 			var temp = document.createElement('div');
-			// temp.id = 'skin-preview';
+			holder.replaceChild(temp, skinpreview);
+
+			temp.id = 'skin-preview';
 			temp.width = '350px'; temp.height = '500px';
 			if ( skinpreview.hasChildNodes() ) {
 				while ( skinpreview.childNodes.length >= 1 ) {
 					temp.appendChild( skinpreview.removeChild( skinpreview.firstChild ) );
 				}
 			}
-			holder.replaceChild(temp, skinpreview);
 			delete skinpreview;
-			temp.id= 'skin-preview';
-			// we dont need to clone listeners because we can’t interact! 
 			skinpreview = document.getElementById( 'skin-preview' );
 
+		} else {
+			// XXX IE before version 9, please die.
+			skinpreviewi = document.getElementById( 'skin-preview-img' );
+			skineditori = document.getElementById( 'skin-editor-img' );
+			skinpreviewi.style.position = skineditori.style.position = 'absolute';
 		}
 	
 		// now that we are here, init our skin.
@@ -1303,8 +1326,11 @@ vTextureCoord = aTextureCoord;
 		timerDrawing = setInterval(drawScene, 1000);
 	}
 
-
-document.addEventListener("DOMContentLoaded", init, false);
+if (document.addEventListener)
+	document.addEventListener("DOMContentLoaded", init, false);
+else {
+	window.onload = init;
+}
 /* ]]> */
 </script>
 
@@ -1318,16 +1344,18 @@ document.addEventListener("DOMContentLoaded", init, false);
 <article id="container">
 	
  <style>
-	html, h1, article, p, div { margin: 0; padding: 0; }
+	html, h1, p, div, article { margin: 0; padding: 0; }
+	article, canvas, section, #skins-container, #skin-preview, #skin-editor, img { display: block; /*IE*/ }
+	canvas img { position: absolute; display: block; } /*IE*/
 	@font-face { font-family: Munro; src: local('Munro'), url(i/munro.ttf); text-rendering: optimizeLegibility; }
 
-	body { background: url(i/bg.gif) #eeeeee; margin:0; font-family: Munro, sans-serif; }
-	a { color: black; background: transparent; }
+	body { color: white; background: url(i/bg.gif) #232323; margin:0; font-family: Munro, sans-serif; }
+	a { color: inherit; background: transparent; }
 
 	#minecraft { background: url(i/minecraft.png) transparent no-repeat; display: inline-block; text-indent: -9999px; min-width:270px; min-height: 60px; }
 	header { margin: 0; font-family: Munro, sans-serif; color: white; background: url(i/top-bg.gif) repeat-x transparent; height:60px; }
 
-	canvas, .box, div#skin-preview { border: 4px solid grey; background: transparent; background: rgba(0,0,0,0.4); font-family: Munro, monospace; }
+	canvas, .box, div#skin-preview { float:left; border: 4px solid grey; background: transparent; background: rgba(0,0,0,0.4); font-family: Munro, monospace; }
 	canvas, .box, div#skin-preview { border-image: url(i/window-border.png) 4 stretch stretch; }
 	canvas, .box, div#skin-preview { -moz-border-image: url(i/window-border.png) 4 stretch stretch; }
 	canvas, .box, div#skin-preview { -webkit-border-image: url(i/window-border.png) 4 stretch stretch; }
@@ -1352,13 +1380,13 @@ document.addEventListener("DOMContentLoaded", init, false);
 	#skins-container div img { margin: 0 5px;}
 	#skins-container div img, #skins-container div p { cursor: pointer; }
 
-	#colourpalette { border: 4px outset #ccc; z-index: 20; top: 320px; color: #999; background: #ccc; padding: 0 4px; width: 504px; }
+	#colourpalette { border: 4px outset #eee; border-image: url(); z-index: 20; top: 320px; color: #999; background: #ccc; padding: 0 4px; width: 504px; }
 	#colourpalette span { display: inline-block; text-indent: -9999px; background: #888; overflow: hidden; width: 21px; height: 21px; border: 2px inset lightgrey; }
 	#colourpalette #pink { background: pink; }
 
-	#skin-editor, #skin-preview { top: 50px; }
-	#skin-editor { left: 374px; }
-	#skin-preview { left: 10px; }
+	#skin-editor, #skin-editor-img, #skin-preview, #skin-preview-img { top: 50px; }
+	#skin-editor, #skin-editor-img { left: 374px; }
+	#skin-preview, #skin-preview-img { left: 10px; }
 
 	#skin-editor.erasing { cursor: url(i/cursor-rubber.png) 9 9, auto; }
 	#skin-editor.painting { cursor: url(i/cursor.png) 9 9, auto; }
@@ -1368,14 +1396,14 @@ document.addEventListener("DOMContentLoaded", init, false);
 	#skin-preview.enabled { cursor: pointer; }
 	#noscript.disabled { display: none; }
 	/*#skin-editor.enabled  { cursor: crosshair; }*/
-	#skin-editor.enabled, #colourpalette #erase {  background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH2wIODxsDFVG/AgAAAClJREFUGNNjvHnz5n8GJKCmpobMZWBiIAAoV8D4//9/FDfcunWL3m4AADstCpWDR4PDAAAAAElFTkSuQmCC); }
+	#skin-editor.enabled, #colourpalette #erase, #skin-editor-img {  background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH2wIODxsDFVG/AgAAAClJREFUGNNjvHnz5n8GJKCmpobMZWBiIAAoV8D4//9/FDfcunWL3m4AADstCpWDR4PDAAAAAElFTkSuQmCC); }
 
 	#skin-preview:after { content: "."; display: block; height: 0; clear: both; visibility: hidden; }
 	#skin-selector, #skin-saver, #skin-loader { position: absolute; top: 570px; }
 	#skin-selector { left: 10px; }
 	#skin-saver { width: 55px; left: 310px; }
 	#skin-loader { width: 55px; left: 255px; }
-	footer { color: black; background: transparent; position: absolute; bottom: 2px; height: 50px; }
+	footer { /*color: black; background: transparent;*/ position: absolute; bottom: 2px; height: 50px; }
 
  </style>
 
@@ -1384,17 +1412,17 @@ document.addEventListener("DOMContentLoaded", init, false);
 Demo of: <code>&lt;canvas&gt;</code>, <code>WebGL</code>, &amp; <code>localStorage</code>.</p>
 
  <canvas id="skin-preview" width="350" height="500">
-  <img src="i/3d-tease.png" width="350" height="500" alt="Minecraft Default Skin Preview" />
+  <img id="skin-preview-img" src="i/3d-tease.png" width="350" height="500" alt="Minecraft Default Skin Preview" />
   <p>Sorry, you browser does not support WebGL. Pretend this image is rendered by your graphics card in real‐time.</p>
  </canvas>
 
  <canvas id="skin-editor" width="512" height="256">
-  <img src="i/char.png" width="512" height="256" alt="Minecraft Default Skin" />
+  <img id="skin-editor-img" src="i/char.png" width="512" height="256" alt="Minecraft Default Skin" />
   <p>Sorry, your browser does not support Canvas. Which kinda makes this whole application redundant.</p>
  </canvas>
 
  <!-- WIP palette, move into JS -->
- <div id="colourpalette" class="box"><p>Palette</p><span id="erase">erase</span><span id="pink">pink</span></div>
+ <div id="colourpalette" class="b ox"><p>Palette</p><span id="erase">erase</span><span id="pink">pink</span></div>
 
  <p id="noscript">While I’m the first person to complain about the needs of JavaScript for many a‐website, this is an ‘application’, it can’t run without the code being used. Please toggle NoScript, or try this in a browser that supports JavaScript.</p>
 
