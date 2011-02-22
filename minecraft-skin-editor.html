@@ -696,22 +696,29 @@ vTextureCoord = aTextureCoord;
 
 		console.log('Saving ‘' + skinName + '’ skin.');
 
-		// generate a thumbnail!
-		var skinthumb = document.createElement('canvas');
-		skinthumbc = skinthumb.getContext('2d');
-		skinthumb.width=70; skinthumb.height=100;
-		// TODO for browsers without WebGL, but with canvas, this will produce something empty
-		skinthumbc.drawImage(skinpreview, 0, 0, 70, 100);
-		var sthumbnail, sskin;
-		try {
+		if (fWebGLSupport) {
+
+			// generate a thumbnail!
+			var skinthumb = document.createElement('canvas');
+			skinthumbc = skinthumb.getContext('2d');
+			skinthumb.width=70; skinthumb.height=100;
+			// TODO for browsers without WebGL, but with canvas, this will produce something empty
+			skinthumbc.drawImage(skinpreview, 0, 0, 70, 100);
+			var sthumbnail, sskin;
 			try {
-				sthumbnail = skinthumb.toDataURL();
+				try {
+					sthumbnail = skinthumb.toDataURL();
+				} catch(e) {
+					netscape ? netscape.security.PrivilegeManager.enablePrivilege("UniversalBrowserRead") : true;
+					sthumbnail = skinthumb.toDataURL();
+				}
 			} catch(e) {
-				netscape ? netscape.security.PrivilegeManager.enablePrivilege("UniversalBrowserRead") : true;
-				sthumbnail = skinthumb.toDataURL();
+				console.log("unable to access image data: " + e);
 			}
-		} catch(e) {
-			console.log("unable to access image data: " + e);
+		} else {
+			// use default
+			// TODO overlay sskin?
+			sthumbnail = initialSkins['default'].thumb;
 		}
 
 		try {
@@ -1338,15 +1345,14 @@ document.addEventListener("DOMContentLoaded", init, false);
 	#wip a { color: black !important;}
 
 	/* skin preview box */
-	#skins-container { padding:0; background: rgba(0,0,0,0.5); top: 320px; height: 150px; min-width:500px; overflow: scroll; overflow-y: hidden; white-space: nowrap; }
-	#skins-container {display:none /* fer debugging */;}
+	#skins-container { padding:0; background: rgba(0,0,0,0.5); /* later top: 320px; */ top: 380px; height: 151px; min-width:510px; overflow: scroll; overflow-y: hidden; white-space: nowrap; }
 	#skins-container:empty { display:none; }
 	#skins-container div { padding: 2px 4px; display: inline-block; text-align: center; height: 124px; width: 80px; overflow: hidden; }
 	#skins-container p { color: white; background: transparent; overflow: ellipsis; }
 	#skins-container div img { margin: 0 5px;}
 	#skins-container div img, #skins-container div p { cursor: pointer; }
 
-	#colourpalette { border: 3px outset #ccc; z-index: 20; top: 320px; color: #999; background: #ccc; padding: 0 4px; width: 504px; }
+	#colourpalette { border: 4px outset #ccc; z-index: 20; top: 320px; color: #999; background: #ccc; padding: 0 4px; width: 504px; }
 	#colourpalette span { display: inline-block; text-indent: -9999px; background: #888; overflow: hidden; width: 21px; height: 21px; border: 2px inset lightgrey; }
 	#colourpalette #pink { background: pink; }
 
@@ -1360,7 +1366,7 @@ document.addEventListener("DOMContentLoaded", init, false);
 
 	/* if the user doesn’t have JS, or Canvas support, no point doing this */
 	#skin-preview.enabled { cursor: pointer; }
-	#noscript.disable { display: none; }
+	#noscript.disabled { display: none; }
 	/*#skin-editor.enabled  { cursor: crosshair; }*/
 	#skin-editor.enabled, #colourpalette #erase {  background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH2wIODxsDFVG/AgAAAClJREFUGNNjvHnz5n8GJKCmpobMZWBiIAAoV8D4//9/FDfcunWL3m4AADstCpWDR4PDAAAAAElFTkSuQmCC); }
 
