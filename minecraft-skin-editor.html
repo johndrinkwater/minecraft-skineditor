@@ -1066,6 +1066,7 @@ vTextureCoord = aTextureCoord;
 
 		// remove our noscript block
 		warning = document.getElementById( 'noscript' );
+		warning.className = 'disabled';
 		if (warning.parentElement)
 			warning.parentElement.removeChild(warning);
 		delete warning;
@@ -1220,6 +1221,7 @@ vTextureCoord = aTextureCoord;
 			// even without data: URL support, we want this gutter to display
 			skinsholder = document.createElement('div');
 			skinsholder.id='skins-container';
+			skinsholder.className = 'box';
 			holder.appendChild(skinsholder);
 
 			// now, for the EDITING!
@@ -1318,10 +1320,10 @@ document.addEventListener("DOMContentLoaded", init, false);
 	#minecraft { background: url(i/minecraft.png) transparent no-repeat; display: inline-block; text-indent: -9999px; min-width:270px; min-height: 60px; }
 	header { margin: 0; font-family: Munro, sans-serif; color: white; background: url(i/top-bg.gif) repeat-x transparent; height:60px; }
 
-	canvas, .box, div#skin-preview { border: 3px solid grey; background: transparent; background: rgba(0,0,0,0.4); font-family: Munro, monospace; }
-	canvas, .box { border-image: url(i/window-border.png) 4 3 3 4 round round; }
-	canvas, .box { -moz-border-image: url(i/window-border.png) 4 3 3 4 round round; }
-	canvas, .box { -webkit-border-image: url(i/window-border.png) 4 3 3 4 stretch stretch; }
+	canvas, .box, div#skin-preview { border: 4px solid grey; background: transparent; background: rgba(0,0,0,0.4); font-family: Munro, monospace; }
+	canvas, .box, div#skin-preview { border-image: url(i/window-border.png) 4 stretch stretch; }
+	canvas, .box, div#skin-preview { -moz-border-image: url(i/window-border.png) 4 stretch stretch; }
+	canvas, .box, div#skin-preview { -webkit-border-image: url(i/window-border.png) 4 stretch stretch; }
 
 	.sign { padding: 6px 4px; text-align:center; color: black; margin: 2px; border: 0; background: url(i/sign.png) no-repeat #ab8c55; background-size: 100% 100%; }
 
@@ -1331,23 +1333,24 @@ document.addEventListener("DOMContentLoaded", init, false);
 	#skin-preview, #skin-editor, #wip, #skins-container, #colourpalette { position: absolute; }
 	#wip, #colourpalette, #skins-container { left: 374px; width: 512px; }
 
-	#wip { font-size: 115%; top:330px; left: 438px; height: 130px; width: 324px; }
+	#wip { font-size: 115%; /* centralise for a lightbox? */ top:330px; left: 438px; height: 130px; width: 324px; }
 	#wip code {font-family: Munro, monospace; }
 	#wip a { color: black !important;}
 
 	/* skin preview box */
-	#skins-container { padding:0; background: rgba(0,0,0,0.5); top: 445px; height: 150px; min-width:260px; overflow: scroll; overflow-y: hidden; white-space: nowrap; }
+	#skins-container { padding:0; background: rgba(0,0,0,0.5); top: 320px; height: 150px; min-width:500px; overflow: scroll; overflow-y: hidden; white-space: nowrap; }
+	#skins-container {display:none /* fer debugging */;}
 	#skins-container:empty { display:none; }
 	#skins-container div { padding: 2px 4px; display: inline-block; text-align: center; height: 124px; width: 80px; overflow: hidden; }
 	#skins-container p { color: white; background: transparent; overflow: ellipsis; }
 	#skins-container div img { margin: 0 5px;}
 	#skins-container div img, #skins-container div p { cursor: pointer; }
 
-	#colourpalette { border: 3px outset #ccc; top: 330px; color: #999; background: #ccc; padding: 4px; padding-top: 0; width: 506px; }
+	#colourpalette { border: 3px outset #ccc; z-index: 20; top: 320px; color: #999; background: #ccc; padding: 0 4px; width: 504px; }
 	#colourpalette span { display: inline-block; text-indent: -9999px; background: #888; overflow: hidden; width: 21px; height: 21px; border: 2px inset lightgrey; }
 	#colourpalette #pink { background: pink; }
 
-	#skin-editor, #skin-preview { top: 60px; }
+	#skin-editor, #skin-preview { top: 50px; }
 	#skin-editor { left: 374px; }
 	#skin-preview { left: 10px; }
 
@@ -1357,6 +1360,7 @@ document.addEventListener("DOMContentLoaded", init, false);
 
 	/* if the user doesn’t have JS, or Canvas support, no point doing this */
 	#skin-preview.enabled { cursor: pointer; }
+	#noscript.disable { display: none; }
 	/*#skin-editor.enabled  { cursor: crosshair; }*/
 	#skin-editor.enabled, #colourpalette #erase {  background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH2wIODxsDFVG/AgAAAClJREFUGNNjvHnz5n8GJKCmpobMZWBiIAAoV8D4//9/FDfcunWL3m4AADstCpWDR4PDAAAAAElFTkSuQmCC); }
 
