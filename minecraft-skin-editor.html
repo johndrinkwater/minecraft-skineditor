@@ -857,7 +857,7 @@ vTextureCoord = aTextureCoord;
 
 		if (!fWebGLSupport)
 			return;
-		skinpreview.style.cursor='move';
+		// skinpreview.style.cursor='move';
 		if (!e) e = window.event;
 		clearInterval(timerDrawing);
 		// store mouse X/Y
@@ -880,7 +880,7 @@ vTextureCoord = aTextureCoord;
 
 		if (!fWebGLSupport)
 			return;
-		skinpreview.style.cursor='pointer';
+		// skinpreview.style.cursor='pointer';
 		clearInterval(timerAnimation);
 		// we should only redraw if: 1, invalidate 2, user draws 3, burn GPU
 		timerDrawing = setInterval(drawScene, 1000);
@@ -1036,8 +1036,10 @@ vTextureCoord = aTextureCoord;
 		skinsholder;
 
 	var ERASE = -1,
+		NONE = 0,
 		PAINT = 1;
-	var paintMode = PAINT;
+
+	var paintMode = NONE;
 	var paintColour = '#fff';
 
 	var skins = {},		// our storage pool for drawings
@@ -1223,9 +1225,9 @@ vTextureCoord = aTextureCoord;
 			// now, for the EDITING!
 			palette = document.getElementById( 'colourpalette' ); 
 			rubber = document.getElementById( 'erase' );
-			rubber.addEventListener('click', function() { paintMode = ERASE; paintColour = 'rgba(0,0,0,0)'; }, true);
+			rubber.addEventListener('click', function() { paintMode = ERASE; paintColour = 'rgba(0,0,0,0)'; skineditor.className = 'enabled erasing'; }, true);
 			pink = document.getElementById( 'pink' );
-			pink.addEventListener('click', function() { paintMode = PAINT; paintColour = 'pink'; }, true);
+			pink.addEventListener('click', function() { paintMode = PAINT; paintColour = 'pink'; skineditor.className = 'enabled painting';  }, true);
 
 		} else {
 			// We don’t have to do anything here, because we have fallback in HTML
@@ -1349,9 +1351,13 @@ document.addEventListener("DOMContentLoaded", init, false);
 	#skin-editor { left: 374px; }
 	#skin-preview { left: 10px; }
 
+	#skin-editor.erasing { cursor: url(i/cursor-rubber.png) 9 9, auto; }
+	#skin-editor.painting { cursor: url(i/cursor.png) 9 9, auto; }
+
+
 	/* if the user doesn’t have JS, or Canvas support, no point doing this */
 	#skin-preview.enabled { cursor: pointer; }
-	#skin-editor.enabled  { cursor: crosshair; }
+	/*#skin-editor.enabled  { cursor: crosshair; }*/
 	#skin-editor.enabled, #colourpalette #erase {  background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH2wIODxsDFVG/AgAAAClJREFUGNNjvHnz5n8GJKCmpobMZWBiIAAoV8D4//9/FDfcunWL3m4AADstCpWDR4PDAAAAAElFTkSuQmCC); }
 
 	#skin-preview:after { content: "."; display: block; height: 0; clear: both; visibility: hidden; }
