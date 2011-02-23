@@ -413,12 +413,12 @@ vTextureCoord = aTextureCoord;
 		headAccessVTCB = gl.createBuffer();
 		gl.bindBuffer(gl.ARRAY_BUFFER, headAccessVTCB);
 		var textureCoords = [
-			0.625, 0.5,	0.75, 0.5,	 0.75, 0.75,	 0.625, 0.75,
-			1.0, 0.5,		1.0, 0.75,	 0.875, 0.75,	0.875, 0.5,
-			0.625, 1.0,	0.625, 0.75, 0.75, 0.75,	 0.75, 1.0,
-			0.875, 1.0,	0.75, 1.0,	 0.75, 0.75,	 0.875, 0.75,
-			0.875, 0.5,	0.875, 0.75, 0.75, 0.75,	 0.75, 0.5,
-			0.5, 0.5,		0.625, 0.5,	0.625, 0.75,	0.5, 0.75,
+			0.625,	0.5,	0.75,	0.5,	0.75,	0.75,	0.625,	0.75,
+			1.0,	0.5,	1.0,	0.75,	0.875,	0.75,	0.875,	0.5,
+			0.625,	1.0,	0.625,	0.75,	0.75,	0.75,	0.75,	1.0,
+			0.875,	1.0,	0.75,	1.0,	0.75,	0.75,	0.875,	0.75,
+			0.875,	0.5,	0.875,	0.75,	0.75,	0.75,	0.75,	0.5,
+			0.5,	0.5,	0.625,	0.5,	0.625,	0.75,	0.5,	0.75,
 		];
 		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoords), gl.STATIC_DRAW);
 		headAccessVTCB.itemSize = 2;
@@ -427,12 +427,12 @@ vTextureCoord = aTextureCoord;
 		bodyVTCB = gl.createBuffer();
 		gl.bindBuffer(gl.ARRAY_BUFFER, bodyVTCB);
 		var textureCoords = [
-			0.3125, 0.0, 0.4375, 0.0, 0.4375, 0.375, 0.3125, 0.375,
-			0.625, 0.0, 0.625, 0.375, 0.5, 0.375, 0.5, 0.0,
-			0.3125, 0.5, 0.3125, 0.375, 0.4375, 0.375, 0.4375, 0.5,
-			0.5625, 0.5, 0.4375, 0.5, 0.4375, 0.375, 0.5625, 0.375,
-			0.5, 0.0, 0.5, 0.375, 0.4375, 0.375, 0.4375, 0.0,
-			0.25, 0.0, 0.3125, 0.0, 0.3125, 0.375, 0.25, 0.375,
+			0.3125,	0.0,	0.4375,	0.0,	0.4375,	0.375,	0.3125,	0.375,
+			0.625,	0.0,	0.625,	0.375,	0.5,	0.375,	0.5,	0.0,
+			0.3125,	0.5,	0.3125,	0.375,	0.4375,	0.375,	0.4375,	0.5,
+			0.5625,	0.5,	0.4375,	0.5,	0.4375,	0.375,	0.5625,	0.375,
+			0.5,	0.0,	0.5,	0.375,	0.4375,	0.375,	0.4375,	0.0,
+			0.25,	0.0,	0.3125,	0.0,	0.3125,	0.375,	0.25,	0.375,
 		];
 		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoords), gl.STATIC_DRAW);
 		bodyVTCB.itemSize = 2;
@@ -442,12 +442,12 @@ vTextureCoord = aTextureCoord;
 		armLVTCB = gl.createBuffer();
 		gl.bindBuffer(gl.ARRAY_BUFFER, armLVTCB);
 		var textureCoords = [
-			0.6875, 0.0, 0.75, 0.0,	0.75, 0.375, 0.6875, 0.375,
-			0.875, 0.0,	0.875, 0.375, 0.8125, 0.375, 0.8125, 0.0,
-			0.6875, 0.5, 0.6875, 0.375,0.75, 0.375,0.75, 0.5,
-			0.8125, 0.5, 0.75, 0.5, 0.75, 0.375, 0.8125, 0.375,
-			0.8125, 0.0, 0.8125, 0.375, 0.75, 0.375, 0.75, 0.0,
-			0.625, 0.0,	0.6875, 0.0,	 0.6875, 0.375, 0.625, 0.375,
+			0.6875,	0.0,	0.75,	0.0,	0.75,	0.375,	0.6875,	0.375,
+			0.875,	0.0,	0.875,	0.375,	0.8125,	0.375,	0.8125,	0.0,
+			0.6875,	0.5,	0.6875,	0.375,	0.75,	0.375,	0.75,	0.5,
+			0.8125,	0.5,	0.75,	0.5,	0.75,	0.375,	0.8125,	0.375,
+			0.8125,	0.0,	0.8125,	0.375,	0.75,	0.375,	0.75,	0.0,
+			0.625,	0.0,	0.6875,	0.0,	0.6875,	0.375,	0.625,	0.375,
 		];
 		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoords), gl.STATIC_DRAW);
 		armLVTCB.itemSize = 2;
@@ -457,12 +457,12 @@ vTextureCoord = aTextureCoord;
 		legLVTCB = gl.createBuffer();
 		gl.bindBuffer(gl.ARRAY_BUFFER, legLVTCB);
 		var textureCoords = [
-			0.0625, 0.0, 0.125, 0.0, 0.125, 0.375, 0.0625, 0.375,
-			0.25, 0.0, 0.25, 0.375, 0.1875, 0.375, 0.1875, 0.0,
-			0.0625, 0.5, 0.0625, 0.375, 0.125, 0.375, 0.125, 0.5,
-			0.1875, 0.5, 0.125, 0.5, 0.125, 0.375, 0.1875, 0.375,
-			0.1875, 0.0, 0.1875, 0.375, 0.125, 0.375, 0.125, 0.0,
-			0.0, 0.0, 0.0625, 0.0, 0.0625, 0.375, 0.0, 0.375,
+			0.0625,	0.0,	0.125,	0.0,	0.125,	0.375,	0.0625,	0.375,
+			0.25,	0.0,	0.25,	0.375,	0.1875,	0.375,	0.1875,	0.0,
+			0.0625,	0.5,	0.0625,	0.375,	0.125,	0.375,	0.125,	0.5,
+			0.1875,	0.5,	0.125,	0.5,	0.125,	0.375,	0.1875,	0.375,
+			0.1875,	0.0,	0.1875,	0.375,	0.125,	0.375,	0.125,	0.0,
+			0.0,	0.0,	0.0625,	0.0,	0.0625,	0.375,	0.0,	0.375,
 		];
 		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoords), gl.STATIC_DRAW);
 		legLVTCB.itemSize = 2;
@@ -471,12 +471,12 @@ vTextureCoord = aTextureCoord;
 		cubeVertexIndexBuffer = gl.createBuffer();
 		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cubeVertexIndexBuffer);
 		var cubeVertexIndices = [
-			0, 1, 2,			0, 2, 3,		// Front face
-			4, 5, 6,			4, 6, 7,		// Back face
-			8, 9, 10,		 8, 10, 11,	// Top face
-			12, 13, 14,	 12, 14, 15, // Bottom face
-			16, 17, 18,	 16, 18, 19, // Right face
-			20, 21, 22,	 20, 22, 23	// Left face
+			0,	1,	2,	0,	2,	3,	// Front face
+			4,	5,	6,	4,	6,	7,	// Back face
+			8,	9,	10,	8,	10,	11,	// Top face
+			12,	13,	14,	12,	14,	15,	// Bottom face
+			16,	17,	18,	16,	18,	19,	// Right face
+			20,	21,	22,	20,	22,	23	// Left face
 		]
 		gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(cubeVertexIndices), gl.STATIC_DRAW);
 		cubeVertexIndexBuffer.itemSize = 1;
@@ -484,8 +484,6 @@ vTextureCoord = aTextureCoord;
 	}
 
 	function updateTexture() {
-
-		// TODO Opera gets here, for some reason… 
 
 		loadedImage = false;
 		gl.bindTexture(gl.TEXTURE_2D, skintexture);
@@ -496,11 +494,11 @@ vTextureCoord = aTextureCoord;
 			try {
 				texels = skineditormc.getImageData(0, 0, 64, 32);
 			} catch(e) {
-				// if we, as the user, have asked for a local file, we expect to be able to use it
-				// TODO: no idea what to do for Chrome here
+				// if we, as the user, have asked for a file, we expect to be able to use it
+				// this hits for file:/// and probably other content.
+				// TODO: no idea what to do for !Gecko here
 				netscape ? netscape.security.PrivilegeManager.enablePrivilege("UniversalBrowserRead") : true;
 				texels = skineditormc.getImageData(0, 0, 64, 32);
-
 			}
 		} catch(e) {
 			console.log("unable to access image data: " + e);
@@ -513,8 +511,7 @@ vTextureCoord = aTextureCoord;
 		loadedImage = true;
 	}
 
-	// because localStorage has the poss. of updating in two tabs,
-	// we need to sync them
+	// Sync localStorage
 	// XXX: assume localStorage and not sessionStorage changed. why would it?
 	function updateSkinsFromAnotherTime(key) {
 
@@ -524,26 +521,34 @@ vTextureCoord = aTextureCoord;
 		// assume here that values have updated in another window
 		// since it was fired, we know at least 1, it is supported, so ignore try{}?
 		// ignorantly overwrite, for now
-		//skins = JSON.parse(localStorage.getItem('skins'));
-		//lastSkin = JSON.parse(localStorage.getItem('lastSkin'));
-		console.log('someone else updated our skins');
+
+		console.log( 'storage: another instance updated key ‘' + key + '’' );
+
+		if (key == 'skins')
+			skins = JSON.parse(localStorage.getItem('skins'));
+		else if (key = 'lastSkin')
+			lastSkin = JSON.parse(localStorage.getItem('lastSkin'));
+
+		updateSkins(false); // This will do more JSON parsing 
 	}
 
 	/*
 	* atm, we call this if we modify skins[]
 	*/
-	function updateSkins() {
+	function updateSkins(refreshLocal) {
 
 		if (!fCanvasSupport)
 			return;
 
 		console.log('Store the updated skins.');
 		// we want this to update the list of Skins stored, to easier allow the user to pop
-		try {
-			localStorage['skins']		= JSON.stringify(skins);
-			localStorage['lastSkin']	= JSON.stringify(lastSkin);
-		} catch (e) {
-			console.log('failed to store skins ' + e);
+		if (refreshLocal) {
+			try {
+				localStorage['skins']		= JSON.stringify(skins);
+				localStorage['lastSkin']	= JSON.stringify(lastSkin);
+			} catch (e) {
+				console.log('failed to store skins ' + e);
+			}
 		}
 
 		// we have to iterate over the object, make sure we get arrays, check for:
@@ -604,7 +609,7 @@ vTextureCoord = aTextureCoord;
 			skins[skinName] = skins[skin];
 			skins[skinName].name = skinName;
 			delete skins[skin];
-			updateSkins();
+			updateSkins(true);
 		}
 	}
 
@@ -658,7 +663,7 @@ vTextureCoord = aTextureCoord;
 		skins = initialSkins.clone();
 		lastSkin = new String(initialLastSkin);
 
-		updateSkins();
+		updateSkins(true);
 	}
 
 	function deleteSkinInSkins(skin) {
@@ -666,7 +671,7 @@ vTextureCoord = aTextureCoord;
 		if (skin) {
 			skins[skin] = {}
 			delete skins[skin];
-			updateSkins();
+			updateSkins(true);
 		}
 	}
 
@@ -733,7 +738,7 @@ vTextureCoord = aTextureCoord;
 			thumb: sthumbnail,
 		}
 		lastSkin = skinName;
-		updateSkins();
+		updateSkins(true);
 	}
 
 		/*
@@ -1031,28 +1036,27 @@ vTextureCoord = aTextureCoord;
 	};
 
 
-	var skinpreview; 	// our WebGL canvas
-
-	var skineditor,		// our drawing canvas
+	var skinpreview, 	// our WebGL canvas
+		skineditor,		// our drawing canvas
 		skineditorc, 	// our drawing canvas context
 		skinsholder;
 
-	var ERASE = -1,
+	var ERASE = -1,		// Painting, awww!
 		NONE = 0,
 		PAINT = 1;
 
-	var paintMode = NONE;
-	var paintColour = '#fff';
+	var paintMode = NONE,
+		paintColour = '#fff';
 
 	var skins = {},		// our storage pool for drawings
 		initialSkins = {},
 		lastSkin,		// our default skin to open
 		initialLastSkin;
 
-	// TODO: rename to loadedSkin?
 	var loadedImage = false; // delay 3D scene if canvas is slow.
 
 	var animate = true; // allow our little guy to agitate
+
 	// features we want to use, test for ’em
 	var fDataUrlSupport 	= false,
 		fJSONSupport		= false,
@@ -1063,7 +1067,6 @@ vTextureCoord = aTextureCoord;
 	/*
 	 * Boot our editor
 	 */
-
 	function init() {
 
 		// Why don’t we use a large library like modernisr?
@@ -1123,7 +1126,7 @@ vTextureCoord = aTextureCoord;
 		initialLastSkin = 'default';
 
 		// discover if we have JSON library in the browser
-		if (JSON) {
+		if ( typeof JSON != 'undefined' ) {
 			fJSONSupport = true;
 		} else {
 			console.log('TODO: write thing. lols' );
@@ -1131,20 +1134,17 @@ vTextureCoord = aTextureCoord;
 
 		// discover localStorage and enable if possible
 
-		if (typeof localStorage != 'undefined') {
+		if ( typeof localStorage != 'undefined' ) {
 			flStorageSupport = true;
 
 			console.log('We have localStorage support.');
 			if (localStorage['skins'] != null) {
 
-				console.log('We have a session!');
 				skins						= JSON.parse(localStorage['skins']);
 				lastSkin					= JSON.parse(localStorage['lastSkin']);
 
 			} else {
 
-				console.log('We are starting a new session.');
-				// copy values from defaults
 				skins = initialSkins.clone();
 				lastSkin = new String(initialLastSkin);
 				try {
@@ -1158,27 +1158,22 @@ vTextureCoord = aTextureCoord;
 
 			// Safari requires you to define your event listener on the body; IE requires it to be set on the document. Firefox doesn’t care.
 			// SERIOUSLY?! bugger Safari. maybe Chrome too.
-			// IE: If we dont have this, wont have ‘storage’
+			// IE: If we dont have this, wont have ‘storage’ (technically a lie, but that IE doesnt do canvas either…)
 			if (document.addEventListener)
-				document.addEventListener('storage',updateSkinsFromAnotherTime,false);
+				document.addEventListener('storage', updateSkinsFromAnotherTime, false);
 
 		} else {
 
 			// we need to disable our ‘skins’ stuff, just do session editing
-			// or, just ask the user for the name?
-			console.log('We don’t have localStorage support.');
 			localStorage = {};
 			skins = initialSkins.clone();
 			lastSkin = new String(initialLastSkin);
 			localStorage['skins']	= JSON.stringify(skins);
 			localStorage['lastSkin']= JSON.stringify(lastSkin);
-			// what we could always do, is localStorage = {}, use it like a assoc. array
-			// might even simplify things
 		}
 
 		// discover dataURL support and continue
-		// takes too long. All browsers that do canvas currently also support data:
-		// so assume. :\
+		// takes too long. Assumption: browsers that do canvas currently also support data:
 		/*
 		var dataTest = document.createElement('img');
 		dataTest.onload = dataTest.onerror = function() {
@@ -1189,10 +1184,10 @@ vTextureCoord = aTextureCoord;
 		dataTest.src = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
 		*/
 
-		// discover canvas support and continue
 		skineditor = document.getElementById( 'skin-editor' );
 		holder = document.getElementById('container');
 
+		// discover canvas support and continue
 		if (skineditor && skineditor.getContext) {
 
 			fCanvasSupport = true;
@@ -1252,9 +1247,9 @@ vTextureCoord = aTextureCoord;
 			// We don’t have to do anything here, because we have fallback in HTML
 		}
 
-		// discover WebGL support and continue
 		skinpreview = document.getElementById( 'skin-preview' );
 
+		// discover WebGL support and continue
 		if (skinpreview && initGL( skinpreview ) != null) {
 
 			fWebGLSupport = true;
@@ -1266,11 +1261,12 @@ vTextureCoord = aTextureCoord;
 			skinpreview.addEventListener('mouseup',			stopRotatingDude, true);
 			skinpreview.addEventListener('mouseout',		stopRotatingDude, true);
 			skinpreview.addEventListener('mousemove',		captureCursorLocation, true);
-		} else if (fCanvasSupport) {
-			// XXX we *could* do some canvas‐generated perspective fallback here
 
+		} else if (fCanvasSupport) {
+
+			// TODO *could* do some canvas‐generated perspective fallback here
 			// Be cheeky, swap out the missing webgl support with the existing fallback image.
-			// XXX This should run for Opera, Firefox, Chrome without WebGL support
+			// This should run for Opera, Firefox, Chrome without WebGL support
 			var temp = document.createElement('div');
 			holder.replaceChild(temp, skinpreview);
 
@@ -1291,10 +1287,8 @@ vTextureCoord = aTextureCoord;
 			skinpreviewi.style.position = skineditori.style.position = 'absolute';
 		}
 	
-		// now that we are here, init our skin.
 		loadSkinInSkins( lastSkin );
-		// init our display of skins
-		updateSkins();
+		updateSkins(false);
 	}
 
 	function webGLStart() {
@@ -1303,7 +1297,6 @@ vTextureCoord = aTextureCoord;
 		initBuffers();
 		updateTexture();
 
-		// if we put 0.0 for alpha, we see the background!
 		gl.clearColor(0.0, 0.0, 0.0, 0.5);
 		gl.clearDepth(1.0);
 		gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
@@ -1338,7 +1331,6 @@ else {
  <style>
 	html, h1, p, div, article { margin: 0; padding: 0; }
 	article, canvas, section, #skins-container, #skin-preview, #skin-editor, img { display: block; /*IE*/ }
-	canvas img { position: absolute; display: block; } /*IE*/
 	@font-face { font-family: Munro; src: local('Munro'), url(i/munro.ttf); text-rendering: optimizeLegibility; }
 
 	body { color: white; background: url(i/bg.gif) #232323; margin:0; font-family: Munro, sans-serif; }
