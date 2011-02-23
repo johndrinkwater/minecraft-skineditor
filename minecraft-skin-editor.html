@@ -1419,13 +1419,14 @@ else {
 	body { color: white; background: url(i/bg.gif) #232323; margin:0; font-family: Munro, monospace; }
 	a { color: inherit; background: transparent; }
 
-	#minecraft { background: url(i/minecraft.png) transparent no-repeat; display: inline-block; text-indent: -9999px; min-width:270px; min-height: 60px; }
-	header { margin: 0; font-family: Munro, monospace; color: white; background: url(i/top-bg.gif) repeat-x transparent; height:60px; }
+	#minecraft { background: url(i/minecraft.png) transparent no-repeat; display: inline-block; text-indent: -9999px; min-width:270px; height:45px; min-height: 45px; }
+	header h1 { margin: 0; color: white; background: url(i/top-bg.gif) transparent repeat-x; height:45px; vertical-align: text-bottom; line-height: 60px; }
 
 	canvas, .box, div#skin-preview { border: 3px solid grey; background: transparent; background: rgba(0,0,0,0.4); font-family: Munro, monospace; }
-	canvas, .box, div#skin-preview { border-image: url(i/window-border.png) 3 stretch stretch; }
-	canvas, .box, div#skin-preview { -moz-border-image: url(i/window-border.png) 3 stretch stretch; }
-	canvas, .box, div#skin-preview { -webkit-border-image: url(i/window-border.png) 3 stretch stretch; }
+	canvas, .box, div#skin-preview {
+		-moz-border-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJCAYAAADgkQYQAAAAAXNSR0IArs4c6QAAAHtJREFUGNONkLENQyEMBQ9IQ+19vQQdY7ADLQMg0dNQU0QiKaIQfSVf+a5sv5N1sgEe/KkbQCkFgJzzIay1EkJ4Qa01UkoHQESotX4uAXjviTGa96yqW8MC9N6Zc5462V+OnC1FBFW9A1hrWWt9Q3NOxhg7cM7t3lz50xP8Gif0o4r5twAAAABJRU5ErkJggg==) 3 stretch stretch;
+		-webkit-border-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJCAYAAADgkQYQAAAAAXNSR0IArs4c6QAAAHtJREFUGNONkLENQyEMBQ9IQ+19vQQdY7ADLQMg0dNQU0QiKaIQfSVf+a5sv5N1sgEe/KkbQCkFgJzzIay1EkJ4Qa01UkoHQESotX4uAXjviTGa96yqW8MC9N6Zc5462V+OnC1FBFW9A1hrWWt9Q3NOxhg7cM7t3lz50xP8Gif0o4r5twAAAABJRU5ErkJggg==) 3 stretch stretch;
+		border-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJCAYAAADgkQYQAAAAAXNSR0IArs4c6QAAAHtJREFUGNONkLENQyEMBQ9IQ+19vQQdY7ADLQMg0dNQU0QiKaIQfSVf+a5sv5N1sgEe/KkbQCkFgJzzIay1EkJ4Qa01UkoHQESotX4uAXjviTGa96yqW8MC9N6Zc5462V+OnC1FBFW9A1hrWWt9Q3NOxhg7cM7t3lz50xP8Gif0o4r5twAAAABJRU5ErkJggg==) 3 stretch stretch; }
 
 	.sign { padding: 6px 4px; text-align:center; color: black; margin: 2px; border: 0; background: url(i/sign.png) no-repeat #ab8c55; background-size: 100% 100%; }
 
@@ -1452,12 +1453,13 @@ else {
 	#skin-editor, #skin-editor-img { left: 374px; }
 	#skin-preview, #skin-preview-img { left: 10px; }
 
-	#skin-editor.erasing { cursor: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAZCAYAAAAiwE4nAAAAAXNSR0IArs4c6QAAAAZiS0dEAAAAAAAA+UO7fwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB9sCFgA4GL9sOcIAAAHRSURBVEjH7ZXPSiNBEMa/mu6J0ej6B4RkjAfXXS+C4CWHeIiC+gTePHjzFeITSMSDl32PPe0bLOzCooiCiokkKmKMmoyjGTWZmfYQnJhsSDqzsu6CBU0fpnp+XVVfVQNyJvBKpsjAhBCvBlXwl+0d+GYm8L8aNYmA2oyYZIHPfVb7gaj+QlTXl838/50I36yGMir9zffu7DyR/votbmZzMFLp6k+Z8pz7yl62MDQXw/jyEskAhRCiYY02VzdE39goQrEoiAiNagtHwDLvcfHjF8rFovfGv97ZS7AOH4LRCETZgrCdyl6/bBuswwdtegpmNucdaGSO48FoBMRYJQ223fIMU1VvQCN9kiieZfHh04gUqFpb5g14tb0b16anIMqW9Bn7sQS1t0cKSC8Fk98/TFjmPfwD/TVKbGU3ySMEhkLSEbrqzH7/GQ/PxtxUUhOhk8rdGt8cZTA4ObHG201nSTegcA741CpMaXBvx4GwHUABcls76A5rCGjBlbaBD/kCHMuSFgupHGbuEr2fP3p7gBXOUTJupf31gyS4349QNEKegIFhDY8FHcSYW58XI8ld7vjLnAIK/dmE317/IvTDFEq60dSPd3UiPD+DscUFl/MEOnTCiVKaAd8AAAAASUVORK5CYII=') 9 9, auto; }
-	#skin-editor.painting { cursor: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAZCAYAAAAiwE4nAAAAAXNSR0IArs4c6QAAAAZiS0dEAAAAAAAA+UO7fwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB9sCFgA4BkVjBKEAAABQSURBVEjH7ZQ7CgAgDEMT73/nODnoIBXFH3lrC6+BtkAMYREpIpO0TJqwGQuPIbwKOwk4mJhRYbmzukC2A7G5y17/PQnx/Zb6l1roX2rMPBkaYRsKucus4wAAAABJRU5ErkJggg==') 9 9, auto; }
+	#skin-editor.erasing { cursor: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAZCAYAAAAiwE4nAAAAAXNSR0IArs4c6QAAAAZiS0dEAAAAAAAA+UO7fwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB9sCFgA4GL9sOcIAAAHRSURBVEjH7ZXPSiNBEMa/mu6J0ej6B4RkjAfXXS+C4CWHeIiC+gTePHjzFeITSMSDl32PPe0bLOzCooiCiokkKmKMmoyjGTWZmfYQnJhsSDqzsu6CBU0fpnp+XVVfVQNyJvBKpsjAhBCvBlXwl+0d+GYm8L8aNYmA2oyYZIHPfVb7gaj+QlTXl838/50I36yGMir9zffu7DyR/votbmZzMFLp6k+Z8pz7yl62MDQXw/jyEskAhRCiYY02VzdE39goQrEoiAiNagtHwDLvcfHjF8rFovfGv97ZS7AOH4LRCETZgrCdyl6/bBuswwdtegpmNucdaGSO48FoBMRYJQ223fIMU1VvQCN9kiieZfHh04gUqFpb5g14tb0b16anIMqW9Bn7sQS1t0cKSC8Fk98/TFjmPfwD/TVKbGU3ySMEhkLSEbrqzH7/GQ/PxtxUUhOhk8rdGt8cZTA4ObHG201nSTegcA741CpMaXBvx4GwHUABcls76A5rCGjBlbaBD/kCHMuSFgupHGbuEr2fP3p7gBXOUTJupf31gyS4349QNEKegIFhDY8FHcSYW58XI8ld7vjLnAIK/dmE317/IvTDFEq60dSPd3UiPD+DscUFl/MEOnTCiVKaAd8AAAAASUVORK5CYII=) 9 9, auto; }
+	#skin-editor.painting { cursor: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAZCAYAAAAiwE4nAAAAAXNSR0IArs4c6QAAAAZiS0dEAAAAAAAA+UO7fwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB9sCFgA4BkVjBKEAAABQSURBVEjH7ZQ7CgAgDEMT73/nODnoIBXFH3lrC6+BtkAMYREpIpO0TJqwGQuPIbwKOwk4mJhRYbmzukC2A7G5y17/PQnx/Zb6l1roX2rMPBkaYRsKucus4wAAAABJRU5ErkJggg==) 9 9, auto; }
 
 
 	/* if the user doesn’t have JS, or Canvas support, no point doing this */
 	#skin-preview.enabled { cursor: pointer; }
+	#noscript { clear:both;}
 	#noscript.disabled { display: none; }
 	/*#skin-editor.enabled { cursor: crosshair; }*/
 	#skin-editor.enabled, #colourpalette #erase, #skin-editor-img { background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH2wIODxsDFVG/AgAAAClJREFUGNNjvHnz5n8GJKCmpobMZWBiIAAoV8D4//9/FDfcunWL3m4AADstCpWDR4PDAAAAAElFTkSuQmCC); }
@@ -1469,9 +1471,11 @@ else {
 	#skin-loader { width: 55px; left: 255px; }
 
 	#output canvas { float: left; }
-	#output {position: absolute; top: 540px; left: 374px; }
-	.button { }
-	#output a { display: block; float: right; clear:right; background: #ccc; margin: 2px 4px; border: 2px outset #eee; color: #999; text-decoration:none; }
+	#output h1 { font-size: 20px; }
+	#output { padding: 4px; position: absolute; top: 540px; left: 374px; }
+	.button { display: block; float: right; clear:right; background: #ccc; margin: 2px 4px; border: 2px outset #eee; color: #444; text-decoration:none; }
+	.button:hover, .button:focus { color: #333; background: #aaa; border: 2px outset #ccc; }
+	.button:active { color: #ddd; background: #999; border: 2px inset #bbb; }
 	footer { /*color: black; background: transparent;*/ position: absolute; bottom: 2px; height: 50px; }
 
  </style>
@@ -1491,7 +1495,7 @@ Demo of: <code>&lt;canvas&gt;</code>, <code>WebGL</code>, &amp; <code>localStora
  </canvas>
 
 <!-- Save Changes | Start Again | Load Skin From Disk | I’m Finished Drawing!  _Save your skin_ … to Minecraft. … to Disk. -->
- <section id="output" class="box"><h1>I think I’m ready to save… </h1><canvas id="skin-editor-mini" name="image" width="64" height="32">?</canvas><a href="#fondle" id="submitmojang">… to Minecraft!</a><br /><a href="">… to Disk.</a> </section>
+ <section id="output" class="box"><h1>I think I’m ready to save… </h1><canvas id="skin-editor-mini" name="image" width="64" height="32">?</canvas><a class="button" href="#savetonotchbabyyeah" id="submitmojang">… to Minecraft!</a><br /><a href="#savetodisk" class="button">… to Disk.</a> </section>
 
  <p id="noscript">While I’m the first person to complain about the needs of JavaScript for many a‐website, this is an ‘application’, it can’t run without the code being used. Please toggle NoScript, or try this in a browser that supports JavaScript.</p>
 
