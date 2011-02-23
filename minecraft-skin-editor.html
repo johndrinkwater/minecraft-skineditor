@@ -564,7 +564,6 @@ vTextureCoord = aTextureCoord;
 
 		// iterate and add skins to GUI!
 		for (obj in skins) {
-			
 			obj = skins[obj];
 			if (obj.thumb != null) {
 
@@ -669,6 +668,13 @@ vTextureCoord = aTextureCoord;
 			delete skins[skin];
 			updateSkins(true);
 		}
+	}
+
+	function saveSkinToMinecraft(e) {
+
+	}
+
+	function saveSkinToDisk(e) {
 	}
 
 	function saveSkinInSkinsButton(e) {
@@ -822,6 +828,7 @@ vTextureCoord = aTextureCoord;
 	var lastTime = 0;
 	function animateScene() {
 
+		// TODO replace with actual animation code
 		var timeNow = new Date().getTime();
 		if (lastTime != 0) {
 			var elapsed = timeNow - lastTime;
@@ -838,29 +845,24 @@ vTextureCoord = aTextureCoord;
 		lastTime = timeNow;
 	}
 
-	/**
-	 * we only want to ‘animate’ when the user rotates, otherwise, just
-	 * redraw
-	 */
-	function tick() {
-		animateScene();
-		drawScene();
-	}
-
 	function startRotatingDude(e) {
 
 		if (!fWebGLSupport)
 			return;
-		// skinpreview.style.cursor='move';
+		pauseAnimation();
+		canRotate = true;
+
+		skinpreview.style.cursor='move';
 		if (!e) e = window.event;
-		clearInterval(timerDrawing);
+		//clearInterval(timerDrawing);
 		// store mouse X/Y
 		cursorThen = [e.clientX, e.clientY];
-
-		timerAnimation = setInterval(tick, 100);
 	}
 
 	function captureCursorLocation(e) {
+		if (!canRotate)
+			return;
+		// test if we want to do this
 		if (!e) e = window.event;
 		// what we really want to do:
 		// rotate body on X, rotate head on Y (within bounds)
@@ -868,28 +870,91 @@ vTextureCoord = aTextureCoord;
 		cursorDiffX = cursorThen[0] - cursorNow[0]
 		cursorDiffY = cursorThen[1] - cursorNow[1]
 		cursorThen = cursorNow
+		xHead -= ( cursorDiffX*2 )
+		yHead -= ( cursorDiffY*2 )
+		// TODO obviously, clamp
 	}
 
 	function stopRotatingDude() {
 
 		if (!fWebGLSupport)
 			return;
-		// skinpreview.style.cursor='pointer';
-		clearInterval(timerAnimation);
+		resumeAnimation();
+		canRotate = false;
+
+		skinpreview.style.cursor='pointer';
+		//clearInterval(timerAnimation);
 		// we should only redraw if: 1, invalidate 2, user draws 3, burn GPU
-		timerDrawing = setInterval(drawScene, 1000);
+		//timerDrawing = setInterval(updateWhileDrawing, 250);
 	}
+
+	/*
+		logic:
+			* Animate guy always.
+			: User starts drawing → reduce scene redraws, set timer for scene update
+			  Timer triggers to resume animation, stop scene update, resume scene redraw
+			: Rotate guy → Pause ‘animation’ of dude, [2 minutes?], allow user to rotate
+	*/
 
 	function toggleAnimation() {
 
 		if (!fWebGLSupport)
 			return;
-		animate = !animate;
+		canAnimate = !canAnimate;
+		if (!canAnimate)
+			resumeAnimation();
+		else
+			pauseAnimation()
+	}
+
+	function pauseAnimation(){
+		canAnimate = false;
+		clearInterval(timerAnimation);
+	}
+	function resumeAnimation() {
+		canAnimate = true;
+		clearTimeout(timerDrawingComplete);
+		timerAnimation = setInterval(animateScene, 50);
+	}
+
+	// to control redraws
+	function reduceSceneDrawing() {
+		clearInterval(timerDrawingScene);
+		timerDrawingScene = setInterval(drawScene, 250);
+	}
+	function resumeSceneDrawing() {
+		clearInterval(timerDrawingScene);
+		timerDrawingScene = setInterval(drawScene, 50);
+	}
+	// to control texture updates
+	function startSceneUpdates() {
+		clearInterval(timerUpdateScene); // incase
+		if (fWebGLSupport)
+			timerUpdateScene = setInterval(updateTexture, 250);
+	}
+	function stopSceneUpdates() {
+		clearInterval(timerUpdateScene);
+	}
+
+	function drawingComplete(){
+		stopSceneUpdates();
+		resumeSceneDrawing();
+		resumeAnimation();
+		timerDrawingComplete = false; // TODO needed?
 	}
 
 	function drawOnDude(ev) {
 		var x, y;
-		clearInterval(timerDrawing);
+		
+		// to prevent constantly blocking updates
+		if (fWebGLSupport) {
+			if (!timerDrawingComplete) {
+				pauseAnimation();
+				reduceSceneDrawing(); // do we need?
+				startSceneUpdates();
+				timerDrawingComplete = setTimeout(drawingComplete, 1000);
+			}
+		}
 
 		if (!ev) ev = window.event;
 	
@@ -901,7 +966,7 @@ vTextureCoord = aTextureCoord;
 		}
 
 		// remove border, clamp to 64×32
-		x -=3; y -=3;
+		x -=4; y -=4;
 		x -= x%8; y -= y%8;
 
 		// What mode are we in?
@@ -920,12 +985,6 @@ vTextureCoord = aTextureCoord;
 			skineditorc.restore();
 		} else {
 			// future proof?
-		}
-
-		if (fWebGLSupport) {
-			updateTexture();
-			drawScene();
-			timerDrawing = setInterval(drawScene, 1000);
 		}
 	}
 
@@ -1045,11 +1104,15 @@ vTextureCoord = aTextureCoord;
 	var loadedImage = false, // delay 3D scene if canvas is slow.
 		skintexture;
 
-	var animate = true, // allow our little guy to agitate
-		timerDrawing,
-		timerAnimation,
-		cursorThen = [0,0],
+	var	cursorThen = [0,0],
 		cursorNow = [0,0];
+
+	var canAnimate,
+		canRotate,
+		timerDrawingComplete,
+		timerAnimation,
+		timerDrawingScene,
+		timerUpdateScene;
 
 	// features we want to use, test for ’em
 	var fDataUrlSupport 	= false,
@@ -1108,11 +1171,6 @@ vTextureCoord = aTextureCoord;
 			data: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAAAgCAYAAACinX6EAAAE8klEQVRogeWX0U/bVhTG/UjtxCVVp0Z2YgqkxoEgh8JLglhIaYBOaNWImFo8NRVMkIYipAj2sAoFNgSESd2eIgWlmVSpUoQ29WHd9lCxxz3lf/r24FxzbeyYUlR31NInJ77HN/5+957jE4ZxOfrDfvSH/YgEO0B/jgQ70NXJYWNKbSu3+T/6gxhWu65C7bpqAhAJdmBjSkVhPI7d7Ihx3s2OXC4AxLwssI4AGIYxqTAevxwAyOpb04Bcu/QAaLOywEIWWFM6fBIA7My7AZhV5MsDgBiPhnyQBRZdndwpAHa6NACIcVpkZ/zvX4OKyEIRdVN9IodoyIfbvZ0YvKlLvenHgKTXASXEIRLsgCywGJB0ACTudm8noiEf+kQOsqDPqYgs3PoIr/2bAMgCi5jEIxryYUDyYzgSwIDkNzQcCeBO/zWk+j9DTOKhhDgjJhryISbxxjw0gHZ9hNf+mZjEQw7qq6Yb56GIHCJB1gDxV/kpjp8X8W9lC8c/FXH8fB2/fTePkVvXEA35EAmyUEQOAy14ssBCDnKISTzc+giv/es7QPBjMMzrqyrqqRCTeKg9ARxtLuHNziqONpfw+9YqasVv8LZcRO3JDGpPZqD2BBCTePSJHBRR30GDYR6K4IcisnDrI7z2b6SAngY+9N64gr0HSdQWM0gq1/FmZxUAMDtWxp/PlvG2XMTsWBkAcLS5hKRyHbXFDPYeJNF74wpkwQd6Trc+wmv/JwAEf2vbBrAzO4RKLo39+QRqi5P449kC/v6haLze/tl/ipeFKWxlR7A/n0All8bO7BBiUgBykDNWny6CTn2E1/4Zsu0HwzwWJlS8KNzH4eJd4w/NL48mUMmNI93tw8HMGA5mxpDp4fHzo8+xnU1gY0rFbnYEh4t38aJwHwsTqp4CrXRw6yO89s+Qf2/EdG15GpVcGgcPR7E+rWItE8PqRD/S3T7cCbPI9PDI9PD4cW4U3385jPVpFQcPR/Fr/h5qy9M4/PYL/dyaj4C09hEEnNf+Tx1f32uClqIoJrlO0Gw6N0XNJpjHj9vL7Wg09HmaTTCNBgrjcXw1dMs4fxQAnFrjCwFAzLf0aQNoNEzmW3/KvAfwIVPgvQHElSLiShFyt4a4UsRk8pVJ9Jh1PDlUBlMqnUjTwFSrYOp1bGcTeFmYwnY2ge1sAky9rouOL5X0a43GiV6/1kW+O8WTGOs4uZ/oLADkbu1cACaTr/Qfzed1lUonD96CYJgnD0TH5/Nm07TIPHQsMUjuIUCt4+cB4GTQFYDdA5KHrNf1HUGbpOPzeXvz9Bx2gOkYzwFo2skDaJr5xwkA+ppTPIlrNMyfrQbp3fShdgAdkxwqm2QYIapWzabJZ3KdjiUArKap+yu5tKG9uVEcbS6ZtDc3aoqxjp8LADFH7wBHALSZfN4MwM4YDYykgN09ra1uB6CyphkGyfULBfDONcAKgF59umLTAOgaYDFNA6HNWQFU1jRbAJU1zYg5EwBa7/0WcANgfQvYxToAsK6wFYBdilwIgHbjbYuQ9Q1gBWBXtCyizTkBaFcjXAGkUimkUilXACRuZWXFJMMQaUTI6llX3wkAHW9TD2hzdjlOA6BTgJzPDMDJoNs4nSJyt3YKoNExUgCsjZdRUEmaVKtGEXYCQEza7RDPANjtIBOEatW9ta5WTdesK2wqgGuabY14FwD/Ad2t413QljEOAAAAAElFTkSuQmCC',
 			thumb: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEYAAABkCAYAAAA7Ska5AAADkUlEQVR4nO3Zz0vbYBjA8R5HnW4KwhDrnFSR6nClvdji/IXKQDysdIdtWHAwmTYIwe1gGcRN0GzgdioUxMNgIGPiwR87iB49+T89O8j79m36Jk017fs0fQrfw9Is75PP0jS6QIBeti+DkqZ8AKwpHwBrygfAmvIBsKZ8AKwpHwBrygfAmvIBsFb7RUZ6W4E11HPTyOMHvMHuFhjsboHwo3u8ga4gDHQF+f5DPa0QCRUjGIJxD/O096E/YMSTkxULt0Ms3A5TkQ7eeKQTxiOdMNzTxmOA9ZiZYLDAnJlZODOzcLGr867yBlzlDbj4rhfbXYeL3XX4++k1L97fAfH+DoIhmGaF+fP5PbBOtjQ42dJA3HZoaHBoaLCnv+WdmzqcmzrsfZgvi2D8DsMwTrY0YK+XYybvNLcMp7lljnFu6vw98cUgCYZgmhRm790ssI5zS3CcW4J/X3TeysSzsi53snC5k4VfK3M8IxUHIxUnGN/D/FycBlY+MwH5zARMPrnP+zY/VtZMXxvM9LXBj8XnvM3UKGymRgmGYJoVZm1mGFjadAS06UgJzFQoCFOhIMcQ+5pO8jYWYrCxECMY38N8nBsBLys5/vU18A4OiqGAEQcTBxWHLRRu2t/nsXsG+zpmfxYT9+dZ15CFCsYpL2EYtmwd766aO6K4HbQWMEdHxdg2cT/lMG4GlmUBkoKIx7Iek2CqgBG3KYVxGk5EczpBtg/7uBUK8hO1HpdgbGDE48quSKUw4iBuTsALGKcaAsZtMpjbHgsNTKWrohYwTmui/FZyGlI8abuTl70n+3uNAMN/D1vpX9ZjGPG/X+xCAePUdjrpDGN9Opa9J7zvZs2mhNlOJ8vWyK+94aGCkQ1WK5h8ZtKHMLJ7kfXZRfzq9yMM35aZ9BRmO520X4tgytdqmJsvG74WHyW7j21DwXh9xfgGJhAIGFIQNzCS/QjGrzAlA8qeY5x+xSDbxvavZl2CQQ5j9zwxm/gN1ZSImpCImhVhnB4sUcJYB6wnTMm9TRWM0xOoOKDXMLJ1mgLGCpSImq5g7no+nsG47bYwsuo0c31gXr24hko1JQxdMQRDMARDMARDMARDMARDMARTReJP1SxfwzidMMG4gKGPEt1jCIZgCIZgCIZgCIZgGhNmdXUVvIpgCIZgCKaWeARDMChTPgDWlA+ANeUDYE35AFhTPgDWlA+ANeUDYE35AFhTPgDK/gOLlYhBD0WfqAAAAABJRU5ErkJggg==',
 		}
-		/*initialSkins['jd'] = {
-			name: 'jd',
-			data: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAAAgCAMAAACVQ462AAAA8FBMVEUAAAAfEAsjFwkkGAgkGAomGAsjGRUmGgomGgwoGg0nGwsoGwooGwsoHAspHAwyFxQqHQ0rHg0rHg4tHQ4sHg4sHhEvHw8tIBAvIA0vIhEyIxAzJBE0JRI6KBQ/KhVCKhJSKCZLLh0aSxpRMSU/Pz9iQy9qQDBSPYkkcCR1Ry8jfiOKTD2EUjGBUzmGUzSHVTuHWDqIWjmKWTuTW0Jra2uWX0GaY0ScY0WaZEqcZ0ifaEmcaUydak+iakeWb1ucclysdlqqfWaze2K1e2etgG20hG23gnK2iWy+iGy7iXK9i3K9jnK9jnTGloD///8AAABxqeaaAAAAAXRSTlMAQObYZgAAAAFiS0dEAIgFHUgAAAAJcEhZcwAACxMAAAsTAQCanBgAAAAHdElNRQfbAgkTHQUig98cAAAB30lEQVRIx7WUC1PTQBSFu4R2aRc2CV22QkWNlNAK3QBxixWMJoqKj/b//xvvzWaZTjuaB+OZTPcmM+fL2fQkrVYhz3PgcMikUKuuPEdKADiTUIVKNQFISQ1gCQrrAxyJe5BeYwB4KZVPAeR+C3jVAEAlpwQBuRoAOAV5Xu2/kTHa40eDwTNf7jnU9waDI96jjNleVAFQwf2h7/vDly/E3tDngiKg6EUpQLQp39/d5v63n79//Pr0nG/v7nPaFrYX5Qm6fcF64jC9T798fLi9PRQ9JvpdZntRYQtsZ+vy5vh+cfb54WyRHt9cbu3ARduLCoBu++BCX2XZ1yD4nmVX+uKg3cWHaHpR/gxY//RupuI4C87PgyyO1ezutM+E7UUpQKmZmuvrOI4DECzX7+fv5jN4IbEXE1WpC2MQFtieFx8Fsiz0eB0UnoQn5QBT5/8DAH/4pC1sAND8BoTraxDJNf0wnZJ/qgRANvyu69qhEmBTtQGLhXXmB2mewAC01lEKimDAtTrAXQEkaaqjuoA8gUsiA0hyQJI0AuCdERDVTGAEPgPQa4DRyAJGo7egvwG0AaQak8BWVgDGaFdMgWnGHXDh3MGhMzaAJM2TrAKWa3oEAKGYOwR+8M7gS6K1BH8A2DSJHSt8yKwAAAAASUVORK5CYII=',
-			thumb: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEYAAABkCAYAAAA7Ska5AAACv0lEQVR4nO3ZsUsbYRzG8RuLwVYDgSoahZwisW0GXUREdMlQp4pLLQgOlZocLYftEixnCei1kEXI5OQodTLaIcTRf+vXobyvL7m75FIveX+5ew6+g4nmnvtgwqGGgSPwcJBv2gdwTfsArmkfwDXtA7imfQDXtA/gmvYBXNM+gGv9P0lhdpREi9l/FWZeyBamUrQwlSLz5TPZ/OQIzU+OyO9fzI5SfvoxwAAmPMzr2bF4wKgX59eSOU5L5jht5tOy9XyG1vMZepV9LhOAg9gMGC4wd26Z7twytWq27KHu0EPdodYv+7HaEbVqR/T723vZ8lyalufSgAFMUmGujj+SqFG1qFG1SH3s2rHo2rHowv4ga7o2NV2bLj5teQJM3GEERqNqkTjerbmy28oB3VYOJEbTteVz6iEgAQOYhMLcVPapvT8/bNnbN9Oe7s/KdH9W9vzcTWUfMLGHOd/dJJG4OBXh59aaJ/GcCiJeAzCAAYzM73PFL7+fBUzcYb4WCxRl6mvPjKXILxYwQeO6dbK9QifbK3R5WKTLw6L8Wu1/Xxsw/cPRgwKYHoCiAgFM3GH6FWAAAxjyOwADmBi/lcTfYQd90eq/X4JiAdOp053VgaMkEuZ0Z9VzjvrnXRkrGL9h/YKp720AJpYw8rG9jcjfSoHnAoz3XEPz4SvG9+OtFPS2HSqYqH9jYgNjGNHeIQMmrjDqwChhejkvYLjDBN1PmF9M6qXcRIZyE5muMJ1uLFnCtA8cJIz62aYNptMdqDowahi/8yQCph1IReoE89TriQwmbKEQvudCNaDNgNEKE/aiAQMYwAAGMIABDGAAAxjAAAYwgAEMYAADGMAABjCAAQxgEgJTKpUoqgCTBBjDMKhbgHl6sYIJE2ACAswQpH0A17QP4Jr2AVzTPoBr2gdwTfsArmkfwDXtA7imfQDL/gI0JtXz/KxIpQAAAABJRU5ErkJggg==',
-		}*/
 		initialSkins['honeydew'] = {
 			name: 'honeydew',
 			data: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAAAgCAYAAACinX6EAAADG0lEQVRogd1YO26kQBDlCg4mICCzLDn12KlTEvLdDYcT+Ba2z0BqiXCEJpjABARIHACJjMDyPeiNqlUUVf1zW7PrlkpjaLrp9/pV9cNJYmnloVSm+Ly7Usf9TnV5pj7vrvQ1/G2b/59vAPTPr9+rgPtdnongj/vdzyAAAGPw8AuA4bfLs5UiLr3+Lzdu9zERsNtUBT+GgKauVpLHKdHU1QZw7BRo6ko1dbWZR7ofvQEBmAS4bupKA/94e14FEBHj/RclwFYEOfAQXZ79/ylgOwYl8BCXXr+1caCaujKCjjWmPJTRpB2cEtyi5nHwBhIyhiNgHgc1j4M3kNBxSf74oGjM47C6vr25ZsM0xjWSJEnovPM4qNubaw1Gej/uhzFSvzg+ZNExw7QG0yZF63+5T5UUUMiKotgUN3zPNIctvCUbu1Hrukwn7eyW6aSW6aTSNN0YnjRNdT8Yn2U66WeoIaImCTtFaqW5DymXPjo/xii6VLo4AAH3AOAynVRRFKooitU9OpZzhjZCKHj6dcn5CeijxFKisCOFeVbX3O5zllby+/RllBQXn4CVgH+h0Z3lXCZcU5DejRYK27FFW5dnLNDjfqfyxwedNlLY5ueOUnxaBYGmBOAFSZVVarBT1BJ3eRaVgL49rwiAYzk6AdLZKjXTl+F3EhBVASYTZBvPVVvI3e9MgWAFSCahb8+qb89WI0MB4CJFq7rPPBCShbaty7VmiTbRNbhF41MBBywOagMF40qAi5KAhCACJPm7EkCPwuN+p9X08fa8Ate3Z/1OuE+f8QWPSfAmAMvHhQTp5SD/Ls80yL49b3YX5y+AwwS4pkpoTWHPfch/l1zjXvr++qQdJa4pGBglgKYCfTY0vBTAGR+bCmwSxHnP5TcmABfdGOC9CYiVAlQl0m6Wh1LPw6mBm8s3vAn4ShHkFmCSMnaLkhpC/svkY903KcCFiQBpDABzlSqnANP80RQgFUCfQiiBfn990gXRhQApHXxqEt0cKwF4YpPrkvqwjDEg/GnsQoAtHbjNcFGlcwrYCAg5BXxJkNQQogLAY8P/F6CbuIFTQdIoAAAAAElFTkSuQmCC',
@@ -1181,6 +1239,8 @@ vTextureCoord = aTextureCoord;
 		*/
 
 		skineditor = document.getElementById( 'skin-editor' );
+		skineditorm = document.getElementById( 'skin-editor-mini' );
+
 		holder = document.getElementById('container');
 
 		// discover canvas support and continue
@@ -1193,7 +1253,7 @@ vTextureCoord = aTextureCoord;
 
 			// TODO: turn this back into a <canvas> because we need it for
 			// the save image option
-			skineditorm = document.createElement( 'canvas' );
+			//skineditorm = document.createElement( 'canvas' );
 			skineditorm.width = 64; skineditorm.height = 32;
 			skineditormc = skineditorm.getContext( '2d' );
 
@@ -1241,7 +1301,7 @@ vTextureCoord = aTextureCoord;
 			palette.id='colourpalette';
 
 			// TODO dropper?
-			// now build default colours:
+			// now build default colours, C64 has a nice mellow palette… :
 			pColours = { 'erase': 'erase', '#000000': 'black', '#FFFFFF': 'white', '#883932': 'red', '#67B6BD': 'cyan',
 						 '#8B3F96': 'purple', '#55A049': 'green', '#40318D': 'blue', '#BFCE72': 'yellow',
 						 '#8B5429': 'orange', '#574200': 'brown', '#B86962': 'light red',
@@ -1330,7 +1390,8 @@ vTextureCoord = aTextureCoord;
 		gl.enable(gl.DEPTH_TEST);
 		gl.depthFunc(gl.LEQUAL);
 
-		timerDrawing = setInterval(drawScene, 1000);
+		resumeAnimation()
+		resumeSceneDrawing();
 	}
 
 if (document.addEventListener)
@@ -1355,13 +1416,13 @@ else {
 	article, canvas, section, #skins-container, #skin-preview, #skin-editor, img { display: block; /*IE*/ }
 	@font-face { font-family: Munro; src: local('Munro'), url(i/munro.ttf); text-rendering: optimizeLegibility; }
 
-	body { color: white; background: url(i/bg.gif) #232323; margin:0; font-family: Munro, sans-serif; }
+	body { color: white; background: url(i/bg.gif) #232323; margin:0; font-family: Munro, monospace; }
 	a { color: inherit; background: transparent; }
 
 	#minecraft { background: url(i/minecraft.png) transparent no-repeat; display: inline-block; text-indent: -9999px; min-width:270px; min-height: 60px; }
-	header { margin: 0; font-family: Munro, sans-serif; color: white; background: url(i/top-bg.gif) repeat-x transparent; height:60px; }
+	header { margin: 0; font-family: Munro, monospace; color: white; background: url(i/top-bg.gif) repeat-x transparent; height:60px; }
 
-	canvas, .box, div#skin-preview { float:left; border: 4px solid grey; background: transparent; background: rgba(0,0,0,0.4); font-family: Munro, monospace; }
+	canvas, .box, div#skin-preview { border: 4px solid grey; background: transparent; background: rgba(0,0,0,0.4); font-family: Munro, monospace; }
 	canvas, .box, div#skin-preview { border-image: url(i/window-border.png) 4 stretch stretch; }
 	canvas, .box, div#skin-preview { -moz-border-image: url(i/window-border.png) 4 stretch stretch; }
 	canvas, .box, div#skin-preview { -webkit-border-image: url(i/window-border.png) 4 stretch stretch; }
@@ -1378,11 +1439,11 @@ else {
 	#wip code {font-family: Munro, monospace; }
 	#wip a { color: black !important;}
 
-	#skins-container { padding:0; background: rgba(0,0,0,0.5); /* later top: 320px; */ top: 380px; height: 151px; min-width:510px; overflow: scroll; overflow-y: hidden; white-space: nowrap; }
+	#skins-container { padding:0; background: rgba(0,0,0,0.5); /* later top: 320px; */ top: 380px; height: 151px; min-width:260px; overflow: scroll; overflow-y: hidden; white-space: nowrap; }
 	#skins-container:empty { display:none; }
 	#skins-container div { padding: 2px 4px; display: inline-block; text-align: center; height: 124px; width: 80px; overflow: hidden; }
 	#skins-container p { cursor: pointer; color: white; background: transparent; overflow: ellipsis; }
-	#skins-container img { margin: 0 4px; cursor: pointer; }
+	#skins-container img { margin: 0 3px; cursor: pointer; }
 
 	#colourpalette { border: 4px outset #eee; border-image: url(); z-index: 20; top: 320px; color: #999; background: #ccc; padding: 0 4px; width: 504px; }
 	#colourpalette span { display: inline-block; text-indent: -9999px; background: transparent; overflow: hidden; width: 21px; height: 21px; border: 2px inset lightgrey; }
@@ -1406,6 +1467,11 @@ else {
 	#skin-selector { left: 10px; }
 	#skin-saver { width: 55px; left: 310px; }
 	#skin-loader { width: 55px; left: 255px; }
+
+	#output canvas { float: left; }
+	#output {position: absolute; top: 540px; left: 374px; }
+	.button { }
+	#output a { display: block; float: right; clear:right; background: #ccc; margin: 2px 4px; border: 2px outset #eee; color: #999; text-decoration:none; }
 	footer { /*color: black; background: transparent;*/ position: absolute; bottom: 2px; height: 50px; }
 
  </style>
@@ -1423,6 +1489,9 @@ Demo of: <code>&lt;canvas&gt;</code>, <code>WebGL</code>, &amp; <code>localStora
   <img id="skin-editor-img" src="i/char.png" width="512" height="256" alt="Minecraft Default Skin" />
   <p>Sorry, your browser does not support Canvas. Which kinda makes this whole application redundant.</p>
  </canvas>
+
+<!-- Save Changes | Start Again | Load Skin From Disk | I’m Finished Drawing!  _Save your skin_ … to Minecraft. … to Disk. -->
+ <section id="output" class="box"><h1>I think I’m ready to save… </h1><canvas id="skin-editor-mini" name="image" width="64" height="32">?</canvas><a href="#fondle" id="submitmojang">… to Minecraft!</a><br /><a href="">… to Disk.</a> </section>
 
  <p id="noscript">While I’m the first person to complain about the needs of JavaScript for many a‐website, this is an ‘application’, it can’t run without the code being used. Please toggle NoScript, or try this in a browser that supports JavaScript.</p>
 
