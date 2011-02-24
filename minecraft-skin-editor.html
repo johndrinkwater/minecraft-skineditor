@@ -713,7 +713,12 @@ vTextureCoord = aTextureCoord;
 		// upon getting confirmation, load another tab?
 	}
 
+	function openPushSkinDialog(e) {
+		// all this really needs to do is animate‐in the ‘I think i’m ready’ dialogue
+	}
+
 	function saveSkinToDisk(e) {
+		skinimporterchrome.click();
 	}
 
 	function saveSkinInSkinsButton(e) {
@@ -1315,14 +1320,16 @@ vTextureCoord = aTextureCoord;
 			 * convert everything below either: into pure JS, or keep as HTML and fix display w/o JS
 			 */
 
-			//<a href="#wedontneedclouds" id="openFile" class="button">Open From Disk</a>
-			//<a href="#notcheatthis" id="pushSkin" class="button">I’m Finished Drawing!</a>
 			var temp = document.getElementById( 'saveSkin' );
 			temp.addEventListener('click',		saveSkinInSkinsButton, false);
 			temp = document.getElementById( 'resetSkin' );
 			temp.addEventListener('click',					resetSkin, false);
 			temp = document.getElementById( 'submitmojang' );
 			temp.addEventListener('click',		  saveSkinToMinecraft, false);
+			temp = document.getElementById( 'openFile' );
+			temp.addEventListener('click',			   saveSkinToDisk, false);
+			temp = document.getElementById( 'pushSkin' );
+			temp.addEventListener('click',		   openPushSkinDialog, false);
 
 			// now, for the EDITING!
 			palette = document.createElement('div');
@@ -1471,7 +1478,7 @@ else {
 	#skin-preview, #skin-editor, #wip, #skins-container, #colourpalette { position: absolute; }
 	#wip, #colourpalette, #skins-container, #skin-editor, #skin-editor-img, #doshit { left: 374px; width: 512px; }
 
-	#wip { font-size: 115%; /* centralise for a lightbox? */ top:330px; left: 438px; height: 130px; width: 324px; }
+	#wip { font-size: 115%; /* centralise for a lightbox? */ top:570px; left: 10px; height: 130px; width: 324px; }
 	#wip code {font-family: Munro, monospace; }
 	#wip a { color: black !important;}
 
@@ -1499,9 +1506,9 @@ else {
 	/*#skin-editor.enabled { cursor: crosshair; }*/
 	#skin-editor.enabled, #colourpalette #erase, #skin-editor-img { background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH2wIODxsDFVG/AgAAAClJREFUGNNjvHnz5n8GJKCmpobMZWBiIAAoV8D4//9/FDfcunWL3m4AADstCpWDR4PDAAAAAElFTkSuQmCC); }
 
-	#skin-preview:after { content: "."; display: block; height: 0; clear: both; visibility: hidden; }
+	/* why did I do this? #skin-preview:after { content: "."; display: block; height: 0; clear: both; visibility: hidden; }*/
 	#skin-selector, #skin-saver, #skin-loader { position: absolute; top: 570px; }
-	#skin-selector { left: 10px; }
+	#skin-selector { left: 10px; visibility: hidden; }
 	#skin-saver { width: 55px; left: 310px; }
 	#skin-loader { width: 55px; left: 255px; }
 
@@ -1518,9 +1525,9 @@ else {
 
  </style>
 <!-- http://sylvester.jcoglan.com/ Sylvester is © 2007 James Coglan -->
- <p id="wip" class="sign box">Work‐in‐progress. Please send suggestions to jdrinkwater@gmail.com. Code history <a href="">here</a>, licensed AGPL where applicable. <br/>
-© <a href="http://johndrinkwater.name/">JD</a>, <a href="">Mojang</a>, <a href="http://www.tenbytwenty.com/munro.php">10×20</a>, <a href="http://learningwebgl.com/blog/">learningWebGL</a>.<br />
-Demo of: <code>&lt;canvas&gt;</code>, <code>WebGL</code>, &amp; <code>localStorage</code>.</p>
+ <p id="wip" class="sign box">Work‐in‐progress. Please send suggestions to jdrinkwater@gmail.com. Code history <a href="http://johndrinkwater.name/code/mcse/">here</a>, licensed AGPL where applicable. <br/>
+© <a href="http://johndrinkwater.name/">JD</a>, <a href="http://mojang.com/">Mojang</a>, <a href="http://www.tenbytwenty.com/munro.php">10×20</a>, <a href="http://learningwebgl.com/blog/">learningWebGL</a>.<br />
+<code>HTML5</code> demo: <code>canvas</code>, <code>WebGL</code>, <code>localStorage</code>.</p>
 
  <canvas id="skin-preview" width="350" height="500">
   <img id="skin-preview-img" src="i/3d-tease.png" width="350" height="500" alt="Minecraft Default Skin Preview" />
