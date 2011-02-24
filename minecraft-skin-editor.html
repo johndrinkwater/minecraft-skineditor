@@ -1449,15 +1449,21 @@ else {
 
 <header><h1><span id="minecraft">Minecraft</span> Skin Editor</h1></header>
 
-<section>
 <article id="container">
 	
  <style>
 	html, h1, p, div, article { margin: 0; padding: 0; }
-	article, canvas, section, #skins-container, #skin-preview, #skin-editor, img { display: block; /*IE*/ }
+	article, canvas, #skins-container, #skin-preview, #skin-editor, img { display: block; /*IE*/ }
+
+	body { width: 700px; margin: 0 auto; }
+
 	@font-face { font-family: Munro; src: local('Munro'), url(i/munro.ttf); text-rendering: optimizeLegibility; }
 
-	body { color: white; background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAAAAAByaaZbAAAACXZwQWcAAAAwAAAAMADO7oxXAAAACXBIWXMAAABIAAAASABGyWs+AAAAvUlEQVRIx72VwQoEIQxD5zsCBQ/9/2/cQyBk21n2ZHpSxzekUdvnnFMW55zu7m4A3b2/PhFAmzyqSmMA3FZVGQAAJWrA3RStP3KQATQh7Cv1HUmAincMrwEEAIkbopWPFjkNABTnwFjxqwkgAGz1Cr+LyjMDeJkYb2BHBtjq9zHT7pfKdwegXH8A8lTSlVgAkFbKHZ6OKYAA8GqrJ/OnZd0B1G/26dJcTyMD/Krsbu7s0zeBUSZ2FZtV4zrwAZYHGyR4NaVcAAAAAElFTkSuQmCC) #232323; margin:0; font-family: Munro, monospace; }
+	html { height: 100%; color: white; background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAAAAAByaaZbAAAACXZwQWcAAAAwAAAAMADO7oxXAAAACXBIWXMAAABIAAAASABGyWs+AAAAvUlEQVRIx72VwQoEIQxD5zsCBQ/9/2/cQyBk21n2ZHpSxzekUdvnnFMW55zu7m4A3b2/PhFAmzyqSmMA3FZVGQAAJWrA3RStP3KQATQh7Cv1HUmAincMrwEEAIkbopWPFjkNABTnwFjxqwkgAGz1Cr+LyjMDeJkYb2BHBtjq9zHT7pfKdwegXH8A8lTSlVgAkFbKHZ6OKYAA8GqrJ/OnZd0B1G/26dJcTyMD/Krsbu7s0zeBUSZ2FZtV4zrwAZYHGyR4NaVcAAAAAElFTkSuQmCC) #232323; margin:0; font-family: Munro, monospace; }
+
+	body { width: 900px; min-height: 100%; margin: 0 auto; }
+	article { position: relative; }
+
 	a { color: inherit; background: transparent; }
 
 	#minecraft { background: url(i/minecraft.png) transparent no-repeat; display: inline-block; text-indent: -9999px; min-width:270px; height:45px; min-height: 45px; }
@@ -1482,17 +1488,17 @@ else {
 	#wip code {font-family: Munro, monospace; }
 	#wip a { color: black !important;}
 
-	#skins-container { padding:0; background: rgba(0,0,0,0.5); /* later top: 320px; */ top: 401px; height: 149px; min-width:260px; overflow: scroll; overflow-y: hidden; white-space: nowrap; }
+	#skins-container { padding:0; background: rgba(0,0,0,0.5); /* later top: 320px; */ top: 370px; height: 149px; min-width:260px; overflow: scroll; overflow-y: hidden; white-space: nowrap; }
 	#skins-container:empty { display:none; }
 	#skins-container div { padding: 2px 4px; display: inline-block; text-align: center; height: 124px; width: 80px; overflow: hidden; }
 	#skins-container p { cursor: pointer; color: white; background: transparent; overflow: ellipsis; }
 	#skins-container img { margin: 0 3px; cursor: pointer; }
 
-	#colourpalette { border: 2px outset #eee; border-image: url(); z-index: 20; top: 320px; color: #999; background: #ccc; padding: 0 4px; width: 504px; }
+	#colourpalette { border: 2px outset #eee; border-image: url(); z-index: 20; left: 375px; top: 275px; color: #999; background: #ccc; padding: 0 4px; width: 503px; }
 	#colourpalette span { display: inline-block; text-indent: -9999px; background: transparent; overflow: hidden; width: 21px; height: 21px; border: 2px inset lightgrey; }
 
-	#doshit { position: absolute; top: 373px; }
-	#skin-editor, #skin-editor-img, #skin-preview, #skin-preview-img { top: 50px; }
+	#doshit { position: absolute; top: 335px; }
+	#skin-editor, #skin-editor-img, #skin-preview, #skin-preview-img { top: 5px; }
 	#skin-preview, #skin-preview-img { left: 10px; }
 
 	#skin-editor.erasing, #colourpalette #erase { cursor: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAZCAYAAAAiwE4nAAAAAXNSR0IArs4c6QAAAAZiS0dEAAAAAAAA+UO7fwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB9sCFgA4GL9sOcIAAAF2SURBVEjHY2AgDvxnoCP4DwL0tHTUwqFvId1TKc18gI6pqR4zjtABmiH/SVQ/uHw4aOMYA3x5+rzj8pQ5/0/WtP3fHZEKx3ui08F4d1QaGO8KTfp/ddbC/xTnw7Nt/f/vrtn0/9vrN/+/v3kLpjHwy9f/P91/9P/2srX/r81e9J9sC99eutZxoXfq/6/PXoAxyGAYGxc+09xDvoX3N23//+L4aaIsguHzHRPJsxAYRB1Xps8HBxmxloHwhe4p5Fl4b/3W/++u3yLJMlA8kpRwYAygRR23lq6BByUwpRJl4eNd+/8/2LqL9PwKSmnExhsslYLYoCgA0h0kWwiKhx9v3///8f7D/58fPkLwp8+YGCgOVgfEj7bv/f9g807ySqMTlc0kpUyQL28sXPH/+bFT5Fl4qrb9/4fb94i28Nnh4//vrNxAflkLSmkvT50D+xLdp6AEBMMwsVuLV/2/s3ojZYU7KB4PpBaAy0h8eF989n9QikbWCwBbhQgfoI/AOgAAAABJRU5ErkJggg==) 9 9, auto; }
@@ -1503,25 +1509,21 @@ else {
 	#skin-preview.enabled { cursor: pointer; }
 	#noscript { clear:both;}
 	#noscript.disabled { display: none; }
-	/*#skin-editor.enabled { cursor: crosshair; }*/
 	#skin-editor.enabled, #colourpalette #erase, #skin-editor-img { background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH2wIODxsDFVG/AgAAAClJREFUGNNjvHnz5n8GJKCmpobMZWBiIAAoV8D4//9/FDfcunWL3m4AADstCpWDR4PDAAAAAElFTkSuQmCC); }
 
-	/* why did I do this? #skin-preview:after { content: "."; display: block; height: 0; clear: both; visibility: hidden; }*/
-	#skin-selector, #skin-saver, #skin-loader { position: absolute; top: 570px; }
-	#skin-selector { left: 10px; visibility: hidden; }
-	#skin-saver { width: 55px; left: 310px; }
-	#skin-loader { width: 55px; left: 255px; }
+ 	#skin-selector { position: absolute; top: 570px; left: 10px; visibility: hidden; }
 
-.button { display: inline-block; background: #888; padding: 1px 3px ; margin: 2px; border: 2px outset #ccc; color: white; text-shadow: black 1px 1px; text-decoration:none; }
-.button:hover, .button:focus { color: #ff4; background: #48e; border: 2px outset #7ae; }
-.button:active { color: #ddd; background: #999; border: 2px inset #bbb; }
+	.button { display: inline-block; background: #888; padding: 1px 3px ; margin: 2px; border: 2px outset #ccc; color: white; text-shadow: black 1px 1px; text-decoration:none; }
+	.button:hover, .button:focus { color: #ff4; background: #48e; border: 2px outset #7ae; }
+	.button:active { color: #ddd; background: #999; border: 2px inset #bbb; }
 
 	#output canvas { float: left; }
 	#output h1 { font-size: 20px; }
+	#output p {clear:both; }
 	#output { padding: 4px; position: absolute; top: 570px; left: 374px; }
 	#output .button { float: right; clear: right; margin: 2px 4px;  }
 	
-	footer { /*color: black; background: transparent;*/ position: absolute; bottom: 2px; height: 50px; }
+	footer { position: absolute; bottom: 2px; height: 50px; }
 
  </style>
 <!-- http://sylvester.jcoglan.com/ Sylvester is © 2007 James Coglan -->
@@ -1539,15 +1541,12 @@ else {
   <p>Sorry, your browser does not support Canvas. Which kinda makes this whole application redundant.</p>
  </canvas>
 
- <section id="doshit"><a href="#finishedpokingbits" id="saveSkin" class="button">Save</a> <a href="#Imadeabooboo" id="resetSkin" class="button">Start Again</a> <a href="#wedontneedclouds" id="openFile" class="button">Open From Disk</a> <a href="#notcheatthis" id="pushSkin" class="button">I’m Finished Drawing!</a></section>
- <section id="output" class="box"><h1>I think I’m ready to save… </h1><canvas id="skin-editor-mini" name="image" width="64" height="32">?</canvas><a class="button" href="#savetonotchbabyyeah" id="submitmojang">… to Minecraft!</a><br /><a href="#libertarianmoi" class="button">… to Disk.</a> </section>
-
-<!-- <section id="userdialogue" class="box"></section> -->
+ <div id="doshit"><a href="#finishedpokingbits" id="saveSkin" class="button">Save</a> <a href="#Imadeabooboo" id="resetSkin" class="button">Start Again</a> <a href="#wedontneedclouds" id="openFile" class="button">Open From Disk</a> <a href="#notcheatthis" id="pushSkin" class="button">I’m Finished Drawing!</a></div>
+ <div id="output" class="box"><h1>I think I’m ready to save… </h1><canvas id="skin-editor-mini" name="image" width="64" height="32">?</canvas><a class="button" href="#savetonotchbabyyeah" id="submitmojang">… to Minecraft!</a><br /><!--<a href="#libertarianmoi" id="jsapisucksatm" class="button">… to Disk.</a> because you cant without hacks --><p>…to Disk: right click this image and select Save.</p></div>
 
  <p id="noscript">While I’m the first person to complain about the needs of JavaScript for many a‐website, this is an ‘application’, it can’t run without the code being used. Please toggle NoScript, or try this in a browser that supports JavaScript.</p>
 
 </article>
-</section>
 
 <footer><p>Parts <a href="http://creativecommons.org/licenses/by-sa/2.0/deed.en_GB"><svg xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle; padding-bottom:3px; width:.95em; height: .95em;" width="16px" height="16px" viewBox="-2 -2 66 66"><circle cx="32" cy="32" r="28" fill="none" stroke="white" stroke-width="7px" /><path d="m19.63,41.14 c-2.8,-1 -5.1,-4 -5.5,-7.43 -0.6,-5.06 1.327,-9 5.2,-10.75 2.1,-0.96 5.93,-0.93 8.2,0.05 1.4,0.6 4,3 4,3.6 0,0.1 -0.9,0.64 -2,1.17 l-2,1 c-0.87,-1.06 -1.9,-1.74 -3.1,-2.3 -1.37,-0.26 -3,0.35 -3.74,1.4 -1.23,1.72 -1.3,6.2 -0.15,7.974 0.6,0.92 1.6,1.6 2.6,1.6 2,0.16 2.5,-0.02 3.7,-1.26 l1.2,-1.26 1.54,0.85 c0.85,0.47 1.66,0.96 1.8,1.1 0.52,0.47 -1.86,2.9 -3.77,3.85 -1.63,0.8 -2.14,0.92 -4.3,0.9 -1.34,-0.013 -3,-0.22 -3.67,-0.46z m18.32,0 c-2.8,-1 -5.1,-4 -5.5,-7.43 -0.6,-5.06 1.327,-9 5.2,-10.75 2.1,-0.96 5.93,-0.93 8.2,0.05 1.4,0.6 4,3 4,3.6 0,0.1 -0.9,0.64 -2,1.17 l-2,1 c-0.87,-1.06 -1.9,-1.74 -3.1,-2.3 -1.37,-0.26 -3,0.35 -3.74,1.4 -1.23,1.72 -1.3,6.2 -0.15,7.974 0.6,0.92 1.6,1.6 2.6,1.6 2,0.16 2.5,-0.02 3.7,-1.26 l1.2,-1.26 1.54,0.85 c0.85,0.47 1.66,0.96 1.8,1.1 0.52,0.47 -1.86,2.9 -3.77,3.85 -1.63,0.8 -2.14,0.92 -4.3,0.9 -1.34,-0.013 -3,-0.22 -3.67,-0.46z" fill="white" stroke="white" stroke-width="1px" /><switch><g></g><foreignObject width="2em" height="1em">CC</foreignObject></switch></svg> BY‑SA</a> John Drinkwater 2002–2011, see About</p></footer>
 
