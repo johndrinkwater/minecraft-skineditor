@@ -482,7 +482,9 @@ vTextureCoord = aTextureCoord;
 
 	function updateTexture() {
 
-		loadedImage = false;
+		if (!loadedImage)
+			false;
+		loadedTexture = false;
 		gl.bindTexture(gl.TEXTURE_2D, skintexture);
 		gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
 		var texels;
@@ -505,7 +507,7 @@ vTextureCoord = aTextureCoord;
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
 		gl.bindTexture(gl.TEXTURE_2D, null);
-		loadedImage = true;
+		loadedTexture = true;
 	}
 
 	// Sync localStorage
@@ -606,13 +608,6 @@ vTextureCoord = aTextureCoord;
 			delete skins[skin];
 			updateSkins(true);
 		}
-	}
-
-	function loadSkinInSkinsButton(e) {
-
-		loadSkinInSkins("");
-		e.preventDefault();
-		return false;
 	}
 
 	function loadSkinInSkins(skin) { 
@@ -808,8 +803,9 @@ vTextureCoord = aTextureCoord;
 
 	function drawScene() {
 
-		if (!loadedImage)
+		if (!loadedTexture) {
 			return;
+		}
 
 		gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -959,7 +955,7 @@ vTextureCoord = aTextureCoord;
 	function startSceneUpdates() {
 		clearInterval(timerUpdateScene); // incase
 		if (fWebGLSupport)
-			timerUpdateScene = setInterval(updateTexture, 250);
+			timerUpdateScene = setInterval(updateTexture, 200);
 	}
 	function stopSceneUpdates() {
 		clearInterval(timerUpdateScene);
@@ -1011,6 +1007,8 @@ vTextureCoord = aTextureCoord;
 			skineditorc.fillStyle = paintColour;
 			skineditorc.fillRect( x, y, 8, 8);
 			skineditorc.restore();
+		} else if (paintMode == DROPPER) {
+			// 
 		} else {
 			// future proof?
 		}
@@ -1050,16 +1048,16 @@ vTextureCoord = aTextureCoord;
 		return Math.round( Math.round( num * Math.pow( 10, dec + 1 ) ) / Math.pow( 10, 1 ) ) / Math.pow(10,dec);
 	}
 
-	/* Image.onload function */
+	/* our data: URL image loader function */
 	function loadNewSkin() {
 
 		if (!fCanvasSupport)
 			return;
-		console.log('loadNewSkin called.');
-		skineditor.width = skineditor.width; // need a .clear
 
+		skineditormc.save();
 		skineditormc.clearRect(0,0,64,32);
 		skineditormc.drawImage( this, 0, 0, 64, 32 );
+		skineditormc.restore();
 
 		skineditorc.clearRect(0,0,512,256);
 
@@ -1090,9 +1088,11 @@ vTextureCoord = aTextureCoord;
 			}
 			skineditorc.restore();
 		}
+		loadedImage = true;
 
-		if (fWebGLSupport)
+		if (fWebGLSupport) {
 			updateTexture();
+		}
 	}
 
 
@@ -1119,7 +1119,8 @@ vTextureCoord = aTextureCoord;
 
 	var ERASE = -1,		// Painting, awww!
 		NONE = 0,
-		PAINT = 1;
+		PAINT = 1,
+		DROPPER = 2;
 
 	var paintMode = NONE,
 		paintColour = '#fff';
@@ -1129,7 +1130,8 @@ vTextureCoord = aTextureCoord;
 		lastSkin,			// our default skin to open
 		initialLastSkin;
 
-	var loadedImage = false,// delay 3D scene if canvas is slow.
+	var loadedImage = false, // delay 3D scene if canvas is slow.
+		loadedTexture = false,
 		skintexture;
 
 	var	cursorThen = [0,0],
@@ -1273,7 +1275,6 @@ vTextureCoord = aTextureCoord;
 
 			// TODO: turn this back into a <canvas> because we need it for
 			// the save image option
-			//skineditorm = document.createElement( 'canvas' );
 			skineditorm.width = 64; skineditorm.height = 32;
 			skineditormc = skineditorm.getContext( '2d' );
 
@@ -1393,7 +1394,7 @@ vTextureCoord = aTextureCoord;
 
 		initShaders()
 		initBuffers();
-		updateTexture();
+		//updateTexture(); //TODO possibily causing an issue
 
 		gl.clearColor(0.0, 0.0, 0.0, 0.5);
 		gl.clearDepth(1.0);
