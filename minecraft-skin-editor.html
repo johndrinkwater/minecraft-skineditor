@@ -889,12 +889,11 @@ vTextureCoord = aTextureCoord;
 			return;
 		pauseAnimation();
 		canRotate = true;
-
 		skinpreview.style.cursor='move';
+
 		if (!e) e = window.event;
-		//clearInterval(timerDrawing);
-		// store mouse X/Y
 		cursorThen = [e.clientX, e.clientY];
+		// TODO maybe we can scope the mouse click to decide whether we do legs, head, arms, body?
 	}
 	function stopRotatingDude() {
 
@@ -902,31 +901,24 @@ vTextureCoord = aTextureCoord;
 			return;
 		resumeAnimation();
 		canRotate = false;
-
 		skinpreview.style.cursor='pointer';
-		//clearInterval(timerAnimation);
-		// we should only redraw if: 1, invalidate 2, user draws 3, burn GPU
-		//timerDrawing = setInterval(updateWhileDrawing, 250);
 	}
 
 	function captureCursorLocation(e) {
 		if (!canRotate)
 			return;
-		// test if we want to do this
 		if (!e) e = window.event;
-		// what we really want to do:
-		// rotate body on X, rotate head on Y (within bounds)
+
 		cursorNow = [e.clientX, e.clientY];
-		cursorDiffX = cursorThen[0] - cursorNow[0]
-		cursorDiffY = cursorThen[1] - cursorNow[1]
-		cursorThen = cursorNow
-		rBody -= ( cursorDiffX )
-		ryHead -= ( cursorDiffY )
-		// TODO obviously, clamp
+		cursorDiffX = cursorThen[0] - cursorNow[0];
+		cursorDiffY = cursorThen[1] - cursorNow[1];
+		cursorThen = cursorNow;
+
+		rBody -= ( cursorDiffX );
+		ryHead -= ( cursorDiffY );
 	}
 
-	/*
-		logic:
+	/* logic:
 			* Animate guy always.
 			: User starts drawing → reduce scene redraws, set timer for scene update
 			  Timer triggers to resume animation, stop scene update, resume scene redraw
@@ -973,7 +965,7 @@ vTextureCoord = aTextureCoord;
 		clearInterval(timerUpdateScene);
 	}
 
-	function drawingComplete(){
+	function drawingComplete() {
 		stopSceneUpdates();
 		resumeSceneDrawing();
 		resumeAnimation();
@@ -1003,12 +995,11 @@ vTextureCoord = aTextureCoord;
 		}
 
 		// remove border, clamp to 64×32
-		x -=4; y -=4;
+		x -=3; y -=3;
 		x -= x%8; y -= y%8;
 
 		// What mode are we in?
 		if (paintMode == ERASE) {
-			
 			skineditormc.clearRect( x/8, y/8, 1, 1);
 			skineditorc.clearRect( x, y, 8, 8);
 		} else if (paintMode == PAINT) {
