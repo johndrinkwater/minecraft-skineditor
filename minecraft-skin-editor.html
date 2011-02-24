@@ -577,9 +577,8 @@ vTextureCoord = aTextureCoord;
 				preview.addEventListener('click', function() { loadSkinInSkins( this.skin ); }, true);
 				name.addEventListener('click', function() { renameSkinInSkins( this.skin ); }, true);
 				preview.src = obj.thumb;
-				preview.width
 				name.innerHTML = obj.name;
-				preview.skin = name.skin = obj.name;
+				preview.title = preview.skin = name.skin = obj.name;
 				temp.className = 'box';
 			}
 		}
@@ -619,6 +618,7 @@ vTextureCoord = aTextureCoord;
 	function loadSkinInSkins(skin) { 
 
 		if (skin == "") {
+			// TODO with new interface, you cant get here. remove?
 			var skinName = prompt('Which skin do you want to load?', lastSkin);
 		
 			if (skinName == null) { // user aborted
@@ -636,7 +636,7 @@ vTextureCoord = aTextureCoord;
 			// and store latest?
 			lastSkin = skinName;
 			localStorage['lastSkin'] = JSON.stringify(lastSkin);
-
+			
 			var newskin = document.createElement('img');
 			newskin.onload = loadNewSkin;
 			newskin.width=64; newskin.height=32;
@@ -666,12 +666,51 @@ vTextureCoord = aTextureCoord;
 		if (skin) {
 			skins[skin] = {}
 			delete skins[skin];
+			if (skin == lastSkin) {
+				// pick a decent replacement?
+				lastSkin = 'default'; // XXX this can fail if the user deletes us
+			}
 			updateSkins(true);
 		}
 	}
 
+	function resetSkin(e) {
+		// if we are here, user has pressed ‘start again’
+		// do we have changes?
+		// load previously opened skin
+		loadSkinInSkins( lastSkin );
+	}
+
 	function saveSkinToMinecraft(e) {
 
+		try {
+			/* FormData is new for Firefox 4, Chrome #, find something older */
+			var fd = new FormData();
+			fd.append("generator", "jd.name/mcse");
+			fd.append("image", skineditorm.toDataURL('image/png'));
+
+			var xhr = new XMLHttpRequest();
+			// xhr.onreadystatechange = func() {}
+// TODO: fake it for clients that cant do FormData?
+//Content-Type: multipart/form-data;boundary=<boundary string>
+//Content-Length: <length>
+//--<boundary string>
+//Content-Disposition: form-data, name="<input element name>"
+//
+//<input element value>
+//--<boundary string>
+//Content-Disposition: form-data, name=<input element name>"; filename="<input element value>"
+//Content-Type: application/octet-stream
+//
+//<element body>
+			// xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+			xhr.open("POST", "http://www.minecraft.net/skin/upload.jsp"); 
+			xhr.send(fd);
+
+		} catch (e) {
+			console.log('A problem has occured, Mojang returned a creeper.');
+		}
+		// upon getting confirmation, load another tab?
 	}
 
 	function saveSkinToDisk(e) {
@@ -1096,12 +1135,12 @@ vTextureCoord = aTextureCoord;
 	var paintMode = NONE,
 		paintColour = '#fff';
 
-	var skins = {},		// our storage pool for drawings
+	var skins = {},			// our storage pool for drawings
 		initialSkins = {},
-		lastSkin,		// our default skin to open
+		lastSkin,			// our default skin to open
 		initialLastSkin;
 
-	var loadedImage = false, // delay 3D scene if canvas is slow.
+	var loadedImage = false,// delay 3D scene if canvas is slow.
 		skintexture;
 
 	var	cursorThen = [0,0],
@@ -1109,6 +1148,7 @@ vTextureCoord = aTextureCoord;
 
 	var canAnimate,
 		canRotate,
+		canReset,			// LOL, this was to prevent pressing reset. but it was a nag
 		timerDrawingComplete,
 		timerAnimation,
 		timerDrawingScene,
@@ -1265,32 +1305,24 @@ vTextureCoord = aTextureCoord;
 			skinimporterchrome.accept = 'image/png'; // ask for PNG images
 			skinimporterchrome.addEventListener('change',	 loadSkinFromFile, false);
 
-			skinsaverchrome = document.createElement('input');
-			holder.appendChild(skinsaverchrome);
-			skinsaverchrome.id = 'skin-saver';
-			skinsaverchrome.type = 'submit';
-			skinsaverchrome.value = 'Save';
-			skinsaverchrome.addEventListener('click',	saveSkinInSkinsButton, false);
-
-			skinloaderchrome = document.createElement('input');
-			holder.appendChild(skinloaderchrome);
-			skinloaderchrome.id = 'skin-loader';
-			skinloaderchrome.type = 'submit';
-			skinloaderchrome.value = 'Load';
-			skinloaderchrome.addEventListener('click',	loadSkinInSkinsButton, false);
-
-			skinpurgerchrome = document.createElement('input');
-			// holder.appendChild(skinpurgerchrome);
-			skinpurgerchrome.id = 'skin-puger';
-			skinpurgerchrome.type = 'submit';
-			skinpurgerchrome.value = 'Purge';
-			skinpurgerchrome.addEventListener('click',		resetLocalStorage, false);
-
 			// even without data: URL support, we want this gutter to display
 			skinsholder = document.createElement('div');
 			holder.appendChild(skinsholder);
 			skinsholder.id='skins-container';
 			skinsholder.className = 'box';
+
+			/*
+			 * convert everything below either: into pure JS, or keep as HTML and fix display w/o JS
+			 */
+
+			//<a href="#wedontneedclouds" id="openFile" class="button">Open From Disk</a>
+			//<a href="#notcheatthis" id="pushSkin" class="button">I’m Finished Drawing!</a>
+			var temp = document.getElementById( 'saveSkin' );
+			temp.addEventListener('click',		saveSkinInSkinsButton, false);
+			temp = document.getElementById( 'resetSkin' );
+			temp.addEventListener('click',					resetSkin, false);
+			temp = document.getElementById( 'submitmojang' );
+			temp.addEventListener('click',		  saveSkinToMinecraft, false);
 
 			// now, for the EDITING!
 			palette = document.createElement('div');
@@ -1310,10 +1342,10 @@ vTextureCoord = aTextureCoord;
 			for (colour in pColours) {
 				if (colour == 'clone')
 					continue;
-				console.log(colour);
 				var temp = document.createElement('span');
 				palette.appendChild(temp);
 				temp.id = pColours[colour]; // XXX oops?
+				temp.title = temp.id;
 				temp.style.backgroundColor = colour;
 				if (colour == 'erase')
 					temp.addEventListener('click', 
@@ -1342,6 +1374,8 @@ vTextureCoord = aTextureCoord;
 			skinpreview.addEventListener('doubleclick',		toggleAnimation, true);
 			skinpreview.addEventListener('mouseup',			stopRotatingDude, true);
 			skinpreview.addEventListener('mouseout',		stopRotatingDude, true);
+			// TODO Stewart suggested to put this on document, so you can leave the preview and still drag.
+			// need to verify that mouseup on document wouldnt break anything
 			skinpreview.addEventListener('mousemove',		captureCursorLocation, true);
 
 		} else if (fCanvasSupport) {
@@ -1368,7 +1402,7 @@ vTextureCoord = aTextureCoord;
 			skineditori = document.getElementById( 'skin-editor-img' );
 			skinpreviewi.style.position = skineditori.style.position = 'absolute';
 		}
-	
+
 		loadSkinInSkins( lastSkin );
 		updateSkins(false);
 	}
@@ -1426,6 +1460,7 @@ else {
 	canvas, .box, div#skin-preview {
 		-moz-border-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJCAYAAADgkQYQAAAAAXNSR0IArs4c6QAAAHtJREFUGNONkLENQyEMBQ9IQ+19vQQdY7ADLQMg0dNQU0QiKaIQfSVf+a5sv5N1sgEe/KkbQCkFgJzzIay1EkJ4Qa01UkoHQESotX4uAXjviTGa96yqW8MC9N6Zc5462V+OnC1FBFW9A1hrWWt9Q3NOxhg7cM7t3lz50xP8Gif0o4r5twAAAABJRU5ErkJggg==) 3 stretch stretch;
 		-webkit-border-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJCAYAAADgkQYQAAAAAXNSR0IArs4c6QAAAHtJREFUGNONkLENQyEMBQ9IQ+19vQQdY7ADLQMg0dNQU0QiKaIQfSVf+a5sv5N1sgEe/KkbQCkFgJzzIay1EkJ4Qa01UkoHQESotX4uAXjviTGa96yqW8MC9N6Zc5462V+OnC1FBFW9A1hrWWt9Q3NOxhg7cM7t3lz50xP8Gif0o4r5twAAAABJRU5ErkJggg==) 3 stretch stretch;
+		-o-border-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJCAYAAADgkQYQAAAAAXNSR0IArs4c6QAAAHtJREFUGNONkLENQyEMBQ9IQ+19vQQdY7ADLQMg0dNQU0QiKaIQfSVf+a5sv5N1sgEe/KkbQCkFgJzzIay1EkJ4Qa01UkoHQESotX4uAXjviTGa96yqW8MC9N6Zc5462V+OnC1FBFW9A1hrWWt9Q3NOxhg7cM7t3lz50xP8Gif0o4r5twAAAABJRU5ErkJggg==) 3 stretch stretch;
 		border-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJCAYAAADgkQYQAAAAAXNSR0IArs4c6QAAAHtJREFUGNONkLENQyEMBQ9IQ+19vQQdY7ADLQMg0dNQU0QiKaIQfSVf+a5sv5N1sgEe/KkbQCkFgJzzIay1EkJ4Qa01UkoHQESotX4uAXjviTGa96yqW8MC9N6Zc5462V+OnC1FBFW9A1hrWWt9Q3NOxhg7cM7t3lz50xP8Gif0o4r5twAAAABJRU5ErkJggg==) 3 stretch stretch; }
 
 	.sign { padding: 6px 4px; text-align:center; color: black; margin: 2px; border: 0; background: url(i/sign.png) no-repeat #ab8c55; background-size: 100% 100%; }
@@ -1434,27 +1469,27 @@ else {
 	div#skin-preview p { position: absolute; color: white; background: transparent; top: 5px; left: 5px; }
 
 	#skin-preview, #skin-editor, #wip, #skins-container, #colourpalette { position: absolute; }
-	#wip, #colourpalette, #skins-container { left: 374px; width: 512px; }
+	#wip, #colourpalette, #skins-container, #skin-editor, #skin-editor-img, #doshit { left: 374px; width: 512px; }
 
 	#wip { font-size: 115%; /* centralise for a lightbox? */ top:330px; left: 438px; height: 130px; width: 324px; }
 	#wip code {font-family: Munro, monospace; }
 	#wip a { color: black !important;}
 
-	#skins-container { padding:0; background: rgba(0,0,0,0.5); /* later top: 320px; */ top: 380px; height: 151px; min-width:260px; overflow: scroll; overflow-y: hidden; white-space: nowrap; }
+	#skins-container { padding:0; background: rgba(0,0,0,0.5); /* later top: 320px; */ top: 401px; height: 149px; min-width:260px; overflow: scroll; overflow-y: hidden; white-space: nowrap; }
 	#skins-container:empty { display:none; }
 	#skins-container div { padding: 2px 4px; display: inline-block; text-align: center; height: 124px; width: 80px; overflow: hidden; }
 	#skins-container p { cursor: pointer; color: white; background: transparent; overflow: ellipsis; }
 	#skins-container img { margin: 0 3px; cursor: pointer; }
 
-	#colourpalette { border: 3px outset #eee; border-image: url(); z-index: 20; top: 320px; color: #999; background: #ccc; padding: 0 4px; width: 504px; }
+	#colourpalette { border: 2px outset #eee; border-image: url(); z-index: 20; top: 320px; color: #999; background: #ccc; padding: 0 4px; width: 504px; }
 	#colourpalette span { display: inline-block; text-indent: -9999px; background: transparent; overflow: hidden; width: 21px; height: 21px; border: 2px inset lightgrey; }
 
+	#doshit { position: absolute; top: 373px; }
 	#skin-editor, #skin-editor-img, #skin-preview, #skin-preview-img { top: 50px; }
-	#skin-editor, #skin-editor-img { left: 374px; }
 	#skin-preview, #skin-preview-img { left: 10px; }
 
-	#skin-editor.erasing { cursor: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAZCAYAAAAiwE4nAAAAAXNSR0IArs4c6QAAAAZiS0dEAAAAAAAA+UO7fwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB9sCFgA4GL9sOcIAAAHRSURBVEjH7ZXPSiNBEMa/mu6J0ej6B4RkjAfXXS+C4CWHeIiC+gTePHjzFeITSMSDl32PPe0bLOzCooiCiokkKmKMmoyjGTWZmfYQnJhsSDqzsu6CBU0fpnp+XVVfVQNyJvBKpsjAhBCvBlXwl+0d+GYm8L8aNYmA2oyYZIHPfVb7gaj+QlTXl838/50I36yGMir9zffu7DyR/votbmZzMFLp6k+Z8pz7yl62MDQXw/jyEskAhRCiYY02VzdE39goQrEoiAiNagtHwDLvcfHjF8rFovfGv97ZS7AOH4LRCETZgrCdyl6/bBuswwdtegpmNucdaGSO48FoBMRYJQ223fIMU1VvQCN9kiieZfHh04gUqFpb5g14tb0b16anIMqW9Bn7sQS1t0cKSC8Fk98/TFjmPfwD/TVKbGU3ySMEhkLSEbrqzH7/GQ/PxtxUUhOhk8rdGt8cZTA4ObHG201nSTegcA741CpMaXBvx4GwHUABcls76A5rCGjBlbaBD/kCHMuSFgupHGbuEr2fP3p7gBXOUTJupf31gyS4349QNEKegIFhDY8FHcSYW58XI8ld7vjLnAIK/dmE317/IvTDFEq60dSPd3UiPD+DscUFl/MEOnTCiVKaAd8AAAAASUVORK5CYII=) 9 9, auto; }
-	#skin-editor.painting { cursor: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAZCAYAAAAiwE4nAAAAAXNSR0IArs4c6QAAAAZiS0dEAAAAAAAA+UO7fwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB9sCFgA4BkVjBKEAAABQSURBVEjH7ZQ7CgAgDEMT73/nODnoIBXFH3lrC6+BtkAMYREpIpO0TJqwGQuPIbwKOwk4mJhRYbmzukC2A7G5y17/PQnx/Zb6l1roX2rMPBkaYRsKucus4wAAAABJRU5ErkJggg==) 9 9, auto; }
+	#skin-editor.erasing, #colourpalette #erase { cursor: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAZCAYAAAAiwE4nAAAAAXNSR0IArs4c6QAAAAZiS0dEAAAAAAAA+UO7fwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB9sCFgA4GL9sOcIAAAHRSURBVEjH7ZXPSiNBEMa/mu6J0ej6B4RkjAfXXS+C4CWHeIiC+gTePHjzFeITSMSDl32PPe0bLOzCooiCiokkKmKMmoyjGTWZmfYQnJhsSDqzsu6CBU0fpnp+XVVfVQNyJvBKpsjAhBCvBlXwl+0d+GYm8L8aNYmA2oyYZIHPfVb7gaj+QlTXl838/50I36yGMir9zffu7DyR/votbmZzMFLp6k+Z8pz7yl62MDQXw/jyEskAhRCiYY02VzdE39goQrEoiAiNagtHwDLvcfHjF8rFovfGv97ZS7AOH4LRCETZgrCdyl6/bBuswwdtegpmNucdaGSO48FoBMRYJQ223fIMU1VvQCN9kiieZfHh04gUqFpb5g14tb0b16anIMqW9Bn7sQS1t0cKSC8Fk98/TFjmPfwD/TVKbGU3ySMEhkLSEbrqzH7/GQ/PxtxUUhOhk8rdGt8cZTA4ObHG201nSTegcA741CpMaXBvx4GwHUABcls76A5rCGjBlbaBD/kCHMuSFgupHGbuEr2fP3p7gBXOUTJupf31gyS4349QNEKegIFhDY8FHcSYW58XI8ld7vjLnAIK/dmE317/IvTDFEq60dSPd3UiPD+DscUFl/MEOnTCiVKaAd8AAAAASUVORK5CYII=) 9 9, auto; }
+	#skin-editor.painting, #colourpalette span { cursor: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAZCAYAAAAiwE4nAAAAAXNSR0IArs4c6QAAAAZiS0dEAAAAAAAA+UO7fwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB9sCFgA4BkVjBKEAAABQSURBVEjH7ZQ7CgAgDEMT73/nODnoIBXFH3lrC6+BtkAMYREpIpO0TJqwGQuPIbwKOwk4mJhRYbmzukC2A7G5y17/PQnx/Zb6l1roX2rMPBkaYRsKucus4wAAAABJRU5ErkJggg==) 9 9, auto; }
 
 
 	/* if the user doesn’t have JS, or Canvas support, no point doing this */
@@ -1470,12 +1505,15 @@ else {
 	#skin-saver { width: 55px; left: 310px; }
 	#skin-loader { width: 55px; left: 255px; }
 
+.button { display: inline-block; background: #888; padding: 1px 3px ; margin: 2px; border: 2px outset #ccc; color: white; text-shadow: black 1px 1px; text-decoration:none; }
+.button:hover, .button:focus { color: #ff4; background: #48e; border: 2px outset #7ae; }
+.button:active { color: #ddd; background: #999; border: 2px inset #bbb; }
+
 	#output canvas { float: left; }
 	#output h1 { font-size: 20px; }
-	#output { padding: 4px; position: absolute; top: 540px; left: 374px; }
-	.button { display: block; float: right; clear:right; background: #ccc; margin: 2px 4px; border: 2px outset #eee; color: #444; text-decoration:none; }
-	.button:hover, .button:focus { color: #333; background: #aaa; border: 2px outset #ccc; }
-	.button:active { color: #ddd; background: #999; border: 2px inset #bbb; }
+	#output { padding: 4px; position: absolute; top: 570px; left: 374px; }
+	#output .button { float: right; clear: right; margin: 2px 4px;  }
+	
 	footer { /*color: black; background: transparent;*/ position: absolute; bottom: 2px; height: 50px; }
 
  </style>
@@ -1494,8 +1532,10 @@ Demo of: <code>&lt;canvas&gt;</code>, <code>WebGL</code>, &amp; <code>localStora
   <p>Sorry, your browser does not support Canvas. Which kinda makes this whole application redundant.</p>
  </canvas>
 
-<!-- Save Changes | Start Again | Load Skin From Disk | I’m Finished Drawing!  _Save your skin_ … to Minecraft. … to Disk. -->
- <section id="output" class="box"><h1>I think I’m ready to save… </h1><canvas id="skin-editor-mini" name="image" width="64" height="32">?</canvas><a class="button" href="#savetonotchbabyyeah" id="submitmojang">… to Minecraft!</a><br /><a href="#savetodisk" class="button">… to Disk.</a> </section>
+ <section id="doshit"><a href="#finishedpokingbits" id="saveSkin" class="button">Save</a> <a href="#Imadeabooboo" id="resetSkin" class="button">Start Again</a> <a href="#wedontneedclouds" id="openFile" class="button">Open From Disk</a> <a href="#notcheatthis" id="pushSkin" class="button">I’m Finished Drawing!</a></section>
+ <section id="output" class="box"><h1>I think I’m ready to save… </h1><canvas id="skin-editor-mini" name="image" width="64" height="32">?</canvas><a class="button" href="#savetonotchbabyyeah" id="submitmojang">… to Minecraft!</a><br /><a href="#libertarianmoi" class="button">… to Disk.</a> </section>
+
+<!-- <section id="userdialogue" class="box"></section> -->
 
  <p id="noscript">While I’m the first person to complain about the needs of JavaScript for many a‐website, this is an ‘application’, it can’t run without the code being used. Please toggle NoScript, or try this in a browser that supports JavaScript.</p>
 
