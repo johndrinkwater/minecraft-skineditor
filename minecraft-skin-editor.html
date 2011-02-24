@@ -757,8 +757,7 @@ vTextureCoord = aTextureCoord;
 				console.log("unable to access image data: " + e);
 			}
 		} else {
-			// use default
-			// TODO overlay sskin?
+			// TODO build a front‐only drawing of the avatar
 			sthumbnail = initialSkins['default'].thumb;
 		}
 
@@ -774,7 +773,6 @@ vTextureCoord = aTextureCoord;
 		}
 
 		// TODO: for now, overwrite is default
-		// or, we could use bung it into skins[]?
 		skins[skinName] = {
 			name: skinName,
 			data: sskin,
@@ -784,11 +782,11 @@ vTextureCoord = aTextureCoord;
 		updateSkins(true);
 	}
 
-		/*
-		 * helper function
-		 * replace this will inline code & a loop instead.
-		 * ie, avoid function call
-		 */
+	/*
+	 * helper function
+	 * replace this will inline code & a loop instead.
+	 * ie, avoid function call
+	 */
 	function drawAndTexture(vertices, texture) {
 		gl.bindBuffer(gl.ARRAY_BUFFER, vertices);
 		gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, vertices.itemSize, gl.FLOAT, false, 0, 0);
@@ -802,7 +800,11 @@ vTextureCoord = aTextureCoord;
 		gl.drawElements(gl.TRIANGLES, cubeVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
 	}
 
-	var xHead = 0, yHead = 0;
+	var rxRArm = 5, ryRArm = 0,
+		rxLArm = 5, ryLArm = 0,
+		ryRLeg = 3, ryLLeg =-3,
+		rzHead = 0, ryHead = 0,
+		rBody = 0;
 
 	function drawScene() {
 
@@ -819,7 +821,8 @@ vTextureCoord = aTextureCoord;
 		mvTranslate([0.0, 0.5, -13.0])
 
 		// we rotate everything
-		mvRotate(xHead, [0, 1, 0]); 
+		// TODO do we still want this?
+		mvRotate(rBody, [0, 1, 0]);
 
 		// draw body
 		mvPushMatrix();
@@ -829,14 +832,14 @@ vTextureCoord = aTextureCoord;
 		// arms
 		mvPushMatrix();
 			mvTranslate([-1.5, 0.0, 0.0]);
-			mvRotateAbout(25, [1, 0, 0], [-0.5, 1.5, 0]);
-			mvRotateAbout(-5, [0, 0, 1], [-0.5, 1.25, 0]);
+			mvRotateAbout(ryRArm, [1, 0, 0], [-0.5, 1.5, 0]);
+			mvRotateAbout(-rxRArm, [0, 0, 1], [-0.5, 1.25, 0]);
 			drawAndTexture(armVPB, armLVTCB);
 		mvPopMatrix();
 		mvPushMatrix();
 			mvTranslate([1.5, 0.0, 0.0]);
-			mvRotateAbout(25, [1, 0, 0], [-0.5, 1.25, 0]);
-			mvRotateAbout(5, [0, 0, 1], [-0.5, 1.25, 0]);
+			mvRotateAbout(ryLArm, [1, 0, 0], [-0.5, 1.25, 0]);
+			mvRotateAbout(rxLArm, [0, 0, 1], [-0.5, 1.25, 0]);
 			mvScale([-1.0,1.0,1.0]);
 			drawAndTexture(armVPB, armLVTCB);
 		mvPopMatrix();
@@ -844,12 +847,12 @@ vTextureCoord = aTextureCoord;
 		// legs
 		mvPushMatrix();
 			mvTranslate([-0.5, -3, 0.0]);
-			mvRotateAbout(10, [1, 0, 0], [0, 1.5, 0]);
+			mvRotateAbout(ryRLeg, [1, 0, 0], [0, 1.5, 0]);
 			drawAndTexture(legVPB, legLVTCB);
 		mvPopMatrix();
 		mvPushMatrix();
 			mvTranslate([0.5, -3, 0.0]);
-			mvRotateAbout(-10, [1, 0, 0], [0, 1.5, 0]);
+			mvRotateAbout(ryLLeg, [1, 0, 0], [0, 1.5, 0]);
 			mvScale([-1.0,1.0,1.0]);
 			drawAndTexture(legVPB, legLVTCB);
 		mvPopMatrix();
@@ -857,9 +860,8 @@ vTextureCoord = aTextureCoord;
 		// draw head
 		mvPushMatrix();
 			mvTranslate([0.0, 2.6, 0]);
-			mvRotateAbout(xHead, [0, 1, 0], [0, -1.0, 0]); 
-			mvRotateAbout(yHead, [1, 0, 0], [0, -1.0, 0]);
-			mvRotateAbout( 5, [1, 0, 0], [0, -1.0, 0]);
+			mvRotateAbout(rzHead, [0, 1, 0], [0, -1.0, 0]); 
+			mvRotateAbout(ryHead, [1, 0, 0], [0, -1.0, 0]);
 			drawAndTexture(cubeVPB, headVTCB);
 			// 1.125 puts it as 9,9,9
 			mvScale([1.125,1.125,1.125]);
@@ -877,14 +879,6 @@ vTextureCoord = aTextureCoord;
 		if (lastTime != 0) {
 			var elapsed = timeNow - lastTime;
 
-			xHead -= ( cursorDiffX*2 )
-			yHead -= ( cursorDiffY*2 )
-			//if (yHead >= 32)
-			//	yHead = 32;
-			//if (yHead <= -50)
-			//	yHead = -50;
-
-			cursorDiffX= cursorDiffY = 0
 		}
 		lastTime = timeNow;
 	}
@@ -902,6 +896,18 @@ vTextureCoord = aTextureCoord;
 		// store mouse X/Y
 		cursorThen = [e.clientX, e.clientY];
 	}
+	function stopRotatingDude() {
+
+		if (!fWebGLSupport)
+			return;
+		resumeAnimation();
+		canRotate = false;
+
+		skinpreview.style.cursor='pointer';
+		//clearInterval(timerAnimation);
+		// we should only redraw if: 1, invalidate 2, user draws 3, burn GPU
+		//timerDrawing = setInterval(updateWhileDrawing, 250);
+	}
 
 	function captureCursorLocation(e) {
 		if (!canRotate)
@@ -914,22 +920,9 @@ vTextureCoord = aTextureCoord;
 		cursorDiffX = cursorThen[0] - cursorNow[0]
 		cursorDiffY = cursorThen[1] - cursorNow[1]
 		cursorThen = cursorNow
-		xHead -= ( cursorDiffX*2 )
-		yHead -= ( cursorDiffY*2 )
+		rBody -= ( cursorDiffX )
+		ryHead -= ( cursorDiffY )
 		// TODO obviously, clamp
-	}
-
-	function stopRotatingDude() {
-
-		if (!fWebGLSupport)
-			return;
-		resumeAnimation();
-		canRotate = false;
-
-		skinpreview.style.cursor='pointer';
-		//clearInterval(timerAnimation);
-		// we should only redraw if: 1, invalidate 2, user draws 3, burn GPU
-		//timerDrawing = setInterval(updateWhileDrawing, 250);
 	}
 
 	/*
@@ -1272,16 +1265,7 @@ vTextureCoord = aTextureCoord;
 		}
 
 		// discover dataURL support and continue
-		// takes too long. Assumption: browsers that do canvas currently also support data:
-		/*
-		var dataTest = document.createElement('img');
-		dataTest.onload = dataTest.onerror = function() {
-			console.log('testing');
-			if (this.width == 1 && this.height == 1)
-				fDataUrlSupport = true;
-		}
-		dataTest.src = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
-		*/
+		// XXX takes too long. Assumption: browsers that do canvas currently also support data:
 
 		skineditor = document.getElementById( 'skin-editor' );
 		skineditorm = document.getElementById( 'skin-editor-mini' );
