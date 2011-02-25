@@ -1072,17 +1072,16 @@ vTextureCoord = aTextureCoord;
 
 			skineditorc.save();
 			var pixels = skineditormc.getImageData(0, 0, 64, 32);
-			pixels = pixels.data; // apparently, detaching = quicker
 			for (var x = 0; x<=64; x++ ) {
 				for (var y = 0; y<=32; y++ ) {
 
 					/* XXX avoid doing work for empty pixels */
-					if ( pixels[((y *(pixels.width*4)) + (x*4)) + 3] != 0 ) {
+					if ( pixels.data[((y *(pixels.width*4)) + (x*4)) + 3] != 0 ) {
 
-						skineditorc.fillStyle = 'rgba(' +	pixels[((y *(pixels.width*4)) + (x*4))] + ',' + 
-														pixels[((y *(pixels.width*4)) + (x*4)) + 1] + ','+
-														pixels[((y *(pixels.width*4)) + (x*4)) + 2] + ','+
-														pixels[((y *(pixels.width*4)) + (x*4)) + 3] + ')';
+						skineditorc.fillStyle = 'rgba(' +	pixels.data[((y *(pixels.width*4)) + (x*4))] + ',' + 
+														pixels.data[((y *(pixels.width*4)) + (x*4)) + 1] + ','+
+														pixels.data[((y *(pixels.width*4)) + (x*4)) + 2] + ','+
+														pixels.data[((y *(pixels.width*4)) + (x*4)) + 3] + ')';
 						skineditorc.fillRect(x*8, y*8, 8, 8);
 					}
 				}
