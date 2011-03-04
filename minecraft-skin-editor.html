@@ -94,12 +94,13 @@ vTextureCoord = aTextureCoord;
 
 
 	function getShader(gl, id) {
-		var shaderScript = document.getElementById(id);
+		var shader, str, k,
+			shaderScript = document.getElementById(id);
 		if (!shaderScript)
 			return null;
 
-		var str = "";
-		var k = shaderScript.firstChild;
+		str = "",
+		k = shaderScript.firstChild;
 		while (k) {
 			if (k.nodeType == 3) {
 				str += k.textContent;
@@ -107,7 +108,6 @@ vTextureCoord = aTextureCoord;
 			k = k.nextSibling;
 		}
 
-		var shader;
 		if (shaderScript.type == "x-shader/x-fragment") {
 			shader = gl.createShader(gl.FRAGMENT_SHADER);
 		} else if (shaderScript.type == "x-shader/x-vertex") {
@@ -222,15 +222,15 @@ vTextureCoord = aTextureCoord;
 	}
 
 
-	var cubeVPB, bodyVPB, armVPB, legVPB;
-	var headVTCB, headAccessVTCB, bodyVTCB, armLVTCB, legVTCB;
-	var cubeVertexIndexBuffer;
+	var cubeVPB, bodyVPB, limbVPB,
+		headVTCB, headAccessVTCB, bodyVTCB, armLVTCB, legVTCB,
+		cubeVertexIndexBuffer;
+
 	function initBuffers() {
 
 		cubeVPB = makeCube( 8,  8, 8 );
 		bodyVPB = makeCube( 8, 12, 4 );
-		armVPB	= makeCube( 4, 12, 4 );
-		legVPB	= makeCube( 4, 12, 4 );
+		limbVPB	= makeCube( 4, 12, 4 );
 
 		skintexture = gl.createTexture();
 
@@ -354,7 +354,6 @@ vTextureCoord = aTextureCoord;
 	}
 
 	// Sync localStorage
-	// XXX: assume localStorage and not sessionStorage changed. why would it?
 	function updateSkinsFromAnotherTime(key) {
 
 		// ERM. GREAT. so if the update is atomic,
@@ -384,7 +383,7 @@ vTextureCoord = aTextureCoord;
 
 		console.log('Store the updated skins.');
 		// we want this to update the list of Skins stored, to easier allow the user to pop
-		if (refreshLocal) {
+		if (refreshLocal && flStorageSupport) {
 			try {
 				localStorage['skins']		= JSON.stringify(skins);
 				localStorage['lastSkin']	= JSON.stringify(lastSkin);
@@ -407,15 +406,16 @@ vTextureCoord = aTextureCoord;
 		}
 		holder.appendChild( skinsholder );
 
+		var temp, name, preview;
 		// iterate and add skins to GUI!
 		for (obj in skins) {
 			obj = skins[obj];
 			if (obj.thumb != null) {
 
-				var temp = document.createElement('div');
+				temp = document.createElement('div');
 				skinsholder.appendChild(temp);
-				var name = document.createElement('p');
-				var preview = document.createElement('img');
+				name = document.createElement('p');
+				preview = document.createElement('img');
 				temp.appendChild(name);
 				temp.appendChild(preview);
 				temp.className = 'box'; // TODO DOMy method please.
@@ -470,10 +470,9 @@ vTextureCoord = aTextureCoord;
 
 		if (skins[skinName]) {
 
-			// so when we go to save, use correct name.
-			// and store latest?
 			lastSkin = skinName;
-			localStorage['lastSkin'] = JSON.stringify(lastSkin);
+			if (flStorageSupport)
+				localStorage['lastSkin'] = JSON.stringify(lastSkin);
 			
 			var newskin = document.createElement('img');
 			newskin.onload = loadNewSkin;
@@ -486,8 +485,10 @@ vTextureCoord = aTextureCoord;
 
 	function resetLocalStorage() {
 
-		console.log('Purging localStorage');
+		if (!flStorageSupport)
+			return;
 
+		console.log('Purging localStorage');
 		if (localStorage && localStorage.clear)
 			localStorage.clear();
 		else {
@@ -638,12 +639,10 @@ vTextureCoord = aTextureCoord;
 		gl.drawElements(gl.TRIANGLES, cubeVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
 	}
 
-	var rxRArm = degToRad(-5), ryRArm,
-		rxLArm = degToRad(5), ryLArm,
+	var rxRArm = degToRad(-5), ryRArm = degToRad(0),
+		rxLArm = degToRad(5), ryLArm = degToRad(0),
 		ryRLeg = degToRad(3), ryLLeg = degToRad(-3),
-		rzHead, ryHead = 0,	rBody = 0;
-
-	ryRArm = ryLArm = rzHead = degToRad(0);
+		rzHead = degToRad(0), ryHead = 0, rBody = 0;
 
 	function drawScene() {
 
@@ -664,7 +663,6 @@ vTextureCoord = aTextureCoord;
 		// TODO do we still want this?
 		mat4.rotate(mvMatrix, degToRad(rBody), [0.0, 1.0, 0.0]);
 
-		// draw body
 		mvPushMatrix();
 			drawAndTexture(bodyVPB, bodyVTCB);
 		mvPopMatrix();
@@ -676,7 +674,7 @@ vTextureCoord = aTextureCoord;
 			mat4.rotate(mvMatrix, ryRArm, [1.0, 0.0, 0.0]);
 			mat4.rotate(mvMatrix, rxRArm, [0.0, 0.0, 1.0]);
 			mat4.translate(mvMatrix, [-0.5, -1.5, 0.0]);
-			drawAndTexture(armVPB, armLVTCB);
+			drawAndTexture(limbVPB, armLVTCB);
 		mvPopMatrix();
 		mvPushMatrix();
 			// [1.5, 0.0, 0.0] [-0.5, 1.5, 0.0]
@@ -685,7 +683,7 @@ vTextureCoord = aTextureCoord;
 			mat4.rotate(mvMatrix, rxLArm, [0.0, 0.0, 1.0]);
 			mat4.translate(mvMatrix, [0.5, -1.5, 0.0]);
 			mat4.scale(mvMatrix, [-1.0, 1.0, 1.0]);
-			drawAndTexture(armVPB, armLVTCB);
+			drawAndTexture(limbVPB, armLVTCB);
 		mvPopMatrix();
 
 		// legs
@@ -694,7 +692,7 @@ vTextureCoord = aTextureCoord;
 			mat4.translate(mvMatrix, [-0.5, -1.5, 0.0]);
 			mat4.rotate(mvMatrix, ryRLeg, [1.0, 0.0, 0.0]);
 			mat4.translate(mvMatrix, [0.0, -1.5, 0.0]);
-			drawAndTexture(legVPB, legLVTCB);
+			drawAndTexture(limbVPB, legLVTCB);
 		mvPopMatrix();
 		mvPushMatrix();
 			// [0.5, -3.0, 0.0] [0.0, 1.5, 0.0]
@@ -702,7 +700,7 @@ vTextureCoord = aTextureCoord;
 			mat4.rotate(mvMatrix, ryLLeg, [1.0, 0.0, 0.0]);
 			mat4.translate(mvMatrix, [0.0, -1.5, 0.0]);
 			mat4.scale(mvMatrix, [-1.0, 1.0, 1.0]);
-			drawAndTexture(legVPB, legLVTCB);
+			drawAndTexture(limbVPB, legLVTCB);
 		mvPopMatrix();
 
 		// draw head
@@ -967,22 +965,22 @@ vTextureCoord = aTextureCoord;
 	};
 
 
-	var skinpreview, 	// our WebGL canvas
-		skineditor,		// our drawing canvas
-		skineditorc, 	// our drawing canvas context
+	var skinpreview, 	// WebGL canvas
+		skineditor,		// drawing canvas
+		skineditorm,	// saveas/pbuffer canvas
+		skineditorc,
 		skinsholder;
 
 	var ERASE = -1,		// Painting, awww!
 		NONE = 0,
 		PAINT = 1,
-		DROPPER = 2;
-
-	var paintMode = NONE,
+		DROPPER = 2,
+		paintMode = NONE,
 		paintColour = '#fff';
 
-	var skins = {},			// our storage pool for drawings
+	var skins = {},			// storage pool for drawings
+		lastSkin,			// previous skin to open
 		initialSkins = {},
-		lastSkin,			// our default skin to open
 		initialLastSkin;
 
 	var loadedImage = false, // delay 3D scene if canvas is slow.
@@ -994,7 +992,6 @@ vTextureCoord = aTextureCoord;
 
 	var canAnimate,
 		canRotate,
-		canReset,			// LOL, this was to prevent pressing reset. but it was a nag
 		timerDrawingComplete,
 		timerAnimation,
 		timerDrawingScene,
@@ -1039,17 +1036,11 @@ vTextureCoord = aTextureCoord;
 		// discover if we are IE?
 		if (true) {
 			document.createElement('header');
-			document.createElement('hgroup');
-			document.createElement('nav');
-			document.createElement('menu');
-			document.createElement('section');
 			document.createElement('article');
-			document.createElement('aside');
 			document.createElement('footer');
 		}
 
 		// default SKINS setup
-		// TODO: make this an ‘initial’ blob, so that if localStorage is purged, we can restore
 		skins = {};
 		initialSkins = {};
 		initialSkins['default'] = {
@@ -1069,12 +1060,11 @@ vTextureCoord = aTextureCoord;
 		if ( typeof JSON != 'undefined' ) {
 			fJSONSupport = true;
 		} else {
-			console.log('TODO: write thing. lols' );
+			console.log('TODO: missing JSON support. bugger using localStorage.' );
 		}
 
-		// discover localStorage and enable if possible
-
-		if ( typeof localStorage != 'undefined' ) {
+		// discover localStorage and enable if possible - fail if no JSON
+		if ( typeof localStorage != 'undefined' && fJSONSupport ) {
 			flStorageSupport = true;
 
 			console.log('We have localStorage support.');
@@ -1104,21 +1094,17 @@ vTextureCoord = aTextureCoord;
 
 		} else {
 
-			// we need to disable our ‘skins’ stuff, just do session editing
 			localStorage = {};
 			skins = initialSkins.clone();
 			lastSkin = new String(initialLastSkin);
-			localStorage['skins']	= JSON.stringify(skins);
-			localStorage['lastSkin']= JSON.stringify(lastSkin);
 		}
 
 		// discover dataURL support and continue
 		// XXX takes too long. Assumption: browsers that do canvas currently also support data:
 
-		skineditor = document.getElementById( 'skin-editor' );
-		skineditorm = document.getElementById( 'skin-editor-mini' );
-
-		holder = document.getElementById('container');
+		skineditor	= document.getElementById( 'skin-editor' );
+		skineditorm	= document.getElementById( 'skin-editor-mini' );
+		holder		= document.getElementById( 'container' );
 
 		// discover canvas support and continue
 		if (skineditor && skineditor.getContext) {
@@ -1128,7 +1114,6 @@ vTextureCoord = aTextureCoord;
 			skineditorc = skineditor.getContext( '2d' );
 			skineditor.addEventListener('click',			drawOnDude, true);
 
-			// TODO: turn this back into a <canvas> because we need it for
 			// the save image option
 			skineditorm.width = 64; skineditorm.height = 32;
 			skineditormc = skineditorm.getContext( '2d' );
@@ -1141,7 +1126,6 @@ vTextureCoord = aTextureCoord;
 			skinimporterchrome.accept = 'image/png'; // ask for PNG images
 			skinimporterchrome.addEventListener('change',	 loadSkinFromFile, false);
 
-			// even without data: URL support, we want this gutter to display
 			skinsholder = document.createElement('div');
 			holder.appendChild(skinsholder);
 			skinsholder.id='skins-container';
@@ -1180,7 +1164,7 @@ vTextureCoord = aTextureCoord;
 			for (colour in pColours) {
 				if (colour == 'clone')
 					continue;
-				var temp = document.createElement('span');
+				temp = document.createElement('span');
 				palette.appendChild(temp);
 				temp.id = pColours[colour]; // XXX oops?
 				temp.title = temp.id;
@@ -1196,7 +1180,7 @@ vTextureCoord = aTextureCoord;
 			}
 
 		} else {
-			// We don’t have to do anything here, because we have fallback in HTML
+			// Fallback in is HTML
 		}
 
 		skinpreview = document.getElementById( 'skin-preview' );
@@ -1221,7 +1205,7 @@ vTextureCoord = aTextureCoord;
 			// TODO *could* do some canvas‐generated perspective fallback here
 			// Be cheeky, swap out the missing webgl support with the existing fallback image.
 			// This should run for Opera, Firefox, Chrome without WebGL support
-			var temp = document.createElement('div');
+			temp = document.createElement('div');
 			holder.replaceChild(temp, skinpreview);
 
 			temp.id = 'skin-preview';
@@ -1255,9 +1239,6 @@ vTextureCoord = aTextureCoord;
 		gl.clearDepth(1.0);
 		gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 		gl.enable(gl.BLEND);
-
-		//gl.enable(gl.ALPHA_TEST);
-		//gl.alphaTestFunc(gl.LEQUAL);
 
 		gl.enable(gl.DEPTH_TEST);
 		gl.depthFunc(gl.LEQUAL);
