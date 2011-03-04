@@ -638,11 +638,12 @@ vTextureCoord = aTextureCoord;
 		gl.drawElements(gl.TRIANGLES, cubeVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
 	}
 
-	var rxRArm = 5, ryRArm = 0,
-		rxLArm = 5, ryLArm = 0,
-		ryRLeg = 3, ryLLeg =-3,
-		rzHead = 0, ryHead = 0,
-		rBody = 0;
+	var rxRArm = degToRad(-5), ryRArm,
+		rxLArm = degToRad(5), ryLArm,
+		ryRLeg = degToRad(3), ryLLeg = degToRad(-3),
+		rzHead, ryHead = 0,	rBody = 0;
+
+	ryRArm = ryLArm = rzHead = degToRad(0);
 
 	function drawScene() {
 
@@ -659,7 +660,6 @@ vTextureCoord = aTextureCoord;
 		// move to the plain we want
 		mat4.translate(mvMatrix, [0.0, 0.5, -13.0]);
 
-
 		// we rotate everything
 		// TODO do we still want this?
 		mat4.rotate(mvMatrix, degToRad(rBody), [0.0, 1.0, 0.0]);
@@ -672,18 +672,18 @@ vTextureCoord = aTextureCoord;
 		// arms
 		mvPushMatrix();
 			mat4.translate(mvMatrix, [-1.5, 0.0, 0.0]);
-			mat4.translate(mvMatrix, [-0.5, 1.5, 0.0]);
-			mat4.rotate(mvMatrix, degToRad(ryRArm), [1.0, 0.0, 0.0]);
-			mat4.rotate(mvMatrix, degToRad(rxRArm), [0.0, 0.0, 1.0]);
-			mat4.translate(mvMatrix, [0.5, -1.5, 0.0]);
+			mat4.translate(mvMatrix, [0.5, 1.5, 0.0]);
+			mat4.rotate(mvMatrix, ryRArm, [1.0, 0.0, 0.0]);
+			mat4.rotate(mvMatrix, rxRArm, [0.0, 0.0, 1.0]);
+			mat4.translate(mvMatrix, [-0.5, -1.5, 0.0]);
 			drawAndTexture(armVPB, armLVTCB);
 		mvPopMatrix();
 		mvPushMatrix();
 			mat4.translate(mvMatrix, [1.5, 0.0, 0.0]);
-			mat4.translate(mvMatrix, [-0.5, 1.25, 0.0]);
-			mat4.rotate(mvMatrix, degToRad(ryLArm), [1.0, 0.0, 0.0]);
-			mat4.rotate(mvMatrix, degToRad(rxLArm), [0.0, 0.0, 1.0]);
-			mat4.translate(mvMatrix, [0.5, -1.25, 0.0]);
+			mat4.translate(mvMatrix, [-0.5, 1.5, 0.0]);
+			mat4.rotate(mvMatrix, ryLArm, [1.0, 0.0, 0.0]);
+			mat4.rotate(mvMatrix, rxLArm, [0.0, 0.0, 1.0]);
+			mat4.translate(mvMatrix, [0.5, -1.5, 0.0]);
 			mat4.scale(mvMatrix, [-1.0, 1.0, 1.0]);
 			drawAndTexture(armVPB, armLVTCB);
 		mvPopMatrix();
@@ -692,14 +692,14 @@ vTextureCoord = aTextureCoord;
 		mvPushMatrix();
 			mat4.translate(mvMatrix, [-0.5, -3.0, 0.0]);
 			mat4.translate(mvMatrix, [0.0, 1.5, 0.0]);
-			mat4.rotate(mvMatrix, degToRad(ryRLeg), [1.0, 0.0, 0.0]);
+			mat4.rotate(mvMatrix, ryRLeg, [1.0, 0.0, 0.0]);
 			mat4.translate(mvMatrix, [0.0, -1.5, 0.0]);
 			drawAndTexture(legVPB, legLVTCB);
 		mvPopMatrix();
 		mvPushMatrix();
 			mat4.translate(mvMatrix, [0.5, -3.0, 0.0]);
 			mat4.translate(mvMatrix, [0.0, 1.5, 0.0]);
-			mat4.rotate(mvMatrix, degToRad(ryLLeg), [1.0, 0.0, 0.0]);
+			mat4.rotate(mvMatrix, ryLLeg, [1.0, 0.0, 0.0]);
 			mat4.translate(mvMatrix, [0.0, -1.5, 0.0]);
 			mat4.scale(mvMatrix, [-1.0, 1.0, 1.0]);
 			drawAndTexture(legVPB, legLVTCB);
@@ -710,7 +710,7 @@ vTextureCoord = aTextureCoord;
 
 			mat4.translate(mvMatrix, [0.0, 2.6, 0.0]);
 			mat4.translate(mvMatrix, [0.0, -1.0, 0.0]);
-			mat4.rotate(mvMatrix, degToRad(rzHead), [0.0, 1.0, 0.0]);
+			mat4.rotate(mvMatrix, rzHead, [0.0, 1.0, 0.0]);
 			mat4.rotate(mvMatrix, degToRad(ryHead), [1.0, 0.0, 0.0]);
 			mat4.translate(mvMatrix, [0.0, 1.0, 0.0]);
 			mat4.scale(mvMatrix, [-1.0, 1.0, 1.0]);
