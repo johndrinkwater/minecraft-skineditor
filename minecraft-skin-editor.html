@@ -41,12 +41,6 @@ quat4.toMat4=function(a,b){b||(b=mat4.create());var c=a[0],d=a[1],e=a[2],g=a[3],
 quat4.str=function(a){return"["+a[0]+", "+a[1]+", "+a[2]+", "+a[3]+"]"};
 /* ]]> */
 </script>
-<script type="text/javascript">
-/* <![CDATA[ */
-// glUtils, augment Sylvester some. Taken from learningwebgl. Possible author Vlad?
-// XXX no longer needed
-/* ]]> */
-</script>
 <script id="shader-fs" type="x-shader/x-fragment">
 #ifdef GL_ES
 precision highp float;
@@ -660,8 +654,7 @@ vTextureCoord = aTextureCoord;
 		mat4.translate(mvMatrix, [0.0, 0.5, -13.0]);
 
 		// we rotate everything
-		// TODO do we still want this?
-		mat4.rotate(mvMatrix, degToRad(rBody), [0.0, 1.0, 0.0]);
+		mat4.rotateY(mvMatrix, degToRad(rBody));
 
 		mvPushMatrix();
 			drawAndTexture(bodyVPB, bodyVTCB);
@@ -671,16 +664,16 @@ vTextureCoord = aTextureCoord;
 		mvPushMatrix();
 			// [-1.5, 0.0, 0.0] [0.5, 1.5, 0.0]
 			mat4.translate(mvMatrix, [-1.0, 1.5, 0.0]);
-			mat4.rotate(mvMatrix, ryRArm, [1.0, 0.0, 0.0]);
-			mat4.rotate(mvMatrix, rxRArm, [0.0, 0.0, 1.0]);
+			mat4.rotateX(mvMatrix, ryRArm);
+			mat4.rotateZ(mvMatrix, rxRArm);
 			mat4.translate(mvMatrix, [-0.5, -1.5, 0.0]);
 			drawAndTexture(limbVPB, armLVTCB);
 		mvPopMatrix();
 		mvPushMatrix();
 			// [1.5, 0.0, 0.0] [-0.5, 1.5, 0.0]
 			mat4.translate(mvMatrix, [1.0, 1.5, 0.0]);
-			mat4.rotate(mvMatrix, ryLArm, [1.0, 0.0, 0.0]);
-			mat4.rotate(mvMatrix, rxLArm, [0.0, 0.0, 1.0]);
+			mat4.rotateX(mvMatrix, ryLArm);
+			mat4.rotateZ(mvMatrix, rxLArm);
 			mat4.translate(mvMatrix, [0.5, -1.5, 0.0]);
 			mat4.scale(mvMatrix, [-1.0, 1.0, 1.0]);
 			drawAndTexture(limbVPB, armLVTCB);
@@ -690,14 +683,14 @@ vTextureCoord = aTextureCoord;
 		mvPushMatrix();
 			// [-0.5, -3.0, 0.0] [0.0, 1.5, 0.0])
 			mat4.translate(mvMatrix, [-0.5, -1.5, 0.0]);
-			mat4.rotate(mvMatrix, ryRLeg, [1.0, 0.0, 0.0]);
+			mat4.rotateX(mvMatrix, ryRLeg);
 			mat4.translate(mvMatrix, [0.0, -1.5, 0.0]);
 			drawAndTexture(limbVPB, legLVTCB);
 		mvPopMatrix();
 		mvPushMatrix();
 			// [0.5, -3.0, 0.0] [0.0, 1.5, 0.0]
 			mat4.translate(mvMatrix, [0.5, -1.5, 0.0]);
-			mat4.rotate(mvMatrix, ryLLeg, [1.0, 0.0, 0.0]);
+			mat4.rotateX(mvMatrix, ryLLeg);
 			mat4.translate(mvMatrix, [0.0, -1.5, 0.0]);
 			mat4.scale(mvMatrix, [-1.0, 1.0, 1.0]);
 			drawAndTexture(limbVPB, legLVTCB);
@@ -707,8 +700,8 @@ vTextureCoord = aTextureCoord;
 		mvPushMatrix();
 			// [0.0, 2.6, 0.0] [0.0, -1.0, 0.0]
 			mat4.translate(mvMatrix, [0.0, 1.6, 0.0]);
-			mat4.rotate(mvMatrix, rzHead, [0.0, 1.0, 0.0]);
-			mat4.rotate(mvMatrix, degToRad(ryHead), [1.0, 0.0, 0.0]);
+			mat4.rotateY(mvMatrix, rzHead);
+			mat4.rotateX(mvMatrix, degToRad(ryHead));
 			mat4.translate(mvMatrix, [0.0, 1.0, 0.0]);
 			mat4.scale(mvMatrix, [-1.0, 1.0, 1.0]);
 			drawAndTexture(cubeVPB, headVTCB);
