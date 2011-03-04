@@ -703,7 +703,6 @@ vTextureCoord = aTextureCoord;
 			mat4.rotateY(mvMatrix, rzHead);
 			mat4.rotateX(mvMatrix, degToRad(ryHead));
 			mat4.translate(mvMatrix, [0.0, 1.0, 0.0]);
-			mat4.scale(mvMatrix, [-1.0, 1.0, 1.0]);
 			drawAndTexture(cubeVPB, headVTCB);
 			// 1.125 puts it as 9,9,9
 			mat4.scale(mvMatrix, [1.125, 1.125, 1.125]);
