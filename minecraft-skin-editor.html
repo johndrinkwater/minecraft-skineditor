@@ -671,16 +671,16 @@ vTextureCoord = aTextureCoord;
 
 		// arms
 		mvPushMatrix();
-			mat4.translate(mvMatrix, [-1.5, 0.0, 0.0]);
-			mat4.translate(mvMatrix, [0.5, 1.5, 0.0]);
+			// [-1.5, 0.0, 0.0] [0.5, 1.5, 0.0]
+			mat4.translate(mvMatrix, [-1.0, 1.5, 0.0]);
 			mat4.rotate(mvMatrix, ryRArm, [1.0, 0.0, 0.0]);
 			mat4.rotate(mvMatrix, rxRArm, [0.0, 0.0, 1.0]);
 			mat4.translate(mvMatrix, [-0.5, -1.5, 0.0]);
 			drawAndTexture(armVPB, armLVTCB);
 		mvPopMatrix();
 		mvPushMatrix();
-			mat4.translate(mvMatrix, [1.5, 0.0, 0.0]);
-			mat4.translate(mvMatrix, [-0.5, 1.5, 0.0]);
+			// [1.5, 0.0, 0.0] [-0.5, 1.5, 0.0]
+			mat4.translate(mvMatrix, [1.0, 1.5, 0.0]);
 			mat4.rotate(mvMatrix, ryLArm, [1.0, 0.0, 0.0]);
 			mat4.rotate(mvMatrix, rxLArm, [0.0, 0.0, 1.0]);
 			mat4.translate(mvMatrix, [0.5, -1.5, 0.0]);
@@ -690,15 +690,15 @@ vTextureCoord = aTextureCoord;
 
 		// legs
 		mvPushMatrix();
-			mat4.translate(mvMatrix, [-0.5, -3.0, 0.0]);
-			mat4.translate(mvMatrix, [0.0, 1.5, 0.0]);
+			// [-0.5, -3.0, 0.0] [0.0, 1.5, 0.0])
+			mat4.translate(mvMatrix, [-0.5, -1.5, 0.0]);
 			mat4.rotate(mvMatrix, ryRLeg, [1.0, 0.0, 0.0]);
 			mat4.translate(mvMatrix, [0.0, -1.5, 0.0]);
 			drawAndTexture(legVPB, legLVTCB);
 		mvPopMatrix();
 		mvPushMatrix();
-			mat4.translate(mvMatrix, [0.5, -3.0, 0.0]);
-			mat4.translate(mvMatrix, [0.0, 1.5, 0.0]);
+			// [0.5, -3.0, 0.0] [0.0, 1.5, 0.0]
+			mat4.translate(mvMatrix, [0.5, -1.5, 0.0]);
 			mat4.rotate(mvMatrix, ryLLeg, [1.0, 0.0, 0.0]);
 			mat4.translate(mvMatrix, [0.0, -1.5, 0.0]);
 			mat4.scale(mvMatrix, [-1.0, 1.0, 1.0]);
@@ -707,9 +707,8 @@ vTextureCoord = aTextureCoord;
 
 		// draw head
 		mvPushMatrix();
-
-			mat4.translate(mvMatrix, [0.0, 2.6, 0.0]);
-			mat4.translate(mvMatrix, [0.0, -1.0, 0.0]);
+			// [0.0, 2.6, 0.0] [0.0, -1.0, 0.0]
+			mat4.translate(mvMatrix, [0.0, 1.6, 0.0]);
 			mat4.rotate(mvMatrix, rzHead, [0.0, 1.0, 0.0]);
 			mat4.rotate(mvMatrix, degToRad(ryHead), [1.0, 0.0, 0.0]);
 			mat4.translate(mvMatrix, [0.0, 1.0, 0.0]);
