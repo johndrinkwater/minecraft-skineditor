@@ -42,7 +42,6 @@ precision highp float;
 #endif
 
 varying vec2 vTextureCoord;
-
 uniform sampler2D uSampler;
 
 void main(void) {
@@ -66,6 +65,7 @@ vTextureCoord = aTextureCoord;
 <script type="text/javascript">
 /* <![CDATA[ */
 
+	/** GL Routines from learningWebGL / other */
 	var gl;
 	function initGL(canvas) {
 		try {
@@ -107,7 +107,6 @@ vTextureCoord = aTextureCoord;
 
 		gl.shaderSource(shader, str);
 		gl.compileShader(shader);
-
 		if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
 			console.log(gl.getShaderInfoLog(shader));
 			return null;
@@ -116,6 +115,7 @@ vTextureCoord = aTextureCoord;
 		return shader;
 	}
 
+	/** Our routines start here */
 
 	var shaderProgram;
 	function initShaders() {
@@ -135,14 +135,12 @@ vTextureCoord = aTextureCoord;
 
 		shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition");
 		gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
-
 		shaderProgram.textureCoordAttribute = gl.getAttribLocation(shaderProgram, "aTextureCoord");
 		gl.enableVertexAttribArray(shaderProgram.textureCoordAttribute);
 
 		shaderProgram.pMatrixUniform = gl.getUniformLocation(shaderProgram, "uPMatrix");
 		shaderProgram.mvMatrixUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
 		shaderProgram.samplerUniform = gl.getUniformLocation(shaderProgram, "uSampler");
-
 	}
 
 	var mvMatrix = mat4.create();
@@ -173,11 +171,6 @@ vTextureCoord = aTextureCoord;
 	}
 
 	/*
-	 * now our code starts
-	 */
- 
-
-	/*
 	 * helper function, just to reduce code size
 	 */
 	function makeCube(width, height, depth) {
@@ -191,17 +184,12 @@ vTextureCoord = aTextureCoord;
 		var buffer = gl.createBuffer();
 		gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
 		vertices = [
-			// Front face
+			// Front Ba.. T Bo R L
 			-w,-h, d, w,-h, d, w, h, d,-w, h, d,
-			// Back face
 			-w,-h,-d,-w, h,-d, w, h,-d, w,-h,-d,
-			// Top face
 			-w, h,-d,-w, h, d, w, h, d, w, h,-d,
-			// Bottom face
 			-w,-h,-d, w,-h,-d, w,-h, d,-w,-h, d,
-			// Right face
 			 w,-h,-d, w, h,-d, w, h, d, w,-h, d,
-			// Left face
 			-w,-h,-d,-w,-h, d,-w, h, d,-w, h,-d,
 		];
 		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
@@ -300,12 +288,13 @@ vTextureCoord = aTextureCoord;
 		cubeVertexIndexBuffer = gl.createBuffer();
 		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cubeVertexIndexBuffer);
 		var cubeVertexIndices = [
-			0,	1,	2,	0,	2,	3,	// Front face
-			4,	5,	6,	4,	6,	7,	// Back face
-			8,	9,	10,	8,	10,	11,	// Top face
-			12,	13,	14,	12,	14,	15,	// Bottom face
-			16,	17,	18,	16,	18,	19,	// Right face
-			20,	21,	22,	20,	22,	23	// Left face
+			// Front Ba.. T Bo R L
+			0,	1,	2,	0,	2,	3,
+			4,	5,	6,	4,	6,	7,
+			8,	9,	10,	8,	10,	11,
+			12,	13,	14,	12,	14,	15,
+			16,	17,	18,	16,	18,	19,
+			20,	21,	22,	20,	22,	23
 		]
 		gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(cubeVertexIndices), gl.STATIC_DRAW);
 		cubeVertexIndexBuffer.itemSize = 1;
@@ -342,15 +331,8 @@ vTextureCoord = aTextureCoord;
 		loadedTexture = true;
 	}
 
-	// Sync localStorage
+	/** Sync localStorage from another window */
 	function updateSkinsFromAnotherTime(key) {
-
-		// ERM. GREAT. so if the update is atomic,
-		// we get spammed with updates for each item? :|
-
-		// assume here that values have updated in another window
-		// since it was fired, we know at least 1, it is supported, so ignore try{}?
-		// ignorantly overwrite, for now
 
 		console.log( 'storage: another instance updated key ‘' + key + '’' );
 
@@ -359,12 +341,13 @@ vTextureCoord = aTextureCoord;
 		else if (key = 'lastSkin')
 			lastSkin = JSON.parse(localStorage.getItem('lastSkin'));
 
-		updateSkins(false); // This will do more JSON parsing 
+		updateSkins(false);
 	}
 
-	/*
-	* atm, we call this if we modify skins[]
-	*/
+	/**
+	 * Update our skins storage of the modified skin,
+	 * @param refreshLocal bool update local storage copy as well
+	 */
 	function updateSkins(refreshLocal) {
 
 		if (!fCanvasSupport)
@@ -390,8 +373,8 @@ vTextureCoord = aTextureCoord;
 		if ( skinsholder.hasChildNodes() ) {
 			while ( skinsholder.childNodes.length >= 1 )
 			{
-				skinsholder.removeChild( skinsholder.firstChild );			 
-			} 
+				skinsholder.removeChild( skinsholder.firstChild );
+			}
 		}
 		holder.appendChild( skinsholder );
 
@@ -408,8 +391,8 @@ vTextureCoord = aTextureCoord;
 				temp.appendChild(name);
 				temp.appendChild(preview);
 				temp.className = 'box'; // TODO DOMy method please.
-				preview.addEventListener('click', function() { loadSkinInSkins( this.skin ); }, true);
-				name.addEventListener('click', function() { renameSkinInSkins( this.skin ); }, true);
+				preview.addEventListener('click', function() { loadSkin( this.skin ); }, true);
+				name.addEventListener('click', function() { renameSkin( this.skin ); }, true);
 				preview.src = obj.thumb;
 				name.innerHTML = obj.name;
 				preview.title = preview.skin = name.skin = obj.name;
@@ -419,65 +402,63 @@ vTextureCoord = aTextureCoord;
 
 	}
 
+	/**
+	 * Rename a stored skin
+	 * @param skin string identifies which skin user wishes to rename
+	 */
+	function renameSkin( skin ) {
 
-	function renameSkinInSkins( skin ) {
-
-		if (skin == "") 
+		if (skin == "")
 			return;
-
 		console.log('Renaming ‘' + skin + '’ skin.');
 
-		skinName = prompt('What do you wish to rename ‘' + skin + "’ to?\nTo delete, rename to ''.", skin);
+		var newName = prompt('What do you wish to rename ‘' + skin + "’ to?\nTo delete, rename to ''.", skin);
 		
-		if (skinName === null) { // user aborted
+		if (newName === null) { // user aborted
 			return;
-		} else if (skinName === "") { // user wants to delete
+		} else if (newName === "") { // user wants to delete
 			console.log('Deleting ‘' + skin + '’ skin.');
 			deleteSkinInSkins(skin);
 		} else {
-			skins[skinName] = skins[skin];
-			skins[skinName].name = skinName;
+			skins[newName] = skins[skin];
+			skins[newName].name = newName;
 			delete skins[skin];
 			updateSkins(true);
 		}
 	}
 
-	function loadSkinInSkins(skin) { 
+	/**
+	 * Load skin into editor and preview
+	 * @param skin string identifies which skin user wishes to load
+	 */
+	function loadSkin( skin ) {
 
-		if (skin == "") {
-			// TODO with new interface, you cant get here. remove?
-			var skinName = prompt('Which skin do you want to load?', lastSkin);
-		
-			if (skinName == null) { // user aborted
-				skinName = lastSkin
-				return;
-			}
-		} else {
-			skinName = skin;
-		}
-		console.log('Loading ‘' + skinName + '’ skin.');
+		if (skin == "")
+			return;
+		console.log('Loading ‘' + skin + '’ skin.');
 
-		if (skins[skinName]) {
+		if (skins[skin]) {
 
-			lastSkin = skinName;
+			lastSkin = skin;
 			if (flStorageSupport)
 				localStorage['lastSkin'] = JSON.stringify(lastSkin);
 			
 			var newskin = document.createElement('img');
 			newskin.onload = loadNewSkin;
 			newskin.width=64; newskin.height=32;
-			newskin.src = skins[skinName].data;
+			newskin.src = skins[skin].data;
 		} else {
-			console.log( skinName + " does not exist" );
+			console.log( skin + ' does not exist.' );
 		}
 	}
+
 
 	function resetLocalStorage() {
 
 		if (!flStorageSupport)
 			return;
 
-		console.log('Purging localStorage');
+		console.log( 'Purging localStorage.' );
 		if (localStorage && localStorage.clear)
 			localStorage.clear();
 		else {
@@ -506,7 +487,7 @@ vTextureCoord = aTextureCoord;
 		// if we are here, user has pressed ‘start again’
 		// do we have changes?
 		// load previously opened skin
-		loadSkinInSkins( lastSkin );
+		loadSkin( lastSkin );
 	}
 
 	function saveSkinToMinecraft(e) {
@@ -532,7 +513,7 @@ vTextureCoord = aTextureCoord;
 //
 //<element body>
 			// xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-			xhr.open("POST", "http://www.minecraft.net/skin/upload.jsp"); 
+			xhr.open("POST", "http://www.minecraft.net/skin/upload.jsp");
 			xhr.send(fd);
 
 		} catch (e) {
@@ -848,7 +829,7 @@ vTextureCoord = aTextureCoord;
 			skineditorc.fillRect( x, y, 8, 8);
 			skineditorc.restore();
 		} else if (paintMode == DROPPER) {
-			// 
+			//
 		} else {
 			// future proof?
 		}
@@ -867,7 +848,7 @@ vTextureCoord = aTextureCoord;
 			newskin.onload = loadNewSkin;
 			newskin.file = oF;
 
-			// For Chrome that doesn’t wont to load via .file 
+			// For Chrome that doesn’t wont to load via .file
 			var reader = new FileReader();
 			reader.readAsDataURL(oF);
 			reader.onload = (function(aImg, read) { return function(e) { console.log('Loaded image'); aImg.src = e.target.result; }; })(newskin, reader);
@@ -907,7 +888,7 @@ vTextureCoord = aTextureCoord;
 			skineditorc.drawImage( this, 0, 0, 512, 256 );
 		} else {
 			// we *arent* Gecko. assume, for now, that thats everything that can do what we need
-			// XXX we need to toggle on Opera/Chrome to do a more expensive 
+			// XXX we need to toggle on Opera/Chrome to do a more expensive
 			console.log('Working around a flaw in your browser engine, initial load will be slower than Firefox.');
 
 			skineditorc.save();
@@ -918,7 +899,7 @@ vTextureCoord = aTextureCoord;
 					/* XXX avoid doing work for empty pixels */
 					if ( pixels.data[((y *(pixels.width*4)) + (x*4)) + 3] != 0 ) {
 
-						skineditorc.fillStyle = 'rgba(' +	pixels.data[((y *(pixels.width*4)) + (x*4))] + ',' + 
+						skineditorc.fillStyle = 'rgba(' +	pixels.data[((y *(pixels.width*4)) + (x*4))] + ',' +
 														pixels.data[((y *(pixels.width*4)) + (x*4)) + 1] + ','+
 														pixels.data[((y *(pixels.width*4)) + (x*4)) + 2] + ','+
 														pixels.data[((y *(pixels.width*4)) + (x*4)) + 3] + ')';
@@ -945,7 +926,7 @@ vTextureCoord = aTextureCoord;
 				continue;
 			if (this[i] && typeof this[i] == "object") {
 				newObj[i] = this[i].clone();
-			} else 
+			} else
 				newObj[i] = this[i]
 		}
 		return newObj;
@@ -1013,7 +994,6 @@ vTextureCoord = aTextureCoord;
 		if (typeof console == 'undefined') {
 			console = {}
 			console.log = function(message) {
-				// alert(message);
 			}
 		}
 		// push messages to Opera debug
@@ -1022,14 +1002,15 @@ vTextureCoord = aTextureCoord;
 
 		// discover if we are IE?
 		if (true) {
-			document.createElement('header');
-			document.createElement('article');
-			document.createElement('footer');
+			delete document.createElement('header');
+			delete document.createElement('article');
+			delete document.createElement('footer');
 		}
 
-		// default SKINS setup
+		// Defaults
 		skins = {};
 		initialSkins = {};
+		initialSkins['_previous'] = { name: 'default', data: null, thumb: null, }
 		initialSkins['default'] = {
 			name: 'default',
 			data: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAAAgCAYAAACinX6EAAAE8klEQVRogeWX0U/bVhTG/UjtxCVVp0Z2YgqkxoEgh8JLglhIaYBOaNWImFo8NRVMkIYipAj2sAoFNgSESd2eIgWlmVSpUoQ29WHd9lCxxz3lf/r24FxzbeyYUlR31NInJ77HN/5+957jE4ZxOfrDfvSH/YgEO0B/jgQ70NXJYWNKbSu3+T/6gxhWu65C7bpqAhAJdmBjSkVhPI7d7Ihx3s2OXC4AxLwssI4AGIYxqTAevxwAyOpb04Bcu/QAaLOywEIWWFM6fBIA7My7AZhV5MsDgBiPhnyQBRZdndwpAHa6NACIcVpkZ/zvX4OKyEIRdVN9IodoyIfbvZ0YvKlLvenHgKTXASXEIRLsgCywGJB0ACTudm8noiEf+kQOsqDPqYgs3PoIr/2bAMgCi5jEIxryYUDyYzgSwIDkNzQcCeBO/zWk+j9DTOKhhDgjJhryISbxxjw0gHZ9hNf+mZjEQw7qq6Yb56GIHCJB1gDxV/kpjp8X8W9lC8c/FXH8fB2/fTePkVvXEA35EAmyUEQOAy14ssBCDnKISTzc+giv/es7QPBjMMzrqyrqqRCTeKg9ARxtLuHNziqONpfw+9YqasVv8LZcRO3JDGpPZqD2BBCTePSJHBRR30GDYR6K4IcisnDrI7z2b6SAngY+9N64gr0HSdQWM0gq1/FmZxUAMDtWxp/PlvG2XMTsWBkAcLS5hKRyHbXFDPYeJNF74wpkwQd6Trc+wmv/JwAEf2vbBrAzO4RKLo39+QRqi5P449kC/v6haLze/tl/ipeFKWxlR7A/n0All8bO7BBiUgBykDNWny6CTn2E1/4Zsu0HwzwWJlS8KNzH4eJd4w/NL48mUMmNI93tw8HMGA5mxpDp4fHzo8+xnU1gY0rFbnYEh4t38aJwHwsTqp4CrXRw6yO89s+Qf2/EdG15GpVcGgcPR7E+rWItE8PqRD/S3T7cCbPI9PDI9PD4cW4U3385jPVpFQcPR/Fr/h5qy9M4/PYL/dyaj4C09hEEnNf+Tx1f32uClqIoJrlO0Gw6N0XNJpjHj9vL7Wg09HmaTTCNBgrjcXw1dMs4fxQAnFrjCwFAzLf0aQNoNEzmW3/KvAfwIVPgvQHElSLiShFyt4a4UsRk8pVJ9Jh1PDlUBlMqnUjTwFSrYOp1bGcTeFmYwnY2ge1sAky9rouOL5X0a43GiV6/1kW+O8WTGOs4uZ/oLADkbu1cACaTr/Qfzed1lUonD96CYJgnD0TH5/Nm07TIPHQsMUjuIUCt4+cB4GTQFYDdA5KHrNf1HUGbpOPzeXvz9Bx2gOkYzwFo2skDaJr5xwkA+ppTPIlrNMyfrQbp3fShdgAdkxwqm2QYIapWzabJZ3KdjiUArKap+yu5tKG9uVEcbS6ZtDc3aoqxjp8LADFH7wBHALSZfN4MwM4YDYykgN09ra1uB6CyphkGyfULBfDONcAKgF59umLTAOgaYDFNA6HNWQFU1jRbAJU1zYg5EwBa7/0WcANgfQvYxToAsK6wFYBdilwIgHbjbYuQ9Q1gBWBXtCyizTkBaFcjXAGkUimkUilXACRuZWXFJMMQaUTI6llX3wkAHW9TD2hzdjlOA6BTgJzPDMDJoNs4nSJyt3YKoNExUgCsjZdRUEmaVKtGEXYCQEza7RDPANjtIBOEatW9ta5WTdesK2wqgGuabY14FwD/Ad2t413QljEOAAAAAElFTkSuQmCC',
@@ -1087,7 +1068,7 @@ vTextureCoord = aTextureCoord;
 		}
 
 		// discover dataURL support and continue
-		// XXX takes too long. Assumption: browsers that do canvas currently also support data:
+		// XXX took too long. Assume browsers that do canvas also support data:
 
 		skineditor	= document.getElementById( 'skin-editor' );
 		skineditorm	= document.getElementById( 'skin-editor-mini' );
@@ -1157,10 +1138,10 @@ vTextureCoord = aTextureCoord;
 				temp.title = temp.id;
 				temp.style.backgroundColor = colour;
 				if (colour == 'erase')
-					temp.addEventListener('click', 
+					temp.addEventListener('click',
 						function() { paintMode = ERASE; paintColour = 'rgba(0,0,0,0)'; skineditor.className = 'enabled erasing'; }, true);
 				else
-					temp.addEventListener('click', 
+					temp.addEventListener('click',
 						(function(col) {
 							return function() { paintMode = PAINT; paintColour = col; skineditor.className = 'enabled painting'; }; })(colour),
 						true);
@@ -1212,15 +1193,15 @@ vTextureCoord = aTextureCoord;
 			skinpreviewi.style.position = skineditori.style.position = 'absolute';
 		}
 
-		loadSkinInSkins( lastSkin );
+		loadSkin( lastSkin );
 		updateSkins(false);
 	}
 
+	/** Boot our GL canvas */
 	function webGLStart() {
 
 		initShaders()
 		initBuffers();
-		//updateTexture(); //TODO possibily causing an issue
 
 		gl.clearColor(0.0, 0.0, 0.0, 0.5);
 		gl.clearDepth(1.0);
@@ -1230,6 +1211,8 @@ vTextureCoord = aTextureCoord;
 		gl.enable(gl.DEPTH_TEST);
 		gl.depthFunc(gl.LEQUAL);
 
+		// push animation onto stack
+		// pushAnimation(anim.WALKING);
 		resumeAnimation()
 		resumeSceneDrawing();
 	}
