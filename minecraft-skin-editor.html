@@ -338,10 +338,8 @@ vTextureCoord = aTextureCoord;
 
 		if (key == 'skins')
 			skins = JSON.parse(localStorage.getItem('skins'));
-		else if (key = 'lastSkin')
-			lastSkin = JSON.parse(localStorage.getItem('lastSkin'));
 
-		updateSkins(false);
+		updateSkins( false );
 	}
 
 	/**
@@ -358,7 +356,6 @@ vTextureCoord = aTextureCoord;
 		if (refreshLocal && flStorageSupport) {
 			try {
 				localStorage['skins']		= JSON.stringify(skins);
-				localStorage['lastSkin']	= JSON.stringify(lastSkin);
 			} catch (e) {
 				console.log('failed to store skins ' + e);
 			}
@@ -439,9 +436,9 @@ vTextureCoord = aTextureCoord;
 
 		if (skins[skin]) {
 
-			lastSkin = skin;
+			skins[ '_previous' ].name = skin;
 			if (flStorageSupport)
-				localStorage['lastSkin'] = JSON.stringify(lastSkin);
+				localStorage['skins'] = JSON.stringify(skins);
 			
 			var newskin = document.createElement('img');
 			newskin.onload = loadNewSkin;
@@ -465,7 +462,6 @@ vTextureCoord = aTextureCoord;
 			localStorage = {};
 		}
 		skins = initialSkins.clone();
-		lastSkin = new String(initialLastSkin);
 
 		updateSkins(true);
 	}
@@ -475,9 +471,9 @@ vTextureCoord = aTextureCoord;
 		if (skin) {
 			skins[skin] = {}
 			delete skins[skin];
-			if (skin == lastSkin) {
+			if (skin == skins[ '_previous' ].name ) {
 				// pick a decent replacement?
-				lastSkin = 'default'; // XXX this can fail if the user deletes us
+				skins[ '_previous' ].name = 'default'; // XXX this can fail if the user deletes us
 			}
 			updateSkins(true);
 		}
@@ -487,7 +483,7 @@ vTextureCoord = aTextureCoord;
 		// if we are here, user has pressed ‘start again’
 		// do we have changes?
 		// load previously opened skin
-		loadSkin( lastSkin );
+		loadSkin( skins[ '_previous' ].name );
 	}
 
 	function saveSkinToMinecraft(e) {
@@ -539,9 +535,9 @@ vTextureCoord = aTextureCoord;
 	function saveSkinInSkins(skin) {
 
 		if (skin == "") {
-			var skinName = prompt('Please name your skin: ', lastSkin);
+			var skinName = prompt('Please name your skin: ', skins[ '_previous' ].name );
 			if (skinName == null) {
-				skinName = lastSkin
+				skinName = skins[ '_previous' ].name;
 				return;
 			}
 		} else
@@ -587,7 +583,7 @@ vTextureCoord = aTextureCoord;
 			data: sskin,
 			thumb: sthumbnail,
 		}
-		lastSkin = skinName;
+		skins[ '_previous' ].name = skinName;
 		updateSkins(true);
 	}
 
@@ -947,9 +943,7 @@ vTextureCoord = aTextureCoord;
 		paintColour = '#fff';
 
 	var skins = {},			// storage pool for drawings
-		lastSkin,			// previous skin to open
-		initialSkins = {},
-		initialLastSkin;
+		initialSkins = {};
 
 	var loadedImage = false, // delay 3D scene if canvas is slow.
 		loadedTexture = false,
@@ -1021,9 +1015,6 @@ vTextureCoord = aTextureCoord;
 			data: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAAAgCAYAAACinX6EAAADG0lEQVRogd1YO26kQBDlCg4mICCzLDn12KlTEvLdDYcT+Ba2z0BqiXCEJpjABARIHACJjMDyPeiNqlUUVf1zW7PrlkpjaLrp9/pV9cNJYmnloVSm+Ly7Usf9TnV5pj7vrvQ1/G2b/59vAPTPr9+rgPtdnongj/vdzyAAAGPw8AuA4bfLs5UiLr3+Lzdu9zERsNtUBT+GgKauVpLHKdHU1QZw7BRo6ko1dbWZR7ofvQEBmAS4bupKA/94e14FEBHj/RclwFYEOfAQXZ79/ylgOwYl8BCXXr+1caCaujKCjjWmPJTRpB2cEtyi5nHwBhIyhiNgHgc1j4M3kNBxSf74oGjM47C6vr25ZsM0xjWSJEnovPM4qNubaw1Gej/uhzFSvzg+ZNExw7QG0yZF63+5T5UUUMiKotgUN3zPNIctvCUbu1Hrukwn7eyW6aSW6aTSNN0YnjRNdT8Yn2U66WeoIaImCTtFaqW5DymXPjo/xii6VLo4AAH3AOAynVRRFKooitU9OpZzhjZCKHj6dcn5CeijxFKisCOFeVbX3O5zllby+/RllBQXn4CVgH+h0Z3lXCZcU5DejRYK27FFW5dnLNDjfqfyxwedNlLY5ueOUnxaBYGmBOAFSZVVarBT1BJ3eRaVgL49rwiAYzk6AdLZKjXTl+F3EhBVASYTZBvPVVvI3e9MgWAFSCahb8+qb89WI0MB4CJFq7rPPBCShbaty7VmiTbRNbhF41MBBywOagMF40qAi5KAhCACJPm7EkCPwuN+p9X08fa8Ate3Z/1OuE+f8QWPSfAmAMvHhQTp5SD/Ls80yL49b3YX5y+AwwS4pkpoTWHPfch/l1zjXvr++qQdJa4pGBglgKYCfTY0vBTAGR+bCmwSxHnP5TcmABfdGOC9CYiVAlQl0m6Wh1LPw6mBm8s3vAn4ShHkFmCSMnaLkhpC/svkY903KcCFiQBpDABzlSqnANP80RQgFUCfQiiBfn990gXRhQApHXxqEt0cKwF4YpPrkvqwjDEg/GnsQoAtHbjNcFGlcwrYCAg5BXxJkNQQogLAY8P/F6CbuIFTQdIoAAAAAElFTkSuQmCC',
 			thumb: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEYAAABkCAYAAAA7Ska5AAACz0lEQVR4nO3bPXLbMBAFYF7BhQsW7DKZcRuPWrVseIn4BDmCO0/ukd6FCxVRwUJncJ/JPYxUK8OYBbAMQe+CeJp5DUeiFp8N4odU1+EVfT0ibNQLsBr1AqxGvQCrUS/AatQLsBr1AqxGvQCrUS/Aarb/kofvD650AAMYwNSA8rkwd1+/rM6uYMbjwY3HQxGY8XgATDMwpQIYwDQK8+fXk6NM0+SmaXL+sVTo/f5nAAOYRmHeXl8cpe971/e9+/vt5pp5HNw8Dh+O+aHP0DkA0xIM1/AcDGVXMBzAPA7Ox/KvI5QUJAUwLcFIu9Lz/e0+YXyc5/vba1LXmnkcou+dx2Ef15iue5/HlIAJ5zEbbmatb7hk1y3V2CUw4/FwPeflfHKX86kumLDoVIO5awy9x8eiRaT/HRtugW7/31IahksVMFzhkuE3F8AshHl7fWGBzMCECLmE3YbrSnStupxPyfMDJgNTcKdvHQzXXTRgOKBqYcLRyB+BCMO/dULHqoBZirE1jJ+qYH7//HENHaNuw10n/K5ESwvAtAQjHVEo/sb40vMCBjA7g/GHcult2BQGNzUwPcFLLfBKw0hSBcwSjFy3iZ3P/OpastpeA8MhVLHtEIaehCoFQ8/i5f4IqjDSvp6DWDLqSKEBYxkm9UBh173fQuEa6i8TwuVCbH6Se4ARMNZhuPgwXAPDpxi4JxtyMOa7UgxFA8bUcJ3qUlvCcF2oepgYUOyYBGZte4rBSCOB8Telwg3wgtcOWzCSeQdgEhCAYWCkv0DZFUyJn+QAJjI/AUyLMLlZMmCYBnPTem4TalcwkgYDJtJg7uFGP4XWQLZgJA0GDGD+H2bD2yI2YUqkORiMShiuAZMNlgSAWRbJ1qY0gAFMwzCSjW9pANMCDJYEgAEMYLQDGMBUHfUCrEa9AKtRL8Bq1AuwGvUCrEa9AKtRL8Bq1AuwGvUCTOYfXfp3gFneuucAAAAASUVORK5CYII=',
 		}
-		lastSkin = 'default';
-		initialLastSkin = 'default';
-
 		// discover if we have JSON library in the browser
 		if ( typeof JSON != 'undefined' ) {
 			fJSONSupport = true;
@@ -1039,15 +1030,12 @@ vTextureCoord = aTextureCoord;
 			if (localStorage['skins'] != null) {
 
 				skins						= JSON.parse(localStorage['skins']);
-				lastSkin					= JSON.parse(localStorage['lastSkin']);
 
 			} else {
 
 				skins = initialSkins.clone();
-				lastSkin = new String(initialLastSkin);
 				try {
 					localStorage['skins']	= JSON.stringify(skins);
-					localStorage['lastSkin']= JSON.stringify(lastSkin);
 				} catch (e) {
 					// OOM seems unlikely with our usage needs.
 					console.log('Had a problem setting up localStorage: ' + e);
@@ -1064,7 +1052,6 @@ vTextureCoord = aTextureCoord;
 
 			localStorage = {};
 			skins = initialSkins.clone();
-			lastSkin = new String(initialLastSkin);
 		}
 
 		// discover dataURL support and continue
@@ -1193,7 +1180,7 @@ vTextureCoord = aTextureCoord;
 			skinpreviewi.style.position = skineditori.style.position = 'absolute';
 		}
 
-		loadSkin( lastSkin );
+		loadSkin( skins[ '_previous' ].name );
 		updateSkins(false);
 	}
 
