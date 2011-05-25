@@ -67,9 +67,25 @@ vTextureCoord = aTextureCoord;
 
 	/** GL Routines from learningWebGL / other */
 	var gl;
+
+	function fetchGLContext(canvas, attribs) {
+		var type = ["webgl", "experimental-webgl", "moz-webgl", "webkit-3d"];
+		var context = null;
+		for (i in type) {
+			try {
+				context = canvas.getContext(type[i], attribs);
+			} catch(e) {
+			}
+			if (context) {
+			  break;
+			}
+		}
+		return context;
+	}
+
 	function initGL(canvas) {
 		try {
-			gl = canvas.getContext("experimental-webgl");
+			gl = fetchGLContext(canvas, null);
 			gl.viewportWidth = canvas.width;
 			gl.viewportHeight = canvas.height;
 		} catch(e) {
@@ -209,7 +225,9 @@ vTextureCoord = aTextureCoord;
 		bodyVPB = makeCube( 8, 12, 4 );
 		limbVPB	= makeCube( 4, 12, 4 );
 
-		skintexture = gl.createTexture();
+		textures[0] = gl.createTexture();
+		textures[1] = gl.createTexture();
+		activeTexture = 0;
 
 		// TODO for the following, what we could do to make it more readable/flexible,
 		// is store it in ints for x/y, then divide by 64 or 32, depending.
@@ -301,12 +319,31 @@ vTextureCoord = aTextureCoord;
 		cubeVertexIndexBuffer.numItems = 36;
 	}
 
+
+	/**
+	 * To get rid of our timers
+	 * http://paulirish.com/2011/requestanimationframe-for-smart-animating/
+	 */
+	window.FRAMERATE = 30;
+    window.requestAnimFrame = (function(){
+      return  window.requestAnimationFrame       ||
+              window.webkitRequestAnimationFrame ||
+              window.mozRequestAnimationFrame    ||
+              window.oRequestAnimationFrame      ||
+              window.msRequestAnimationFrame     ||
+              function( callback, element ){
+                window.setTimeout(callback, 1000 / window.FRAMERATE );
+              };
+    })();
+
+
 	function updateTexture() {
 
 		if (!loadedImage)
 			false;
-		loadedTexture = false;
-		gl.bindTexture(gl.TEXTURE_2D, skintexture);
+
+		var nextTexture = activeTexture ? 0 : 1;
+		gl.bindTexture(gl.TEXTURE_2D, textures[nextTexture]);
 		gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
 		var texels;
 		skineditormc.save();
@@ -328,11 +365,17 @@ vTextureCoord = aTextureCoord;
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
 		gl.bindTexture(gl.TEXTURE_2D, null);
+		// we must come here first, so..
 		loadedTexture = true;
+		// now we're done, update which texture to use
+		activeTexture = nextTexture;
 	}
 
-	/** Sync localStorage from another window */
-	function updateSkinsFromAnotherTime(key) {
+	/**
+	 * Sync localStorage from another window
+	 * @param key string which localStorage item got updated
+	 */
+	function updateSkinsFromAnotherTime( key ) {
 
 		console.log( 'storage: another instance updated key ‘' + key + '’' );
 
@@ -346,7 +389,7 @@ vTextureCoord = aTextureCoord;
 	 * Update our skins storage of the modified skin,
 	 * @param refreshLocal bool update local storage copy as well
 	 */
-	function updateSkins(refreshLocal) {
+	function updateSkins( refreshLocal ) {
 
 		if (!fCanvasSupport)
 			return;
@@ -361,12 +404,8 @@ vTextureCoord = aTextureCoord;
 			}
 		}
 
-		// we have to iterate over the object, make sure we get arrays, check for:
-		// .data, .thumb, .name
-		// then push some thumbnails!
-
 		holder.removeChild( skinsholder );
-		// remove previous
+
 		if ( skinsholder.hasChildNodes() ) {
 			while ( skinsholder.childNodes.length >= 1 )
 			{
@@ -376,7 +415,7 @@ vTextureCoord = aTextureCoord;
 		holder.appendChild( skinsholder );
 
 		var temp, name, preview;
-		// iterate and add skins to GUI!
+
 		for (obj in skins) {
 			obj = skins[obj];
 			if (obj.thumb != null) {
@@ -391,8 +430,7 @@ vTextureCoord = aTextureCoord;
 				preview.addEventListener('click', function() { loadSkin( this.skin ); }, true);
 				name.addEventListener('click', function() { renameSkin( this.skin ); }, true);
 				preview.src = obj.thumb;
-				name.innerHTML = obj.name;
-				preview.title = preview.skin = name.skin = obj.name;
+				name.innerHTML = preview.title = preview.skin = name.skin = obj.name;
 				temp.className = 'box';
 			}
 		}
@@ -415,7 +453,7 @@ vTextureCoord = aTextureCoord;
 			return;
 		} else if (newName === "") { // user wants to delete
 			console.log('Deleting ‘' + skin + '’ skin.');
-			deleteSkinInSkins(skin);
+			deleteSkin(skin);
 		} else {
 			skins[newName] = skins[skin];
 			skins[newName].name = newName;
@@ -449,39 +487,32 @@ vTextureCoord = aTextureCoord;
 		}
 	}
 
+	/**
+	 * Delete skin, and update skin selection box
+	 * @param skin string identifies which skin user wishes to delete
+	 */
+	function deleteSkin( skin ) {
 
-	function resetLocalStorage() {
-
-		if (!flStorageSupport)
+		if (skin == "")
 			return;
+		console.log('Deleting ‘' + skin + '’ skin.');
 
-		console.log( 'Purging localStorage.' );
-		if (localStorage && localStorage.clear)
-			localStorage.clear();
-		else {
-			localStorage = {};
-		}
-		skins = initialSkins.clone();
-
-		updateSkins(true);
-	}
-
-	function deleteSkinInSkins(skin) {
-
-		if (skin) {
+		if ( skin && skins[skin] ) {
 			skins[skin] = {}
 			delete skins[skin];
 			if (skin == skins[ '_previous' ].name ) {
-				// pick a decent replacement?
-				skins[ '_previous' ].name = 'default'; // XXX this can fail if the user deletes us
+				skins[ '_previous' ].name = 'default'; // XXX can fail if the user deletes default
 			}
 			updateSkins(true);
 		}
 	}
 
-	function resetSkin(e) {
+	/**
+	 * Reload skin, drop all updates
+	 * @param skin string identifies which skin user wishes to reload
+	 */
+	function resetSkin( event ) {
 		// if we are here, user has pressed ‘start again’
-		// do we have changes?
 		// load previously opened skin
 		loadSkin( skins[ '_previous' ].name );
 	}
@@ -516,6 +547,23 @@ vTextureCoord = aTextureCoord;
 			console.log('A problem has occured, Mojang returned a creeper.');
 		}
 		// upon getting confirmation, load another tab?
+	}
+
+	
+	function resetLocalStorage() {
+
+		if (!flStorageSupport)
+			return;
+
+		console.log( 'Purging localStorage.' );
+		if (localStorage && localStorage.clear)
+			localStorage.clear();
+		else {
+			localStorage = {};
+		}
+		skins = initialSkins.clone();
+
+		updateSkins(true);
 	}
 
 	function openPushSkinDialog(e) {
@@ -589,8 +637,6 @@ vTextureCoord = aTextureCoord;
 
 	/*
 	 * helper function
-	 * replace this will inline code & a loop instead.
-	 * ie, avoid function call
 	 */
 	function drawAndTexture(vertices, texture) {
 		gl.bindBuffer(gl.ARRAY_BUFFER, vertices);
@@ -598,10 +644,12 @@ vTextureCoord = aTextureCoord;
 		gl.bindBuffer(gl.ARRAY_BUFFER, texture);
 		gl.vertexAttribPointer(shaderProgram.textureCoordAttribute, texture.itemSize, gl.FLOAT, false, 0, 0);
 		gl.activeTexture(gl.TEXTURE0);
-		gl.bindTexture(gl.TEXTURE_2D, skintexture);
+		gl.bindTexture(gl.TEXTURE_2D, textures[activeTexture]);
 		gl.uniform1i(shaderProgram.samplerUniform, 0);
 		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cubeVertexIndexBuffer);
-		setMatrixUniforms();
+		//setMatrixUniforms();
+		gl.uniformMatrix4fv(shaderProgram.pMatrixUniform, false, pMatrix);
+		gl.uniformMatrix4fv(shaderProgram.mvMatrixUniform, false, mvMatrix);
 		gl.drawElements(gl.TRIANGLES, cubeVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
 	}
 
@@ -610,11 +658,24 @@ vTextureCoord = aTextureCoord;
 		ryRLeg = degToRad(3), ryLLeg = degToRad(-3),
 		rzHead = degToRad(0), ryHead = 0, rBody = 0;
 
+	var lastTime = new Date().getTime();
+
 	function drawScene() {
 
-		if (!loadedTexture) {
+		// call ourselves in the future
+		requestAnimFrame(drawScene, skinpreview);
+
+
+		if (!loadedTexture)
 			return;
-		}
+
+		// we first need to do any animation maths
+		var timeNow = new Date().getTime();
+		var elapsed = timeNow - lastTime;
+		console.log(elapsed);
+		lastTime = timeNow;
+
+		// adjust window.FRAMERATE?
 
 		gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -683,24 +744,10 @@ vTextureCoord = aTextureCoord;
 	}
 
 	/* ################################## */
-
-	var lastTime = 0;
-	function animateScene() {
-
-		// TODO replace with actual animation code
-		var timeNow = new Date().getTime();
-		if (lastTime != 0) {
-			var elapsed = timeNow - lastTime;
-
-		}
-		lastTime = timeNow;
-	}
-
 	function startRotatingDude(e) {
 
 		if (!fWebGLSupport)
 			return;
-		pauseAnimation();
 		canRotate = true;
 		skinpreview.style.cursor='move';
 
@@ -712,7 +759,6 @@ vTextureCoord = aTextureCoord;
 
 		if (!fWebGLSupport)
 			return;
-		resumeAnimation();
 		canRotate = false;
 		skinpreview.style.cursor='pointer';
 	}
@@ -738,64 +784,12 @@ vTextureCoord = aTextureCoord;
 			: Rotate guy → Pause ‘animation’ of dude, [2 minutes?], allow user to rotate
 	*/
 
-	function toggleAnimation() {
-
-		if (!fWebGLSupport)
-			return;
-		canAnimate = !canAnimate;
-		if (!canAnimate)
-			resumeAnimation();
-		else
-			pauseAnimation()
-	}
-
-	function pauseAnimation(){
-		canAnimate = false;
-		clearInterval(timerAnimation);
-	}
-	function resumeAnimation() {
-		canAnimate = true;
-		clearTimeout(timerDrawingComplete);
-		timerAnimation = setInterval(animateScene, 50);
-	}
-
-	// to control redraws
-	function reduceSceneDrawing() {
-		clearInterval(timerDrawingScene);
-		timerDrawingScene = setInterval(drawScene, 250);
-	}
-	function resumeSceneDrawing() {
-		clearInterval(timerDrawingScene);
-		timerDrawingScene = setInterval(drawScene, 50);
-	}
-	// to control texture updates
-	function startSceneUpdates() {
-		clearInterval(timerUpdateScene); // incase
-		if (fWebGLSupport)
-			timerUpdateScene = setInterval(updateTexture, 200);
-	}
-	function stopSceneUpdates() {
-		clearInterval(timerUpdateScene);
-	}
-
-	function drawingComplete() {
-		stopSceneUpdates();
-		resumeSceneDrawing();
-		resumeAnimation();
-		timerDrawingComplete = false; // TODO needed?
-	}
-
 	function drawOnDude(ev) {
 		var x, y;
 		
 		// to prevent constantly blocking updates
 		if (fWebGLSupport) {
-			if (!timerDrawingComplete) {
-				pauseAnimation();
-				reduceSceneDrawing(); // do we need?
-				startSceneUpdates();
-				timerDrawingComplete = setTimeout(drawingComplete, 1000);
-			}
+
 		}
 
 		if (!ev) ev = window.event;
@@ -829,9 +823,10 @@ vTextureCoord = aTextureCoord;
 		} else {
 			// future proof?
 		}
+
+		updateTexture();
 	}
 
-	/* ################################## */
 
 	function loadSkinFromFile(e) {
 
@@ -947,7 +942,8 @@ vTextureCoord = aTextureCoord;
 
 	var loadedImage = false, // delay 3D scene if canvas is slow.
 		loadedTexture = false,
-		skintexture;
+		activeTexture = 0,
+		textures = [];		// use buffers
 
 	var	cursorThen = [0,0],
 		cursorNow = [0,0];
@@ -1148,7 +1144,6 @@ vTextureCoord = aTextureCoord;
 			webGLStart();
 		
 			skinpreview.addEventListener('mousedown',		startRotatingDude, true);
-			skinpreview.addEventListener('doubleclick',		toggleAnimation, true);
 			skinpreview.addEventListener('mouseup',			stopRotatingDude, true);
 			skinpreview.addEventListener('mouseout',		stopRotatingDude, true);
 			// TODO Stewart suggested to put this on document, so you can leave the preview and still drag.
@@ -1200,8 +1195,7 @@ vTextureCoord = aTextureCoord;
 
 		// push animation onto stack
 		// pushAnimation(anim.WALKING);
-		resumeAnimation()
-		resumeSceneDrawing();
+		drawScene();
 	}
 
 if (document.addEventListener)
@@ -1302,7 +1296,7 @@ else {
 
  <canvas id="skin-preview" width="350" height="500">
   <img id="skin-preview-img" src="i/3d-tease.png" width="350" height="500" alt="Minecraft Default Skin Preview" />
-  <p>Sorry, you browser does not support WebGL. Pretend this image is rendered by your graphics card in real‐time.</p>
+  <p>Sorry, you browser does not support <em>WebGL</em>, <a href="http://get.webgl.org">click here to find a browser that does</a>. Pretend this image is rendered by your graphics card in real‐time.</p>
  </canvas>
 
  <canvas id="skin-editor" width="512" height="256">
