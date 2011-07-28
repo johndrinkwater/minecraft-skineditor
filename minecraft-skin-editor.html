@@ -575,6 +575,9 @@ vTextureCoord = aTextureCoord;
 		return false;
 	}
 
+	/*
+	 * stores the active canvas into localStorage with a thumbnail of the webgl context
+	 */
 	function saveSkinInSkins(skin) {
 
 		if (skin == "") {
@@ -666,7 +669,6 @@ vTextureCoord = aTextureCoord;
 		// we first need to do any animation maths
 		var timeNow = new Date().getTime();
 		var elapsed = timeNow - lastTime;
-		console.log(elapsed);
 		lastTime = timeNow;
 
 		// adjust window.FRAMERATE?
@@ -867,9 +869,8 @@ vTextureCoord = aTextureCoord;
 
 		skineditorc.clearRect(0,0,512,256);
 
-		if ( skineditorc.mozImageSmoothingEnabled ) {
-			// if we are mozilla, tell them to stop SMOOTHING OUR SHIT
-			skineditorc.mozImageSmoothingEnabled ? skineditorc.mozImageSmoothingEnabled = false : true;
+		if ( 'mozImageSmoothingEnabled' in skineditorc ) {
+			skineditorc.mozImageSmoothingEnabled = false;
 			skineditorc.drawImage( this, 0, 0, 512, 256 );
 		} else {
 			// we *arent* Gecko. assume, for now, that thats everything that can do what we need
