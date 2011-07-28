@@ -1064,7 +1064,7 @@ vTextureCoord = aTextureCoord;
 			skineditorm.width = 64; skineditorm.height = 32;
 			skineditormc = skineditorm.getContext( '2d' );
 
-			// need to disable for file:// Opera & Chrome, they refuse to open files
+			// need to disable for file:// Opera + Chrome, they refuse to open files
 			skinimporterchrome = document.createElement('input');
 			holder.appendChild(skinimporterchrome);
 			skinimporterchrome.id = 'skin-selector';
@@ -1224,7 +1224,7 @@ else {
 	a { color: inherit; background: transparent; }
 
 	#minecraft { background: url(i/minecraft.png) transparent no-repeat; display: inline-block; text-indent: -9999px; min-width:270px; height:45px; min-height: 45px; }
-	header h1 { margin: 0; color: white; background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAwFBMVEVZPio2JhpFMiMwIhhBLiA6KRwiGBFALB4qHhQ+Kx0uIBYrHhU4KBxWPClJNCUpHBMfFQ4zJBkmGhJKNSUtLS0yIxgoHBRPNyUiIiIgFg8sHxYwMDAqHRQkGRE5KBtCQkIvIRdROCc0JBkkGhI0JRo9LB9KMyM4JxsaEgxeQS0YEAtcQCw3NzcXEAs7Kh0mHBNfQi0iFxA3JxslGRFDMCFMNSQcEw1bQCtIMyQ/LSA1JhsnGxI2JhkhFxAnHBM8Kh3NW47EAAAACXBIWXMAAABIAAAASABGyWs+AAAACXZwQWcAAAAwAAAAMADO7oxXAAACkUlEQVRIS5WUa1NaQRBEVwIkAZFHBCRAQEFQeQuoCWD+/7/K2WmcurkxSdFVTp3p3eaLvTcsl8svpp+m1FosFt3XDCcH7u/vkzdSqwfwNcN8Pr+4uOBgboJ7vZ5WjlndL5pCLpdj6XQ6OZMCWhVwv2OKgZeXFw/AHphMJqzuHwPPz8+yWJxRknVVTgx8M8kSoyR7AA5IbrlcdtaBc9kkJ2QymXa7zTIej2EOANaMSaY7ETzw+PioAOABme5E2Gw2BEql0tnZGUwAYN2YZLoDxIBcrN1up1UOK8DPJdfTA9lsdjgcMhXQKocVIJBcA3+1Wi1r0kHtTUo6oOvr61CtVrG+m2CmB6omBxQD9Xp9vV4rADPXb6qbHFAMNJtNt6bTqaBpSsLt7a1mDHS73Q8mAgLdSwKvRzNst9s/A1tTEn4L9Pt9Hehx9U1APp9POSiMRiOWkUnt1zFAIOXE98C9QqGQDBRMwGq1SjkxcH5+rl2geTgcxH7qZmz1V5NAs9Vqif3UzdMDP0ws+uy0TGKX3gbAzVg+VKlUPpkqJrFL1QSGaqsC+jQoIHYpAMSAasjLlCvAIeaO7lxeXsZvh9rWaDQ+mgQ4T09P7ugOAfgYeH19/WwSKOCOB+BApXYm1Y56ia+uruSwEnYIlETvS4UhICYgh5V7DukAbflPYDAY3N3dURJAneEDOnhPx28ur4cA/3NAFcDtvqe/Bvjipu+axqbAK6Ek+YTUH4Af4lPHhAH5MUBJkgH1B3h4eNjv90wYkB94VpRkZeJAqxyuUh4mDMgP/PGUcG9ubgQ+JedjgHrIpV7/DjRMMcCLmc1mtEXgU3I+BugTi/on5n8s1oqcCZ8eWCwWvBXKuDDBBMRakTOBX0m2AlUoQDmeAAAAAElFTkSuQmCC) transparent repeat-x; height:45px; vertical-align: text-bottom; line-height: 60px; }
+	header h1, footer { background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAwFBMVEVZPio2JhpFMiMwIhhBLiA6KRwiGBFALB4qHhQ+Kx0uIBYrHhU4KBxWPClJNCUpHBMfFQ4zJBkmGhJKNSUtLS0yIxgoHBRPNyUiIiIgFg8sHxYwMDAqHRQkGRE5KBtCQkIvIRdROCc0JBkkGhI0JRo9LB9KMyM4JxsaEgxeQS0YEAtcQCw3NzcXEAs7Kh0mHBNfQi0iFxA3JxslGRFDMCFMNSQcEw1bQCtIMyQ/LSA1JhsnGxI2JhkhFxAnHBM8Kh3NW47EAAAACXBIWXMAAABIAAAASABGyWs+AAAACXZwQWcAAAAwAAAAMADO7oxXAAACkUlEQVRIS5WUa1NaQRBEVwIkAZFHBCRAQEFQeQuoCWD+/7/K2WmcurkxSdFVTp3p3eaLvTcsl8svpp+m1FosFt3XDCcH7u/vkzdSqwfwNcN8Pr+4uOBgboJ7vZ5WjlndL5pCLpdj6XQ6OZMCWhVwv2OKgZeXFw/AHphMJqzuHwPPz8+yWJxRknVVTgx8M8kSoyR7AA5IbrlcdtaBc9kkJ2QymXa7zTIej2EOANaMSaY7ETzw+PioAOABme5E2Gw2BEql0tnZGUwAYN2YZLoDxIBcrN1up1UOK8DPJdfTA9lsdjgcMhXQKocVIJBcA3+1Wi1r0kHtTUo6oOvr61CtVrG+m2CmB6omBxQD9Xp9vV4rADPXb6qbHFAMNJtNt6bTqaBpSsLt7a1mDHS73Q8mAgLdSwKvRzNst9s/A1tTEn4L9Pt9Hehx9U1APp9POSiMRiOWkUnt1zFAIOXE98C9QqGQDBRMwGq1SjkxcH5+rl2geTgcxH7qZmz1V5NAs9Vqif3UzdMDP0ws+uy0TGKX3gbAzVg+VKlUPpkqJrFL1QSGaqsC+jQoIHYpAMSAasjLlCvAIeaO7lxeXsZvh9rWaDQ+mgQ4T09P7ugOAfgYeH19/WwSKOCOB+BApXYm1Y56ia+uruSwEnYIlETvS4UhICYgh5V7DukAbflPYDAY3N3dURJAneEDOnhPx28ur4cA/3NAFcDtvqe/Bvjipu+axqbAK6Ek+YTUH4Af4lPHhAH5MUBJkgH1B3h4eNjv90wYkB94VpRkZeJAqxyuUh4mDMgP/PGUcG9ubgQ+JedjgHrIpV7/DjRMMcCLmc1mtEXgU3I+BugTi/on5n8s1oqcCZ8eWCwWvBXKuDDBBMRakTOBX0m2AlUoQDmeAAAAAElFTkSuQmCC) transparent repeat-x; height:45px; vertical-align: text-bottom; line-height: 60px; }
 
 	canvas, .box, div#skin-preview { border: 3px solid grey; background: transparent; background: rgba(0,0,0,0.4); font-family: Munro, monospace; }
 	canvas, .box, div#skin-preview {
@@ -1240,8 +1240,9 @@ else {
 
 	#skin-preview, #skin-editor, #wip, #skins-container, #colourpalette { position: absolute; }
 	#wip, #colourpalette, #skins-container, #skin-editor, #skin-editor-img, #doshit { left: 374px; width: 512px; }
+	#wip, #skin-selector, #output { top:540px; }
 
-	#wip { font-size: 115%; /* centralise for a lightbox? */ top:570px; left: 10px; height: 150px; width: 324px; }
+	#wip { font-size: 115%; /* centralise for a lightbox? */ left: 10px; height: 150px; width: 344px; }
 	#wip code {font-family: Munro, monospace; }
 	#wip a { color: black !important;}
 
@@ -1268,7 +1269,7 @@ else {
 	#noscript.disabled { display: none; }
 	#skin-editor.enabled, #colourpalette #erase, #skin-editor-img { background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH2wIODxsDFVG/AgAAAClJREFUGNNjvHnz5n8GJKCmpobMZWBiIAAoV8D4//9/FDfcunWL3m4AADstCpWDR4PDAAAAAElFTkSuQmCC); }
 
- 	#skin-selector { position: absolute; top: 570px; left: 10px; visibility: hidden; }
+ 	#skin-selector { position: absolute; left: 10px; visibility: hidden; }
 
 	.button { display: inline-block; background: #888; padding: 1px 3px ; margin: 2px; border: 2px outset #ccc; color: white; text-shadow: black 1px 1px; text-decoration:none; }
 	.button:hover, .button:focus { color: #ff4; background: #48e; border: 2px outset #7ae; }
@@ -1277,11 +1278,11 @@ else {
 	#output canvas { float: left; }
 	#output h1 { font-size: 20px; }
 	#output p {clear:both; }
-	#output { padding: 4px; position: absolute; top: 570px; left: 374px; }
+	#output { padding: 4px; position: absolute; left: 374px; }
 	#output .button { float: right; clear: right; margin: 2px 4px;  }
 	
-	footer { position: absolute; bottom: 2px; height: 50px; }
-
+	footer { position: fixed; bottom: 0; padding: 0; width: 900px; line-height: inherit; height: 26px !important; background-position: center -22px; -moz-transform: scaleY(-1); transform: scaleY(-1); }
+	footer p { padding: 2px 10px; -moz-transform: scaleY(-1); transform: scaleY(-1);  }
  </style>
  <p id="wip" class="sign box">Work‐in‐progress. Please send suggestions to <a href="mailto:jdrinkwater@gmail.com">jdrinkwater@gmail.com</a>. Code history <a href="http://johndrinkwater.name/code/mcse/">here</a>, licensed AGPL where applicable. <br/>
 © <a href="http://johndrinkwater.name/">JD</a>, <a href="http://sylvester.jcoglan.com/">JC</a>, <a href="http://mojang.com/">Mojang</a>, <a href="http://www.tenbytwenty.com/munro.php">10×20</a>, <a href="http://learningwebgl.com/blog/">learningWebGL</a>.<br />
