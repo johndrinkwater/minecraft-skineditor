@@ -177,11 +177,6 @@ vTextureCoord = aTextureCoord;
 		return mvMatrix;
 	}
 
-	function setMatrixUniforms() {
-		gl.uniformMatrix4fv(shaderProgram.pMatrixUniform, false, pMatrix);
-		gl.uniformMatrix4fv(shaderProgram.mvMatrixUniform, false, mvMatrix);
-	}
-
 	function degToRad(degrees) {
 		return degrees * Math.PI / 180;
 	}
@@ -647,7 +642,6 @@ vTextureCoord = aTextureCoord;
 		gl.bindTexture(gl.TEXTURE_2D, textures[activeTexture]);
 		gl.uniform1i(shaderProgram.samplerUniform, 0);
 		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cubeVertexIndexBuffer);
-		//setMatrixUniforms();
 		gl.uniformMatrix4fv(shaderProgram.pMatrixUniform, false, pMatrix);
 		gl.uniformMatrix4fv(shaderProgram.mvMatrixUniform, false, mvMatrix);
 		gl.drawElements(gl.TRIANGLES, cubeVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
