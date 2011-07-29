@@ -413,7 +413,6 @@ vTextureCoord = aTextureCoord;
 				temp.className = 'box';
 			}
 		}
-
 	}
 
 	/**
@@ -490,13 +489,13 @@ vTextureCoord = aTextureCoord;
 	 * Reload skin, drop all updates
 	 * @param skin string identifies which skin user wishes to reload
 	 */
-	function resetSkin( event ) {
+	function resetSkin( e ) {
 		// if we are here, user has pressed ‘start again’
 		// load previously opened skin
 		loadSkin( skins[ '_previous' ].name );
 	}
 
-	function saveSkinToMinecraft(e) {
+	function saveSkinToMinecraft( e ) {
 
 		try {
 			/* FormData is new for Firefox 4, Chrome #, find something older */
@@ -529,7 +528,7 @@ vTextureCoord = aTextureCoord;
 	}
 
 	
-	function resetLocalStorage() {
+	function resetLocalStorage( ) {
 
 		if (!flStorageSupport)
 			return;
@@ -545,15 +544,15 @@ vTextureCoord = aTextureCoord;
 		updateSkins(true);
 	}
 
-	function openPushSkinDialog(e) {
+	function openPushSkinDialog( e ) {
 		// all this really needs to do is animate‐in the ‘I think i’m ready’ dialogue
 	}
 
-	function saveSkinToDisk(e) {
+	function saveSkinToDisk( e ) {
 		skinimporterchrome.click();
 	}
 
-	function saveSkinInSkinsButton(e) {
+	function saveSkinInSkinsButton( e ) {
 		saveSkinInSkins("");
 		e.preventDefault();
 		return false;
@@ -623,7 +622,6 @@ vTextureCoord = aTextureCoord;
 	function drawAndTexture(texture) {
 		gl.bindBuffer(gl.ARRAY_BUFFER, texture);
 		gl.vertexAttribPointer(shaderProgram.textureCoordAttribute, texture.itemSize, gl.FLOAT, false, 0, 0);
-		gl.uniformMatrix4fv(shaderProgram.pMatrixUniform, false, pMatrix);
 		gl.uniformMatrix4fv(shaderProgram.mvMatrixUniform, false, mvMatrix);
 		gl.drawElements(gl.TRIANGLES, cubeVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
 	}
@@ -665,6 +663,7 @@ vTextureCoord = aTextureCoord;
 		gl.bindTexture(gl.TEXTURE_2D, textures[activeTexture]);
 		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cubeVertexIndexBuffer);
 		gl.uniform1i(shaderProgram.samplerUniform, 0);
+		gl.uniformMatrix4fv(shaderProgram.pMatrixUniform, false, pMatrix);
 
 		// we rotate everything
 		mat4.rotateY(mvMatrix, degToRad(rBody));
@@ -892,6 +891,26 @@ vTextureCoord = aTextureCoord;
 	}
 
 
+	/** Boot our GL canvas */
+	function webGLStart() {
+
+		initShaders()
+		initBuffers();
+
+		gl.clearColor(0.0, 0.0, 0.0, 0.5);
+		gl.clearDepth(1.0);
+		gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+		gl.enable(gl.BLEND);
+
+		gl.enable(gl.DEPTH_TEST);
+		gl.depthFunc(gl.LEQUAL);
+
+		// push animation onto stack
+		// pushAnimation(anim.WALKING);
+		drawScene();
+	}
+
+
 	/* because JS lacks it */
 	/* http://my.opera.com/GreyWyvern/blog/show.dml/1725165 */
 	Object.prototype.clone = function() {
@@ -995,6 +1014,7 @@ vTextureCoord = aTextureCoord;
 			data: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAAAgCAYAAACinX6EAAADG0lEQVRogd1YO26kQBDlCg4mICCzLDn12KlTEvLdDYcT+Ba2z0BqiXCEJpjABARIHACJjMDyPeiNqlUUVf1zW7PrlkpjaLrp9/pV9cNJYmnloVSm+Ly7Usf9TnV5pj7vrvQ1/G2b/59vAPTPr9+rgPtdnongj/vdzyAAAGPw8AuA4bfLs5UiLr3+Lzdu9zERsNtUBT+GgKauVpLHKdHU1QZw7BRo6ko1dbWZR7ofvQEBmAS4bupKA/94e14FEBHj/RclwFYEOfAQXZ79/ylgOwYl8BCXXr+1caCaujKCjjWmPJTRpB2cEtyi5nHwBhIyhiNgHgc1j4M3kNBxSf74oGjM47C6vr25ZsM0xjWSJEnovPM4qNubaw1Gej/uhzFSvzg+ZNExw7QG0yZF63+5T5UUUMiKotgUN3zPNIctvCUbu1Hrukwn7eyW6aSW6aTSNN0YnjRNdT8Yn2U66WeoIaImCTtFaqW5DymXPjo/xii6VLo4AAH3AOAynVRRFKooitU9OpZzhjZCKHj6dcn5CeijxFKisCOFeVbX3O5zllby+/RllBQXn4CVgH+h0Z3lXCZcU5DejRYK27FFW5dnLNDjfqfyxwedNlLY5ueOUnxaBYGmBOAFSZVVarBT1BJ3eRaVgL49rwiAYzk6AdLZKjXTl+F3EhBVASYTZBvPVVvI3e9MgWAFSCahb8+qb89WI0MB4CJFq7rPPBCShbaty7VmiTbRNbhF41MBBywOagMF40qAi5KAhCACJPm7EkCPwuN+p9X08fa8Ate3Z/1OuE+f8QWPSfAmAMvHhQTp5SD/Ls80yL49b3YX5y+AwwS4pkpoTWHPfch/l1zjXvr++qQdJa4pGBglgKYCfTY0vBTAGR+bCmwSxHnP5TcmABfdGOC9CYiVAlQl0m6Wh1LPw6mBm8s3vAn4ShHkFmCSMnaLkhpC/svkY903KcCFiQBpDABzlSqnANP80RQgFUCfQiiBfn990gXRhQApHXxqEt0cKwF4YpPrkvqwjDEg/GnsQoAtHbjNcFGlcwrYCAg5BXxJkNQQogLAY8P/F6CbuIFTQdIoAAAAAElFTkSuQmCC',
 			thumb: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEYAAABkCAYAAAA7Ska5AAACz0lEQVR4nO3bPXLbMBAFYF7BhQsW7DKZcRuPWrVseIn4BDmCO0/ukd6FCxVRwUJncJ/JPYxUK8OYBbAMQe+CeJp5DUeiFp8N4odU1+EVfT0ibNQLsBr1AqxGvQCrUS/AatQLsBr1AqxGvQCrUS/Aarb/kofvD650AAMYwNSA8rkwd1+/rM6uYMbjwY3HQxGY8XgATDMwpQIYwDQK8+fXk6NM0+SmaXL+sVTo/f5nAAOYRmHeXl8cpe971/e9+/vt5pp5HNw8Dh+O+aHP0DkA0xIM1/AcDGVXMBzAPA7Ox/KvI5QUJAUwLcFIu9Lz/e0+YXyc5/vba1LXmnkcou+dx2Ef15iue5/HlIAJ5zEbbmatb7hk1y3V2CUw4/FwPeflfHKX86kumLDoVIO5awy9x8eiRaT/HRtugW7/31IahksVMFzhkuE3F8AshHl7fWGBzMCECLmE3YbrSnStupxPyfMDJgNTcKdvHQzXXTRgOKBqYcLRyB+BCMO/dULHqoBZirE1jJ+qYH7//HENHaNuw10n/K5ESwvAtAQjHVEo/sb40vMCBjA7g/GHcult2BQGNzUwPcFLLfBKw0hSBcwSjFy3iZ3P/OpastpeA8MhVLHtEIaehCoFQ8/i5f4IqjDSvp6DWDLqSKEBYxkm9UBh173fQuEa6i8TwuVCbH6Se4ARMNZhuPgwXAPDpxi4JxtyMOa7UgxFA8bUcJ3qUlvCcF2oepgYUOyYBGZte4rBSCOB8Telwg3wgtcOWzCSeQdgEhCAYWCkv0DZFUyJn+QAJjI/AUyLMLlZMmCYBnPTem4TalcwkgYDJtJg7uFGP4XWQLZgJA0GDGD+H2bD2yI2YUqkORiMShiuAZMNlgSAWRbJ1qY0gAFMwzCSjW9pANMCDJYEgAEMYLQDGMBUHfUCrEa9AKtRL8Bq1AuwGvUCrEa9AKtRL8Bq1AuwGvUCTOYfXfp3gFneuucAAAAASUVORK5CYII=',
 		}
+
 		// discover if we have JSON library in the browser
 		if ( typeof JSON != 'undefined' ) {
 			fJSONSupport = true;
@@ -1009,24 +1029,22 @@ vTextureCoord = aTextureCoord;
 			console.log('We have localStorage support.');
 			if (localStorage['skins'] != null) {
 
-				skins						= JSON.parse(localStorage['skins']);
-
+				skins = JSON.parse(localStorage['skins']);
 			} else {
 
 				skins = initialSkins.clone();
 				try {
-					localStorage['skins']	= JSON.stringify(skins);
+					localStorage['skins'] = JSON.stringify(skins);
 				} catch (e) {
-					// OOM seems unlikely with our usage needs.
 					console.log('Had a problem setting up localStorage: ' + e);
 				}
 			}
 
-			// Safari requires you to define your event listener on the body; IE requires it to be set on the document. Firefox doesn’t care.
-			// SERIOUSLY?! bugger Safari. maybe Chrome too.
-			// IE: If we dont have this, wont have ‘storage’ (technically a lie, but that IE doesnt do canvas either…)
-			if (document.addEventListener)
-				document.addEventListener('storage', updateSkinsFromAnotherTime, false);
+		// Safari requires you to define your event listener on the body; IE requires it to be set on the document. Firefox doesn’t care.
+		// SERIOUSLY?! bugger Safari. maybe Chrome too.
+		// IE: If we dont have this, wont have ‘storage’ (technically a lie, but that IE doesnt do canvas either…)
+		if (document.addEventListener)
+			document.addEventListener('storage', updateSkinsFromAnotherTime, false);
 
 		} else {
 
@@ -1161,25 +1179,6 @@ vTextureCoord = aTextureCoord;
 
 		loadSkin( skins[ '_previous' ].name );
 		updateSkins(false);
-	}
-
-	/** Boot our GL canvas */
-	function webGLStart() {
-
-		initShaders()
-		initBuffers();
-
-		gl.clearColor(0.0, 0.0, 0.0, 0.5);
-		gl.clearDepth(1.0);
-		gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-		gl.enable(gl.BLEND);
-
-		gl.enable(gl.DEPTH_TEST);
-		gl.depthFunc(gl.LEQUAL);
-
-		// push animation onto stack
-		// pushAnimation(anim.WALKING);
-		drawScene();
 	}
 
 if (document.addEventListener)
