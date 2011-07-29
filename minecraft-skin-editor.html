@@ -89,8 +89,7 @@ vTextureCoord = aTextureCoord;
 			gl.viewportWidth = canvas.width;
 			gl.viewportHeight = canvas.height;
 		} catch(e) {
-			// promote this to a higher level than log
-			console.log("Could not initialise WebGL, sorry :-(");
+			console.info("Could not initialise WebGL, sorry :-(");
 		}
 		if (!gl)
 			return null;
@@ -181,44 +180,29 @@ vTextureCoord = aTextureCoord;
 		return degrees * Math.PI / 180;
 	}
 
-	/*
-	 * helper function, just to reduce code size
-	 */
-	function makeCube(width, height, depth) {
-
-		// we are passed in something like 8, 10, 12.
-		// we convert these to floats, based around 8!
-		var w = width / 8,
-			h = height / 8,
-			d = depth / 8;
-
-		var buffer = gl.createBuffer();
-		gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-		vertices = [
-			// Front Ba.. T Bo R L
-			-w,-h, d, w,-h, d, w, h, d,-w, h, d,
-			-w,-h,-d,-w, h,-d, w, h,-d, w,-h,-d,
-			-w, h,-d,-w, h, d, w, h, d, w, h,-d,
-			-w,-h,-d, w,-h,-d, w,-h, d,-w,-h, d,
-			 w,-h,-d, w, h,-d, w, h, d, w,-h, d,
-			-w,-h,-d,-w,-h, d,-w, h, d,-w, h,-d,
-		];
-		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
-		buffer.itemSize = 3;
-		buffer.numItems = 24;
-		return buffer;
-	}
-
-
-	var cubeVPB, bodyVPB, limbVPB,
-		headVTCB, headAccessVTCB, bodyVTCB, armLVTCB, legVTCB,
+	var cubeVPB, headVTCB, headAccessVTCB, bodyVTCB, armLVTCB, legVTCB,
 		cubeVertexIndexBuffer;
 
 	function initBuffers() {
 
-		cubeVPB = makeCube( 8,  8, 8 );
-		bodyVPB = makeCube( 8, 12, 4 );
-		limbVPB	= makeCube( 4, 12, 4 );
+		cubeVPB = gl.createBuffer();
+		gl.bindBuffer(gl.ARRAY_BUFFER, cubeVPB);
+		vertices = [
+			// Front Ba.. T Bo R L
+			-1,-1, 1, 1,-1, 1, 1, 1, 1,-1, 1, 1,
+			-1,-1,-1,-1, 1,-1, 1, 1,-1, 1,-1,-1,
+			-1, 1,-1,-1, 1, 1, 1, 1, 1, 1, 1,-1,
+			-1,-1,-1, 1,-1,-1, 1,-1, 1,-1,-1, 1,
+			 1,-1,-1, 1, 1,-1, 1, 1, 1, 1,-1, 1,
+			-1,-1,-1,-1,-1, 1,-1, 1, 1,-1, 1,-1,
+		];
+		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+		cubeVPB.itemSize = 3;
+		cubeVPB.numItems = 24;
+
+		// body and limbs are just skewed cubes, use same verts.
+		bodyScale = [1.0, 1.5, 0.5];
+		limbScale = [0.5, 1.5, 0.5];
 
 		textures[0] = gl.createTexture();
 		textures[1] = gl.createTexture();
@@ -669,6 +653,7 @@ vTextureCoord = aTextureCoord;
 		// we first need to do any animation maths
 		var timeNow = new Date().getTime();
 		var elapsed = timeNow - lastTime;
+		// console.timeStamp(); for firebug 1.8
 		lastTime = timeNow;
 
 		// adjust window.FRAMERATE?
@@ -686,7 +671,8 @@ vTextureCoord = aTextureCoord;
 		mat4.rotateY(mvMatrix, degToRad(rBody));
 
 		mvPushMatrix();
-			drawAndTexture(bodyVPB, bodyVTCB);
+			mat4.scale(mvMatrix, bodyScale);
+			drawAndTexture(cubeVPB, bodyVTCB);
 		mvPopMatrix();
 
 		// arms
@@ -696,7 +682,8 @@ vTextureCoord = aTextureCoord;
 			mat4.rotateX(mvMatrix, ryRArm);
 			mat4.rotateZ(mvMatrix, rxRArm);
 			mat4.translate(mvMatrix, [-0.5, -1.5, 0.0]);
-			drawAndTexture(limbVPB, armLVTCB);
+			mat4.scale(mvMatrix, limbScale);
+			drawAndTexture(cubeVPB, armLVTCB);
 		mvPopMatrix();
 		mvPushMatrix();
 			// [1.5, 0.0, 0.0] [-0.5, 1.5, 0.0]
@@ -704,8 +691,9 @@ vTextureCoord = aTextureCoord;
 			mat4.rotateX(mvMatrix, ryLArm);
 			mat4.rotateZ(mvMatrix, rxLArm);
 			mat4.translate(mvMatrix, [0.5, -1.5, 0.0]);
+			mat4.scale(mvMatrix, limbScale);
 			mat4.scale(mvMatrix, [-1.0, 1.0, 1.0]);
-			drawAndTexture(limbVPB, armLVTCB);
+			drawAndTexture(cubeVPB, armLVTCB);
 		mvPopMatrix();
 
 		// legs
@@ -714,15 +702,17 @@ vTextureCoord = aTextureCoord;
 			mat4.translate(mvMatrix, [-0.5, -1.5, 0.0]);
 			mat4.rotateX(mvMatrix, ryRLeg);
 			mat4.translate(mvMatrix, [0.0, -1.5, 0.0]);
-			drawAndTexture(limbVPB, legLVTCB);
+			mat4.scale(mvMatrix, limbScale);
+			drawAndTexture(cubeVPB, legLVTCB);
 		mvPopMatrix();
 		mvPushMatrix();
 			// [0.5, -3.0, 0.0] [0.0, 1.5, 0.0]
 			mat4.translate(mvMatrix, [0.5, -1.5, 0.0]);
 			mat4.rotateX(mvMatrix, ryLLeg);
 			mat4.translate(mvMatrix, [0.0, -1.5, 0.0]);
+			mat4.scale(mvMatrix, limbScale);
 			mat4.scale(mvMatrix, [-1.0, 1.0, 1.0]);
-			drawAndTexture(limbVPB, legLVTCB);
+			drawAndTexture(cubeVPB, legLVTCB);
 		mvPopMatrix();
 
 		// draw head
