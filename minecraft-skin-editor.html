@@ -620,15 +620,9 @@ vTextureCoord = aTextureCoord;
 	/*
 	 * helper function
 	 */
-	function drawAndTexture(vertices, texture) {
-		gl.bindBuffer(gl.ARRAY_BUFFER, vertices);
-		gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, vertices.itemSize, gl.FLOAT, false, 0, 0);
+	function drawAndTexture(texture) {
 		gl.bindBuffer(gl.ARRAY_BUFFER, texture);
 		gl.vertexAttribPointer(shaderProgram.textureCoordAttribute, texture.itemSize, gl.FLOAT, false, 0, 0);
-		gl.activeTexture(gl.TEXTURE0);
-		gl.bindTexture(gl.TEXTURE_2D, textures[activeTexture]);
-		gl.uniform1i(shaderProgram.samplerUniform, 0);
-		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cubeVertexIndexBuffer);
 		gl.uniformMatrix4fv(shaderProgram.pMatrixUniform, false, pMatrix);
 		gl.uniformMatrix4fv(shaderProgram.mvMatrixUniform, false, mvMatrix);
 		gl.drawElements(gl.TRIANGLES, cubeVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
@@ -646,7 +640,6 @@ vTextureCoord = aTextureCoord;
 		// call ourselves in the future
 		requestAnimFrame(drawScene, skinpreview);
 
-
 		if (!loadedTexture)
 			return;
 
@@ -655,8 +648,6 @@ vTextureCoord = aTextureCoord;
 		var elapsed = timeNow - lastTime;
 		// console.timeStamp(); for firebug 1.8
 		lastTime = timeNow;
-
-		// adjust window.FRAMERATE?
 
 		gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -667,12 +658,20 @@ vTextureCoord = aTextureCoord;
 		// move to the plain we want
 		mat4.translate(mvMatrix, [0.0, 0.5, -13.0]);
 
+		// upload our constants to the graphics card
+		gl.bindBuffer(gl.ARRAY_BUFFER, cubeVPB);
+		gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, cubeVPB.itemSize, gl.FLOAT, false, 0, 0);
+		gl.activeTexture(gl.TEXTURE0);
+		gl.bindTexture(gl.TEXTURE_2D, textures[activeTexture]);
+		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cubeVertexIndexBuffer);
+		gl.uniform1i(shaderProgram.samplerUniform, 0);
+
 		// we rotate everything
 		mat4.rotateY(mvMatrix, degToRad(rBody));
 
 		mvPushMatrix();
 			mat4.scale(mvMatrix, bodyScale);
-			drawAndTexture(cubeVPB, bodyVTCB);
+			drawAndTexture(bodyVTCB);
 		mvPopMatrix();
 
 		// arms
@@ -683,7 +682,7 @@ vTextureCoord = aTextureCoord;
 			mat4.rotateZ(mvMatrix, rxRArm);
 			mat4.translate(mvMatrix, [-0.5, -1.5, 0.0]);
 			mat4.scale(mvMatrix, limbScale);
-			drawAndTexture(cubeVPB, armLVTCB);
+			drawAndTexture(armLVTCB);
 		mvPopMatrix();
 		mvPushMatrix();
 			// [1.5, 0.0, 0.0] [-0.5, 1.5, 0.0]
@@ -693,7 +692,7 @@ vTextureCoord = aTextureCoord;
 			mat4.translate(mvMatrix, [0.5, -1.5, 0.0]);
 			mat4.scale(mvMatrix, limbScale);
 			mat4.scale(mvMatrix, [-1.0, 1.0, 1.0]);
-			drawAndTexture(cubeVPB, armLVTCB);
+			drawAndTexture(armLVTCB);
 		mvPopMatrix();
 
 		// legs
@@ -703,7 +702,7 @@ vTextureCoord = aTextureCoord;
 			mat4.rotateX(mvMatrix, ryRLeg);
 			mat4.translate(mvMatrix, [0.0, -1.5, 0.0]);
 			mat4.scale(mvMatrix, limbScale);
-			drawAndTexture(cubeVPB, legLVTCB);
+			drawAndTexture(legLVTCB);
 		mvPopMatrix();
 		mvPushMatrix();
 			// [0.5, -3.0, 0.0] [0.0, 1.5, 0.0]
@@ -712,7 +711,7 @@ vTextureCoord = aTextureCoord;
 			mat4.translate(mvMatrix, [0.0, -1.5, 0.0]);
 			mat4.scale(mvMatrix, limbScale);
 			mat4.scale(mvMatrix, [-1.0, 1.0, 1.0]);
-			drawAndTexture(cubeVPB, legLVTCB);
+			drawAndTexture(legLVTCB);
 		mvPopMatrix();
 
 		// draw head
@@ -722,10 +721,10 @@ vTextureCoord = aTextureCoord;
 			mat4.rotateY(mvMatrix, rzHead);
 			mat4.rotateX(mvMatrix, degToRad(ryHead));
 			mat4.translate(mvMatrix, [0.0, 1.0, 0.0]);
-			drawAndTexture(cubeVPB, headVTCB);
+			drawAndTexture(headVTCB);
 			// 1.125 puts it as 9,9,9
 			mat4.scale(mvMatrix, [1.125, 1.125, 1.125]);
-			drawAndTexture(cubeVPB, headAccessVTCB);
+			drawAndTexture(headAccessVTCB);
 		mvPopMatrix();
 	}
 
