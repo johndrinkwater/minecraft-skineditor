@@ -85,7 +85,7 @@ vTextureCoord = aTextureCoord;
 
 	function initGL(canvas) {
 		try {
-			gl = fetchGLContext(canvas, null);
+			gl = fetchGLContext(canvas, {antialias:true});
 			gl.viewportWidth = canvas.width;
 			gl.viewportHeight = canvas.height;
 		} catch(e) {
