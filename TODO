@@ -1,0 +1,9 @@
+Things that should be fixed, whenever. It’s been 4 years, a few months wont set it back.
+
+* Add support for the newer skins (1.8 isn’t that new…)
+* Add support for slim arms (aka base model Alex)
+* Add support for pulling down a user skin with the new crappy API
+* (and then check if it still has the same CORS problems as in 2011)
+* Constantly poke Mojang to add POST support so we can submit
+* Add idle animation because why not
+* Fix README to suck less
